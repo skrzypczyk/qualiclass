@@ -1,0 +1,59 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Connexion{% endblock %}
+
+{% block body %}
+    <div class="flex justify-center items-center h-full bg-gray-100 py-12">
+        <div class="w-full max-w-md bg-white shadow-md rounded-lg p-8">
+            <h1 class="text-2xl font-bold mb-6 text-center text-gray-800">Connexion à votre espace</h1>
+
+            {% if error %}
+                <div class="mb-4 p-3 bg-red-100 text-red-700 rounded">
+                    {{ error.messageKey|trans(error.messageData, 'security') }}
+                </div>
+            {% endif %}
+
+
+            <form method="post" action="{{ path('app_login') }}" class="space-y-6">
+                <div>
+                    <label for="email" class="block text-sm font-medium text-gray-700">Adresse email</label>
+                    <input type="email" id="email" name="_username" required autofocus
+                           class="mt-1 block w-full px-4 py-2 border rounded-md shadow-sm focus:ring focus:ring-indigo-200 focus:border-indigo-500"
+                           value="{{ last_username }}">
+                </div>
+
+                <div>
+                    <label for="password" class="block text-sm font-medium text-gray-700">Mot de passe</label>
+                    <input type="password" id="password" name="_password" required
+                           class="mt-1 block w-full px-4 py-2 border rounded-md shadow-sm focus:ring focus:ring-indigo-200 focus:border-indigo-500">
+                </div>
+
+                <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mt-4">
+                    <label class="inline-flex items-center text-sm text-gray-600">
+                        <input type="checkbox" name="_remember_me"
+                               class="mr-2 rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500">
+                        Se souvenir de moi
+                    </label>
+
+                    <div class="text-sm text-right sm:text-left sm:ml-auto">
+                        <a href="{{ path('app_register') }}" class="text-indigo-600 hover:underline block">
+                            S'inscrire
+                        </a>
+                        <a href="{{ path('app_forgot_password_request') }}" class="text-indigo-600 hover:underline block mt-1">
+                            Mot de passe oublié ?
+                        </a>
+                        <a href="{{ path('app_resend_confirmation') }}" class="text-indigo-600 hover:underline block mt-1">
+                            Renvoyer le lien d’activation
+                        </a>
+                    </div>
+                </div>
+
+
+                <button type="submit"
+                        class="w-full bg-indigo-600 text-white font-semibold py-2 px-4 rounded hover:bg-indigo-700 transition">
+                    Se connecter
+                </button>
+            </form>
+        </div>
+    </div>
+{% endblock %}

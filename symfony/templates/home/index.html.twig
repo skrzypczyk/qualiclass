@@ -1,0 +1,106 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <div class="bg-white text-gray-800">
+
+        <!-- Hero -->
+        <section class="text-center py-16 bg-gray-100 px-4">
+            <img src="{{ asset('images/logo-qualiclass.png') }}" alt="Logo QualiClass" class="w-24 mx-auto mb-4">
+            <h1 class="text-4xl font-bold mb-2">Simplifiez vos audits QUALIOPI</h1>
+            <p class="text-lg text-gray-600 mb-8">Une plateforme dédiée à la gestion pédagogique et à la conformité des formations</p>
+            <a href="{{ path('app_register') }}" class="bg-[#142742] text-white py-3 px-6 rounded-lg hover:bg-[#1a355c]">
+                Créer un compte
+            </a>
+        </section>
+
+        <section class="py-20 px-6 bg-white">
+            <div class="max-w-6xl mx-auto grid md:grid-cols-2 gap-12">
+                <div>
+                    <h2 class="text-3xl font-bold mb-4">Qu'est-ce que <span class="text-[#142742]">QualiClass</span> ?</h2>
+                    <p class="text-gray-700 leading-relaxed">
+                        QualiClass est une application web destinée aux établissements de formation.
+                        Elle centralise vos <strong>programmes pédagogiques</strong>, vos <strong>syllabus</strong> et
+                        les pièces justificatives nécessaires pour produire des <strong>rapports conformes aux audits QUALIOPI</strong>.
+                        Simple, rapide et efficace.
+                    </p>
+                </div>
+                <div>
+                    <h2 class="text-3xl font-bold mb-4">Pourquoi <span class="text-[#142742]">QUALIOPI</span> ?</h2>
+                    <p class="text-gray-700 leading-relaxed">
+                        QUALIOPI est une <strong>certification qualité</strong> devenue obligatoire pour les organismes de formation
+                        qui souhaitent accéder à des financements publics ou mutualisés. Elle garantit un cadre structuré et rigoureux
+                        pour l’ensemble des actions de formation professionnelle.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- Fonctionnalités -->
+        <section class="py-16 bg-gray-100">
+            <div class="px-6 max-w-5xl mx-auto">
+                <h2 class="text-3xl font-semibold text-center mb-8">Fonctionnalités principales</h2>
+                <div class="grid md:grid-cols-3 gap-6 text-center">
+                    <div class="p-6 border rounded shadow-sm">
+                        <h3 class="text-xl font-semibold mb-2">Centralisation des contenus</h3>
+                        <p class="text-gray-600">Importez et gérez tous vos programmes, matières, syllabus et éléments de preuve.</p>
+                    </div>
+                    <div class="p-6 border rounded shadow-sm">
+                        <h3 class="text-xl font-semibold mb-2">Génération de rapports</h3>
+                        <p class="text-gray-600">Créez des rapports consolidés à fournir aux auditeurs lors du contrôle QUALIOPI.</p>
+                    </div>
+                    <div class="p-6 border rounded shadow-sm">
+                        <h3 class="text-xl font-semibold mb-2">Multi-utilisateurs</h3>
+                        <p class="text-gray-600">Invitez vos équipes pédagogiques, attribuez des rôles, collaborez facilement.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Formulaire de contact -->
+        <section class=" bg-white py-20 px-6">
+            <div class="max-w-3xl mx-auto bg-white shadow-md rounded-lg p-8">
+                <h2 class="text-3xl font-semibold text-center mb-6 text-[#142742]">Contactez-nous</h2>
+
+                {{ form_start(form, {'attr': {'class': 'space-y-6'}}) }}
+
+                <div>
+                    {{ form_label(form.name, null, {'label_attr': {'class': 'block text-gray-700 font-medium mb-2'}}) }}
+                    {{ form_widget(form.name, {'attr': {'class': 'w-full border border-gray-300 rounded px-4 py-2'}}) }}
+                    {{ form_errors(form.name) }}
+                </div>
+
+                <div>
+                    {{ form_label(form.email, null, {'label_attr': {'class': 'block text-gray-700 font-medium mb-2'}}) }}
+                    {{ form_widget(form.email, {'attr': {'class': 'w-full border border-gray-300 rounded px-4 py-2'}}) }}
+                    {{ form_errors(form.email) }}
+                </div>
+
+                <div>
+                    {{ form_label(form.message, null, {'label_attr': {'class': 'block text-gray-700 font-medium mb-2'}}) }}
+                    {{ form_widget(form.message, {'attr': {'class': 'w-full border border-gray-300 rounded px-4 py-2 resize-none'}}) }}
+                    {{ form_errors(form.message) }}
+                </div>
+
+                <div class="text-center">
+                    <button type="submit" class="bg-[#142742] text-white px-6 py-3 rounded hover:bg-[#1a355c] transition">
+                        Envoyer le message
+                    </button>
+                </div>
+
+                {{ form_end(form) }}
+            </div>
+        </section>
+
+
+
+        <!-- Appel à l'action -->
+        <section class="text-center bg-gray-100 py-12 px-6">
+            <h2 class="text-2xl font-semibold mb-8">Prêt à simplifier vos démarches qualité ?</h2>
+            <a href="{{ path('app_register') }}" class="bg-[#142742] text-white py-3 px-6 rounded-lg hover:bg-[#1a355c]">
+                Créer un compte maintenant
+            </a>
+        </section>
+
+    </div>
+{% endblock %}

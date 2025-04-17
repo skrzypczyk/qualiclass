@@ -1,0 +1,32 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Lien de réinitialisation envoyé{% endblock %}
+
+{% block body %}
+    <div class="flex justify-center items-center h-full bg-gray-100 py-12">
+        <div class="w-full max-w-md bg-white shadow-md rounded-lg p-8">
+            <h1 class="text-2xl font-bold text-center text-indigo-600 mb-4">
+                Vérifie ta boîte mail
+            </h1>
+
+            <p class="text-gray-700 mb-4 text-center">
+                Si un compte correspond à l'adresse saisie, un email vient de t’être envoyé avec un lien de réinitialisation.
+                Ce lien expirera dans <strong class="text-gray-900">{{ resetToken.expirationMessageKey|trans(resetToken.expirationMessageData, 'ResetPasswordBundle') }}</strong>.
+            </p>
+
+            <p class="text-sm text-gray-600 text-center">
+                Si tu ne reçois pas l’email, vérifie ton dossier spam ou
+                <a href="{{ path('app_forgot_password_request') }}" class="text-indigo-600 hover:underline">
+                    réessaie
+                </a>
+            </p>
+
+            <div class="mt-6 text-center">
+                <a href="{{ path('app_login') }}"
+                   class="inline-block bg-indigo-600 text-white font-semibold px-6 py-2 rounded hover:bg-indigo-700 transition">
+                    Retour à la connexion
+                </a>
+            </div>
+        </div>
+    </div>
+{% endblock %}
