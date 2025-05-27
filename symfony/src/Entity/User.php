@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Repository\UserRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
@@ -55,20 +56,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private Collection $invoices;
 
     #[ORM\Column(nullable: true)]
-    private ?int $limitSchools = null;
-
-    #[ORM\Column(nullable: true)]
     private ?int $limitUsers = null;
 
     #[ORM\Column(nullable: true)]
     private ?bool $isFreeAccount = null;
 
 
-    /**
-     * @var Collection<int, School>
-     */
-    #[ORM\OneToMany(targetEntity: School::class, mappedBy: 'owner')]
-    private Collection $schools;
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $stripeSubscriptionId = null;
@@ -90,12 +83,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column(nullable: true)]
     private ?bool $isDisable = null;
-
-    /**
-     * @var Collection<int, School>
-     */
-    #[ORM\ManyToMany(targetEntity: School::class, inversedBy: 'users')]
-    private Collection $School;
 
     /**
      * @var Collection<int, Module>
@@ -127,14 +114,30 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: Program::class, mappedBy: 'owner')]
     private Collection $programs;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $schoolName = null;
+
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $schoolDescription = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $schoolImg = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $schoolPrimaryColor = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $schoolSecondaryColor = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $schoolTypo = null;
+
 
     public function __construct()
     {
         $this->invoices = new ArrayCollection();
-        $this->schools = new ArrayCollection();
         $this->subscriptions = new ArrayCollection();
         $this->users = new ArrayCollection();
-        $this->School = new ArrayCollection();
         $this->modules = new ArrayCollection();
         $this->assessments = new ArrayCollection();
         $this->categories = new ArrayCollection();
@@ -307,17 +310,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function getlimitSchools(): ?int
-    {
-        return $this->limitSchools;
-    }
-
-    public function setlimitSchools(?int $limitSchools): static
-    {
-        $this->limitSchools = $limitSchools;
-
-        return $this;
-    }
 
     public function getLimitUsers(): ?int
     {
@@ -378,38 +370,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    /**
-     * @return Collection<int, School>
-     */
-    public function getSchools(?bool $onlyEnable = false): Collection
-    {
-        if ($onlyEnable) {
-            return $this->schools->filter(fn(School $school) => !$school->isDisable());
-        }
-        return $this->schools;
-    }
-
-    public function addSchool(School $school): static
-    {
-        if (!$this->schools->contains($school)) {
-            $this->schools->add($school);
-            $school->setOwner($this);
-        }
-
-        return $this;
-    }
-
-    public function removeSchool(School $school): static
-    {
-        if ($this->schools->removeElement($school)) {
-            // set the owning side to null (unless already changed)
-            if ($school->getOwner() === $this) {
-                $school->setOwner(null);
-            }
-        }
-
-        return $this;
-    }
 
     public function getStripeSubscriptionId(): ?string
     {
@@ -508,14 +468,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->isDisable = $isDisable;
 
         return $this;
-    }
-
-    /**
-     * @return Collection<int, School>
-     */
-    public function getSchool(): Collection
-    {
-        return $this->School;
     }
 
     /**
@@ -664,6 +616,78 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
                 $program->setOwner(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getSchoolName(): ?string
+    {
+        return $this->schoolName;
+    }
+
+    public function setSchoolName(?string $schoolName): static
+    {
+        $this->schoolName = $schoolName;
+
+        return $this;
+    }
+
+    public function getSchoolDescription(): ?string
+    {
+        return $this->schoolDescription;
+    }
+
+    public function setSchoolDescription(?string $schoolDescription): static
+    {
+        $this->schoolDescription = $schoolDescription;
+
+        return $this;
+    }
+
+    public function getSchoolImg(): ?string
+    {
+        return $this->schoolImg;
+    }
+
+    public function setSchoolImg(?string $schoolImg): static
+    {
+        $this->schoolImg = $schoolImg;
+
+        return $this;
+    }
+
+    public function getSchoolPrimaryColor(): ?string
+    {
+        return $this->schoolPrimaryColor;
+    }
+
+    public function setSchoolPrimaryColor(?string $schoolPrimaryColor): static
+    {
+        $this->schoolPrimaryColor = $schoolPrimaryColor;
+
+        return $this;
+    }
+
+    public function getSchoolSecondaryColor(): ?string
+    {
+        return $this->schoolSecondaryColor;
+    }
+
+    public function setSchoolSecondaryColor(?string $schoolSecondaryColor): static
+    {
+        $this->schoolSecondaryColor = $schoolSecondaryColor;
+
+        return $this;
+    }
+
+    public function getSchoolTypo(): ?string
+    {
+        return $this->schoolTypo;
+    }
+
+    public function setSchoolTypo(?string $schoolTypo): static
+    {
+        $this->schoolTypo = $schoolTypo;
 
         return $this;
     }

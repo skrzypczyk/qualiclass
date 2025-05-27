@@ -57,10 +57,6 @@ class UserEditAdminType extends AbstractType
             ->add('limitUsers', IntegerType::class, [
                 'label' => 'Surcharge du nombre d\'utilisateurs',
                 'required' => false,
-            ])
-            ->add('limitSchools', IntegerType::class, [
-                'label' => 'Surcharge du nombre d\'écoles',
-                'required' => false,
             ]);
     }
 

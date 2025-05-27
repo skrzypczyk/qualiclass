@@ -3,7 +3,6 @@
 namespace App\Form;
 
 use App\Entity\Assessment;
-use App\Entity\School;
 use App\Form\Type\TrixType;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
@@ -28,12 +27,6 @@ class CreateAssessmentType extends AbstractType
                     'placeholder' => 'Description de l\'évaluation',
                     'class' => 'form-control',
                 ],
-            ])
-            ->add('schools', EntityType::class, [
-                'label' => 'Écoles',
-                'class' => School::class,
-                'choice_label' => 'name',
-                'multiple' => true,
             ])
         ;
     }

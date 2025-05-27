@@ -21,23 +21,6 @@
             {% endif %}
         </div>
 
-
-        <div>
-            {{ form_label(form.school, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700'}}) }}
-            {{ form_widget(form.school, {
-                'attr': {
-                    'class': 'block w-full px-4 py-2 rounded-md shadow-sm focus:ring focus:ring-indigo-200 border border-gray-300'
-                }
-            }) }}
-
-            {% if form.school.vars.errors|length > 0 %}
-                <p class="mt-1 text-sm text-red-600">{{ form_errors(form.school) }}</p>
-            {% endif %}
-        </div>
-
-
-
-
         <button type="submit" class="btn-primary">
             Enregistrer
         </button>
@@ -59,7 +42,6 @@
                 <thead class="bg-gray-100 text-gray-700 text-sm uppercase tracking-wide">
                 <tr>
                     <th class="px-6 py-3 text-left">Noms</th>
-                    <th class="px-6 py-3 text-left">Ecoles</th>
                     <th class="px-6 py-3 text-left">Module(s)</th>
                     <th class="px-6 py-3 text-left">Actions</th>
                 </tr>
@@ -68,11 +50,6 @@
                 {% for category in categories|sort((a, b) => a.name <=> b.name) %}
                     <tr class="transition ">
                         <td class="px-6 py-4 font-medium">{{ category.name }}</td>
-                        {% if category.school is empty %}
-                            <td class="px-6 py-4 font-medium">Aucune école</td>
-                        {% else %}
-                            <td class="px-6 py-4 font-medium">{{ category.school.name }}</td>
-                        {% endif %}
                         <td class="px-6 py-4 font-medium">{{ category.modules|length }}</td>
                         <td class="px-6 py-4 space-x-4">
 

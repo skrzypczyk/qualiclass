@@ -26,7 +26,6 @@ services:
       STRIPE_WEBHOOK_SECRET: whsec_9cbd2d3be5ae0c80084468c96372b801bef918549b8c48106863c855493d7100
       STRIPE_PRODUCT_BASE: prod_SA1TaTHvW3he0q
       STRIPE_PRODUCT_USER: prod_SA1TycBhEvU58s
-      STRIPE_PRODUCT_SCHOOL: prod_SA1UfdQDkAuuOJ
 
   db:
     image: postgres:15

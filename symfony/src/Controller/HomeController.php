@@ -52,7 +52,6 @@ final class HomeController extends AbstractController
         $productIds = [
             'base' => $_ENV['STRIPE_PRODUCT_BASE'],
             'user' => $_ENV['STRIPE_PRODUCT_USER'],
-            'school' => $_ENV['STRIPE_PRODUCT_SCHOOL'],
         ];
 
         $products = [];

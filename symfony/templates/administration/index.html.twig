@@ -37,14 +37,13 @@
                         {% set sub = user.getLastSubscription() %}
                         {% set invoice = user.getLastInvoiceValid() %}
                         {% if invoice %}
-                            {{ sub.limitSchools }} école(s)<br> {{ sub.limitUsers }} utilisateur(s)<br>
+                             {{ sub.limitUsers }} utilisateur(s)<br>
                             <small class="text-gray-500">Dernière facture : {{ invoice.paidAt|date('d/m/Y') }}</small>
                         {% else %}
                             ❌ Aucun
                         {% endif %}
                     </td>
                     <td class="px-6 py-4">
-                        {% if user.limitSchools %}{{ user.limitSchools }} école(s)<br>{% endif %}
                         {% if user.limitUsers %}{{ user.limitUsers }} utilisateur(s)<br>{% endif %}
                     </td>
                     <td class="px-6 py-4 text-center space-x-2">
@@ -68,19 +67,17 @@
                             {% set sub = subuser.getLastSubscription() %}
                             {% set invoice = subuser.getLastInvoiceValid() %}
                             {% if invoice %}
-                                {{ sub.limitSchools }} école(s)<br> {{ sub.limitUsers }} utilisateur(s)<br>
+                                {{ sub.limitUsers }} utilisateur(s)<br>
                                 <small class="text-gray-400">Dernière facture : {{ invoice.paidAt|date('d/m/Y') }}</small>
                             {% else %}
                                 ❌ Aucun
                             {% endif %}
                         </td>
                         <td class="px-6 py-4 text-gray-500">
-                            {% if subuser.limitSchools %}{{ subuser.limitSchools }} école(s)<br>{% endif %}
                             {% if subuser.limitUsers %}{{ subuser.limitUsers }} utilisateur(s)<br>{% endif %}
                         </td>
                         <td class="px-6 py-4 text-center space-x-2">
-                            <a href="{{ path('app_admin_user_edit', { id: subuser.id }) }}" class="btn-secondary text-xs">Modifier</a>
-                        </td>
+                            </td>
                     </tr>
                 {% endfor %}
             {% else %}

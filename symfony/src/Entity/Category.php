@@ -29,9 +29,6 @@ class Category
     #[ORM\ManyToMany(targetEntity: Module::class, mappedBy: 'categories')]
     private Collection $modules;
 
-    #[ORM\ManyToOne(inversedBy: 'categories')]
-    private ?School $school = null;
-
 
     public function __construct()
     {
@@ -90,18 +87,6 @@ class Category
         if ($this->modules->removeElement($module)) {
             $module->removeCategory($this);
         }
-
-        return $this;
-    }
-
-    public function getSchool(): ?School
-    {
-        return $this->school;
-    }
-
-    public function setSchool(?School $school): static
-    {
-        $this->school = $school;
 
         return $this;
     }

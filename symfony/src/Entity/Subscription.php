@@ -21,9 +21,6 @@ class Subscription
     #[ORM\Column(length: 255)]
     private ?string $stripeSubscriptionId = null;
 
-    #[ORM\Column]
-    private ?int $limitSchools = null;
-
     #[ORM\Column(nullable: true)]
     private ?int $limitUsers = null;
 
@@ -69,18 +66,6 @@ class Subscription
     public function setStripeSubscriptionId(string $stripeSubscriptionId): static
     {
         $this->stripeSubscriptionId = $stripeSubscriptionId;
-
-        return $this;
-    }
-
-    public function getLimitSchools(bool $withBase = false): ?int
-    {
-        return ($withBase)?$this->limitSchools+1:$this->limitSchools;
-    }
-
-    public function setLimitSchools(int $limitSchools): static
-    {
-        $this->limitSchools = $limitSchools;
 
         return $this;
     }

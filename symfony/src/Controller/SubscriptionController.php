@@ -25,7 +25,6 @@ final class SubscriptionController extends AbstractController
         // IDs à charger (ou tu peux charger tous les produits si tu préfères)
         $productIds = [
             'base' => $_ENV['STRIPE_PRODUCT_BASE'],
-            'school' => $_ENV['STRIPE_PRODUCT_SCHOOL'],
             'user' => $_ENV['STRIPE_PRODUCT_USER'],
         ];
 
@@ -65,7 +64,6 @@ final class SubscriptionController extends AbstractController
 
         $productIds = [
             'base' => $_ENV['STRIPE_PRODUCT_BASE'],
-            'school' => $_ENV['STRIPE_PRODUCT_SCHOOL'],
             'user' => $_ENV['STRIPE_PRODUCT_USER'],
         ];
         $products = [];
@@ -91,7 +89,7 @@ final class SubscriptionController extends AbstractController
 
             $itemsToUpdate = [];
 
-            foreach (['school', 'user'] as $key) {
+            foreach (['user'] as $key) {
                 $quantity = max(0, (int) ($quantities[$key] ?? 0));
                 $productId = $productIds[$key];
                 $priceId = $products[$key]['price_id'];
@@ -152,7 +150,6 @@ final class SubscriptionController extends AbstractController
         // Mapping entre les clés HTML et les ID Stripe (depuis variables d'env)
         $productIds = [
             'base' => $_ENV['STRIPE_PRODUCT_BASE'],
-            'school' => $_ENV['STRIPE_PRODUCT_SCHOOL'],
             'user' => $_ENV['STRIPE_PRODUCT_USER']
         ];
 

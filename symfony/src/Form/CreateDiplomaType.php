@@ -47,12 +47,6 @@ class CreateDiplomaType extends AbstractType
                 'prototype' => true,
                 'label' => false,
             ])
-            ->add('schools', EntityType::class, [
-                'label' => 'Écoles',
-                'class' => School::class,
-                'choice_label' => 'name',
-                'multiple' => true,
-            ])
         ;
     }
 

@@ -112,17 +112,12 @@ class StripeWebhookController extends AbstractController
     private function extractLimitsFromSubscription(Subscription $stripeSub): array
     {
         $limits = [
-            'school' => 0,
             'user' => 0,
         ];
 
         foreach ($stripeSub->items->data as $item) {
             $productId = $item->price->product;
             $qty = $item->quantity ?? 0;
-
-            if ($productId === $_ENV['STRIPE_PRODUCT_SCHOOL']) {
-                $limits['school'] = $qty;
-            }
             if ($productId === $_ENV['STRIPE_PRODUCT_USER']) {
                 $limits['user'] = $qty;
             }
@@ -149,7 +144,6 @@ class StripeWebhookController extends AbstractController
             $subscription->setOwner($user);
         }
 
-        $subscription->setLimitSchools($limits['school']);
         $subscription->setLimitUsers($limits['user']);
 
         $em->persist($subscription);
@@ -159,20 +153,6 @@ class StripeWebhookController extends AbstractController
 
     function adjustLimits(\App\Entity\Subscription $subscription, User $user, EntityManagerInterface $em): void
     {
-        $limitSchools = $user->getLimitSchools() ?? $subscription->getLimitSchools(true);
-        $schools = $user->getSchools(true)->toArray(); // true = toutes les écoles, actives ou non
-
-        if (count($schools) > $limitSchools) {
-            // On trie pour garder les plus anciennes actives
-            $activeSchools = array_filter($schools, fn($school) => !$school->isDisable());
-            $toDisable = array_slice($activeSchools, $limitSchools); // celles à désactiver
-
-            foreach ($toDisable as $school) {
-                $school->setIsDisable(true);
-                $em->persist($school);
-            }
-            $em->flush();
-        }
 
         $limitUsers = $user->getLimitUsers() ?? $subscription->getLimitUsers(true);
         $users = $user->getUsers(true)->toArray(); // true = toutes les écoles, actives ou non

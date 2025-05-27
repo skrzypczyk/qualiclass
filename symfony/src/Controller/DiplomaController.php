@@ -4,16 +4,13 @@ namespace App\Controller;
 
 use App\Entity\Competence;
 use App\Entity\Diploma;
-use App\Entity\Module;
 use App\Form\CreateDiplomaType;
 use App\Form\ImportDiplomaType;
 use App\Repository\DiplomaRepository;
-use App\Repository\ModuleRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DomCrawler\Crawler;
 use Symfony\Component\HttpClient\HttpClient;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;

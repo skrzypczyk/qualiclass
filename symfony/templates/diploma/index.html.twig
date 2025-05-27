@@ -19,9 +19,6 @@
                         RNCP
                     </th>
                     <th class="px-6 py-3 text-left">
-                        Ecole(s)
-                    </th>
-                    <th class="px-6 py-3 text-left">
                         Compétences
                     </th>
                     <th class="px-6 py-3 text-left">Actions</th>
@@ -32,12 +29,6 @@
                     <tr class="transition">
                         <td class="px-6 py-4 font-medium">{{ diploma.title }}</td>
                         <td class="px-6 py-4 font-medium">{{ diploma.RNCP }}</td>
-                        {% if diploma.schools is empty %}
-                            <td class="px-6 py-4 font-medium">Aucune école</td>
-                        {% else %}
-                            {% set schoolNames = diploma.schools|map(school => school.name)|join(', ') %}
-                            <td class="px-6 py-4 font-medium">{{ schoolNames }}</td>
-                        {% endif %}
                         <td class="px-6 py-4 font-medium">
                             {% for competence in diploma.competences|sort((a, b) => a.title <=> b.title) %}
                                 <span class="inline-block bg-gray-200 text-gray-700 text-xs font-semibold mr-2 px-2.5 py-0.5 rounded">

@@ -9,6 +9,18 @@
 
         {# ✅ 4 compteurs globaux #}
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
+
+
+
+            <div class="bg-white shadow rounded-lg text-center">
+                {% if userOwner.schoolImg is not null and userOwner.schoolImg is not empty  %}
+                    <img src="{{ asset('uploads/schools/'~userOwner.schoolImg) }}" class="w-32 h-32 mx-auto" alt="School Image">
+                {% else %}
+                    <img src="{{ asset('images/logo-qualiclass.png') }}" class="w-32 h-32 mx-auto" alt="Default School Image">
+                {% endif %}
+            </div>
+
+
             <div class="bg-white shadow rounded-lg p-6 text-center">
                 <div class="text-4xl font-bold text-[#1a355c]">{{ user.programs|length }}</div>
                 <div class="mt-2 text-gray-600">Programmes</div>
@@ -16,10 +28,6 @@
             <div class="bg-white shadow rounded-lg p-6 text-center">
                 <div class="text-4xl font-bold text-[#1a355c]">{{ user.modules|length }}</div>
                 <div class="mt-2 text-gray-600">Modules</div>
-            </div>
-            <div class="bg-white shadow rounded-lg p-6 text-center">
-                <div class="text-4xl font-bold text-[#1a355c]">{{ user.schools|length }}</div>
-                <div class="mt-2 text-gray-600">Écoles</div>
             </div>
         </div>
 

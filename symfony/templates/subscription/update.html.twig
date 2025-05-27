@@ -72,7 +72,6 @@
             return {
                 products,
                 quantities: {
-                    school: {{ subscription.getLimitSchools()?? 0 }},
                     user: {{ subscription.getLimitUsers()?? 0 }},
                 },
                 total() {

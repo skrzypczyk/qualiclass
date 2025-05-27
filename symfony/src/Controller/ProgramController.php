@@ -97,6 +97,11 @@ final class ProgramController extends AbstractController
             return $this->redirectToRoute('app_program');
         }
 
+        $user = $this->getUser();
+        if($user->getOwner() !== null) {
+            $user = $user->getOwner();
+        }
+
         $moduleByCompetence = [];
         $duration = 0;
         $credit = 0;
@@ -136,14 +141,19 @@ final class ProgramController extends AbstractController
             'duration' => $duration,
             'credit' => $credit,
             'moduleByCompetence' => $moduleByCompetence,
+            'user' => $user,
         ];
 
         // Mode PDF ?
         if ($request->query->get('format') === 'pdf') {
             $options = new Options();
-            $options->set('defaultFont', 'DejaVu Sans');
-            $dompdf = new Dompdf($options);
+            $options->set('isHtml5ParserEnabled', true);
+            $options->set('isRemoteEnabled', true); // autorise l'accès aux URL HTTP/HTTPS
+            $options->setChroot([$this->getParameter('kernel.project_dir') .'/public']);
 
+
+            $dompdf = new Dompdf($options);
+            $dompdf->setBasePath($this->getParameter('kernel.project_dir') . '/public');
             $html = $twig->render('program/showByDiploma.pdf.twig', $params);
 
             $dompdf->loadHtml($html);
@@ -155,7 +165,8 @@ final class ProgramController extends AbstractController
                 200,
                 [
                     'Content-Type' => 'application/pdf',
-                    'Content-Disposition' => 'attachment; filename="' . $program->getTitle() . '-' . $diploma->getRNCP() . '.pdf"',
+                    'Content-Disposition' => 'inline; filename="' . $program->getTitle() . '-' . $diploma->getRNCP() . '.pdf"',
+                    //'Content-Disposition' => 'attachment; filename="' . $program->getTitle() . '-' . $diploma->getRNCP() . '.pdf"',
                 ]
             );
         }

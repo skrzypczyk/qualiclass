@@ -16,10 +16,16 @@ final class BackofficeController extends AbstractController
     #[Route('/dashboard', name: 'app_dashboard')]
     public function index(): Response
     {
-        $user = $this->getUser();
+        $user = $userOwner = $this->getUser();
+
+        if($user->getOwner() !== null) {
+            $userOwner = $user->getOwner();
+        }
+
         return $this->render('dashboard/index.html.twig', [
             'controller_name' => 'DashboardController',
             'user' => $user,
+            'userOwner' => $userOwner,
         ]);
     }
 

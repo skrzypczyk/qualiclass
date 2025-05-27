@@ -4,9 +4,10 @@ FROM php:8.2-fpm
 RUN apt-get update && apt-get install -y \
     git unzip zip curl wget gnupg \
     libpq-dev libsqlite3-dev \
+    libpng-dev libjpeg-dev libfreetype6-dev \
     libonig-dev libzip-dev \
     npm nodejs \
-    && docker-php-ext-install pdo pdo_pgsql pdo_sqlite
+    && docker-php-ext-install pdo pdo_pgsql pdo_sqlite gd
 
 # Installer Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
@@ -20,3 +21,5 @@ RUN npm install -g yarn
 
 # Dossier de travail
 WORKDIR /app
+
+

@@ -22,18 +22,12 @@ class Assessment
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $description = null;
 
-    /**
-     * @var Collection<int, School>
-     */
-    #[ORM\ManyToMany(targetEntity: School::class, inversedBy: 'assessments')]
-    private Collection $schools;
 
     #[ORM\ManyToOne(inversedBy: 'assessments')]
     private ?User $owner = null;
 
     public function __construct()
     {
-        $this->schools = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -65,29 +59,6 @@ class Assessment
         return $this;
     }
 
-    /**
-     * @return Collection<int, School>
-     */
-    public function getSchools(): Collection
-    {
-        return $this->schools;
-    }
-
-    public function addSchool(School $school): static
-    {
-        if (!$this->schools->contains($school)) {
-            $this->schools->add($school);
-        }
-
-        return $this;
-    }
-
-    public function removeSchool(School $school): static
-    {
-        $this->schools->removeElement($school);
-
-        return $this;
-    }
 
     public function getOwner(): ?User
     {

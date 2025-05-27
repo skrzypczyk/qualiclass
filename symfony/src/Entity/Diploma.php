@@ -36,12 +36,6 @@ class Diploma
     private ?string $content = null;
 
     /**
-     * @var Collection<int, School>
-     */
-    #[ORM\ManyToMany(targetEntity: School::class, inversedBy: 'diplomas')]
-    private Collection $schools;
-
-    /**
      * @var Collection<int, Program>
      */
     #[ORM\ManyToMany(targetEntity: Program::class, mappedBy: 'diplomas')]
@@ -50,7 +44,6 @@ class Diploma
     public function __construct()
     {
         $this->competences = new ArrayCollection();
-        $this->schools = new ArrayCollection();
         $this->programs = new ArrayCollection();
     }
 
@@ -137,29 +130,6 @@ class Diploma
         return $this;
     }
 
-    /**
-     * @return Collection<int, School>
-     */
-    public function getSchools(): Collection
-    {
-        return $this->schools;
-    }
-
-    public function addSchool(School $school): static
-    {
-        if (!$this->schools->contains($school)) {
-            $this->schools->add($school);
-        }
-
-        return $this;
-    }
-
-    public function removeSchool(School $school): static
-    {
-        $this->schools->removeElement($school);
-
-        return $this;
-    }
 
     /**
      * @return Collection<int, Program>

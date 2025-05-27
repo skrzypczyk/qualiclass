@@ -3,9 +3,7 @@
 namespace App\Form;
 
 use App\Entity\Category;
-use App\Entity\Module;
 use App\Entity\School;
-use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -24,11 +22,6 @@ class CreateCategoryType extends AbstractType
                         'class' => 'form-control',
                     ],
                 ])
-            ->add('school', EntityType::class, [
-                'label' => 'Écoles',
-                'class' => School::class,
-                'choice_label' => 'name',
-            ])
         ;
     }
 

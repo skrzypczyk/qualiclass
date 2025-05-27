@@ -74,9 +74,8 @@
                                     <li><a href="{{ path('app_admin') }}" class="block px-4 py-2 text-primary hover:bg-gray-100">Gestion globale</a></li>
                                 {% endif %}
                                 {% if app.user.isAdmin() %}
-                                    <li><a href="{{ path('app_school') }}" class="block px-4 py-2 text-primary hover:bg-gray-100">Ecoles</a></li>
+                                    <li><a href="{{ path('app_school') }}" class="block px-4 py-2 text-primary hover:bg-gray-100">Mon école</a></li>
                                     <li><a href="{{ path('app_user') }}" class="block px-4 py-2 text-primary hover:bg-gray-100">Utilisateurs</a></li>
-                                    <li><a href="{{ path('app_assignment') }}" class="block px-4 py-2 text-primary hover:bg-gray-100">Gestion des droits</a></li>
                                     <li><a href="{{ path('app_subscription') }}" class="block px-4 py-2 text-primary hover:bg-gray-100">Mon abonnement</a></li>
                                 {% endif %}
                             </ul>
