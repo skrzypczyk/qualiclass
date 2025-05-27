@@ -20,10 +20,19 @@ security:
             form_login:
                 login_path: app_login
                 check_path: app_login
+                default_target_path: app_dashboard
             logout:
                 path: app_logout
                 target: /
 
     access_control:
-        - { path: ^/backoffice, roles: ROLE_USER }
+        - { path: ^/backoffice/school, roles: ['ROLE_ADMIN','ROLE_SUPER_ADMIN']  }
+        - { path: ^/backoffice/assignment, roles: ['ROLE_ADMIN','ROLE_SUPER_ADMIN']  }
+        - { path: ^/backoffice/assessment, roles: ['ROLE_ADMIN','ROLE_SUPER_ADMIN']  }
+        - { path: ^/backoffice/user, roles: ['ROLE_ADMIN','ROLE_SUPER_ADMIN']  }
+        - { path: ^/backoffice/category, roles: ['ROLE_ADMIN','ROLE_SUPER_ADMIN']  }
+        - { path: ^/backoffice/diploma, roles: ['ROLE_ADMIN','ROLE_SUPER_ADMIN']  }
+        - { path: ^/backoffice, roles: IS_AUTHENTICATED_FULLY  }
+        - { path: ^/subscription, roles: ['ROLE_ADMIN','ROLE_SUPER_ADMIN'] }
+        - { path: ^/admin, roles: ROLE_SUPER_ADMIN }
         - { path: ^/, roles: PUBLIC_ACCESS }

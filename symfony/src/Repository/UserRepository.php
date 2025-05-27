@@ -33,6 +33,17 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         $this->getEntityManager()->flush();
     }
 
+    public function findSelfAndOwnedUsers(User $user): array
+    {
+        return $this->createQueryBuilder('u')
+            ->where('u.isDisable = false OR u.isDisable IS NULL')
+            ->andWhere('u.owner = :user OR u = :user')
+            ->setParameter('user', $user)
+            ->orderBy('u.firstname', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
     //    /**
     //     * @return User[] Returns an array of User objects
     //     */

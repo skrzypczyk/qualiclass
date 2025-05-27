@@ -1,0 +1,104 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mon abonnement{% endblock %}
+
+{% block body %}
+    <div class="max-w-3xl mx-auto px-4 py-8">
+
+        {% if user.limitSchools or user.limitUsers %}
+            <h1 class="text-3xl font-bold title-primary mb-8">Offre spéciale</h1>
+        {% endif %}
+        {% if user.limitSchools %}
+            {{ user.limitSchools }} école(s)<br>
+        {% endif %}
+
+        {% if user.limitUsers %}
+            {{ user.limitUsers }} utilisateur(s)<br>
+        {% endif %}
+
+
+
+
+
+        {% if user.isFreeAccount %}
+            <p class="text-gray-500 mt-4">Vous êtes actuellement sur un abonnement gratuit.</p>
+        {% else %}
+            {%  for subscription in subscriptions %}
+                <h1 class="text-2xl font-bold title-primary my-8">Abonnement Stripe : <br> {{ subscription.stripeSubscriptionId }}</h1>
+                <p>L'abonnement inclus par défaut 1 école avec 4 utilisateurs</p>
+                <p class="text-gray-500 mt-4">Vos option supplémentaires : </p>
+                <li>{{ subscription.limitSchools }} Ecole(s)</li>
+                <li>{{ subscription.limitUsers }} Utilisateur(s)</li>
+
+
+                <h1 class="text-3xl font-bold title-primary my-8">Mes factures</h1>
+
+                {% if subscription.invoices is not empty %}
+                    <table class="min-w-full bg-white border border-gray-200 shadow-sm rounded-lg overflow-hidden my-8">
+                        <thead>
+                        <tr>
+                            <th class="p-2">Date</th>
+                            <th class="p-2">Montant</th>
+                            <th class="p-2">État</th>
+                            <th class="p-2">Facture</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for invoice in subscription.invoices %}
+                            <tr class="border-t">
+                                <td class="p-2">{{ invoice.paidAt|date('d/m/Y') }}</td>
+                                <td class="p-2">{{ invoice.amount / 100 }} {{ invoice.currency|upper }}</td>
+                                <td class="p-2">✅ Payée</td>
+                                <td>
+                                    <a href="{{ invoice.invoiceUrl }}" target="_blank" class="text-indigo-600 underline">
+                                        Télécharger la facture PDF
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <p class="my-4">Vous n'avez encore effectué aucun paiement.</p>
+                {% endif %}
+
+                {% if not subscription.isUnsubscribed %}
+
+                    <a href="{{ path('app_update_subscription',{'id':subscription.id} ) }}" class="btn-primary my-4">Modifier mon abonnement</a>
+
+                    <div x-data="{ showModal: false }">
+                        <form method="post" class="my-4" action="{{ path('app_unsubscribe',{'id':subscription.id}) }}" id="unsubscribe-form">
+                            <button
+                                    type="button"
+                                    @click="showModal = true"
+                                    class="btn-danger my-4"
+                            >
+                                Résilier mon abonnement
+                            </button>
+                        </form>
+
+                        {% include 'components/modal-confirmation.html.twig' with {
+                            x_show: 'showModal',
+                            title: 'Supprimer mon abonnement',
+                            message: 'Souhaitez-vous vraiment résilier votre abonnement ?',
+                            cancelLabel: 'Annuler',
+                            confirmLabel: 'Résilier',
+                            confirmAction: "document.getElementById('unsubscribe-form').submit()"
+                        } %}
+                    </div>
+                {% else %}
+                    <p class="text-red-600 my-4">Vous avez résilié votre abonnement.</p>
+                {% endif %}
+
+
+
+            {% endfor %}
+        {% endif %}
+
+
+
+
+
+
+    </div>
+{% endblock %}

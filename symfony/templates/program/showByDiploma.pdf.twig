@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        @page {
+            margin: 100px 50px 80px 50px;
+        }
+
+        body {
+            font-family: DejaVu Sans, sans-serif;
+            font-size: 12px;
+        }
+
+        header {
+            position: fixed;
+            top: -80px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        footer {
+            position: fixed;
+            bottom: -60px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-size: 10px;
+        }
+
+        .pagenum:before {
+            content: counter(page);
+        }
+
+
+        h1, h2, h3 {
+            font-weight: bold;
+        }
+
+        h1 { font-size: 18px; }
+        h2 { font-size: 16px; }
+        h3 { font-size: 14px; }
+        p, li { font-size: 12px; }
+
+
+    </style>
+</head>
+<body>
+
+<header>
+    Programme – {{ program.title }}<br>
+    {{ diploma.title }} - {{ diploma.RNCP }}
+
+</header>
+
+<footer>
+    Page <span class="pagenum"></span>
+</footer>
+
+
+    <div class="max-w-5xl mx-auto px-6 py-10 bg-white shadow rounded">
+        <h1 class="text-3xl font-bold title-primary mb-8">
+            {{ program.title }}<small class="font-normal text-gray-600 ml-2">
+                    - {{ program.year }} année
+                </small>
+        </h1>
+
+        {% set h = duration // 60 %}
+        {% set m = duration % 60 %}
+
+        <h3 class="text-xl font-semibold mt-6 mb-2">Durée : <span class="font-normal" >{{ h }}h {{ m }}min</span></h3>
+
+        <h3 class="text-xl font-semibold mt-6 mb-2">Crédits : <span class="font-normal" >{{ credit }}</span></h3>
+
+
+        <h3 class="text-xl font-semibold mt-6 mb-2">Prérequis</h3>
+        <p class="text-gray-700 mb-4">{{ program.prerequisites|raw }}</p>
+        <h3 class="text-xl font-semibold mt-6 mb-2">Objectifs</h3>
+        <p class="text-gray-700 mb-4">{{ program.goals|raw }}</p>
+        <h3 class="text-xl font-semibold mt-6 mb-2">Commentaires</h3>
+        <p class="text-gray-700 mb-4">{{ program.notes|raw }}</p>
+
+
+        <div style="page-break-before: always;"></div>
+        <h1 class="text-3xl font-bold title-primary my-8">
+            {{ diploma.title }}<small class="font-normal text-gray-600 ml-2">
+                    - {{ diploma.RNCP }}
+                </small>
+        </h1>
+
+        {{ diploma.content|raw }}
+
+        <div style="page-break-before: always;"></div>
+
+        <h1 class="text-3xl font-bold title-primary my-8" style="margin-bottom: 20px">
+            <center>Résumé du programme</center>
+        </h1>
+        <table class="w-full" style="width: 100%;">
+            <thead>
+                <tr>
+                    <th class="px-6 py-4 text-left">Compétence / module</th>
+                    <th class="px-6 py-4 text-end">Durée</th>
+                    <th class="px-6 py-4 text-end">Crédits</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for competence in diploma.competences %}
+            {% set compId = competence.id %}
+
+                {% if moduleByCompetence[compId] is defined %}
+                <tr class="bg-gray-200">
+                    <td class="px-6 py-3 font-medium">
+                        <a href="#comp-{{ compId }}">
+                            {{ competence.title }}
+                        </a>
+                    </td>
+                    <td class="px-6 py-3 text-end"  style="text-align: center">{{ moduleByCompetence[compId].duration // 60 }}h {{ moduleByCompetence[compId].duration % 60 }}min</td>
+                    <td class="px-6 py-3 text-end"  style="text-align: center">{{ moduleByCompetence[compId].credit }}</td>
+                </tr>
+                    {% for module in moduleByCompetence[compId].modules %}
+                        <tr>
+                            <td class="px-6 py-3 pl-10" style="padding-left: 20px">
+                                <a href="#module-{{ module.id }}">
+                                    <li>{{ module.title }}</li>
+                                </a>
+                            </td>
+                            <td class="px-6 py-3 text-end"  style="text-align: center">{{ module.duration // 60 }}h {{ module.duration % 60 }}min</td>
+                            <td class="px-6 py-3 text-end"  style="text-align: center">{{ module.credit }}</td>
+                        </tr>
+                    {% endfor %}
+                {% else %}
+                <tr  class="bg-gray-200">
+                    <td class="px-6 py-3 font-medium >
+                        <a href="#comp-{{ compId }}">
+                            {{ competence.title }}
+                        </a>
+                    </td>
+                    <td class="px-6 py-3 text-end"   style="text-align: center">0h 0min</td>
+                    <td class="px-6 py-3 text-end"   style="text-align: center">0</td>
+                </tr>
+                {% endif %}
+            {% endfor %}
+
+            </tbody>
+            <tfoot>
+                <tr>
+                    <th class="px-6 py-3 text-end">Total</th>
+                    <th class="px-6 py-3 text-end">{{ h }}h {{ m }}min</th>
+                    <th class="px-6 py-3 text-end">{{ credit }}</th>
+                </tr>
+            </tfoot>
+        </table>
+
+
+    </div>
+
+    <div class="max-w-7xl mx-auto px-6 py-10">
+        <div class="mb-5">
+            {% for competence in diploma.competences %}
+                <div style="page-break-before: always;"></div>
+                {% set compId = competence.id %}
+                <div class="card mb-4 scroll-mt-24" id="comp-{{ compId }}">
+                    <div class="card-header bg-primary text-white fw-bold p-4 mb-4">
+                        <h2>{{ competence.title }}</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="card-text">{{ competence.content | raw }}</div>
+
+                        {% if moduleByCompetence[compId] is defined %}
+                            <table class="w-full table-auto text-left my-4"  style="width: 100%;">
+                                <thead class="bg-gray-200">
+                                    <tr>
+                                        <th class="px-6 py-4 text-left">Module</th>
+                                        <th class="px-6 py-4 text-end">Durée</th>
+                                        <th class="px-6 py-4 text-end">Crédits</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                            {% for module in moduleByCompetence[compId].modules %}
+                                    <tr>
+                                        <td class="px-6 py-3 font-medium">
+                                            <a href="#module-{{ module.id }}">
+                                                {{ module.title }}</td>
+                                            </a>
+                                        <td  class="px-6 py-3 text-end"  style="text-align: center">{{ module.duration // 60 }}h {{ module.duration % 60 }}min</td>
+                                        <td  class="px-6 py-3 text-end"  style="text-align: center">{{ module.credit  }}</td>
+                                    </tr>
+                            {% endfor %}
+                                </tbody>
+                                <tfoot class="bg-gray-200">
+                                    <tr>
+                                        <th class="px-6 py-3 text-end">Total</th>
+                                        <th class="px-6 py-3 text-end">{{ moduleByCompetence[compId].duration // 60 }}h {{ moduleByCompetence[compId].duration % 60 }}min</th>
+                                        <th class="px-6 py-3 text-end">{{ moduleByCompetence[compId].credit }}</th>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        {% endif %}
+                    </div>
+                </div>
+
+            {% endfor %}
+        </div>
+
+    </div>
+
+    <div class="max-w-5xl mx-auto px-6 py-10">
+        <div class="mb-5">
+            {% for competence in diploma.competences %}
+                {% set compId = competence.id %}
+                {% if moduleByCompetence[compId] is defined %}
+                    {% for module in moduleByCompetence[compId].modules %}
+
+                        <div style="page-break-before: always;"></div>
+                        <div class="card mb-4 scroll-mt-24" id="module-{{ module.id }}">
+                            <div class="card-header bg-primary text-white fw-bold p-4 mb-4">
+                                <h2>{{ module.title }}</h2>
+                            </div>
+                            <div class="card-body">
+
+                                {% set h = module.duration // 60 %}
+                                {% set m = module.duration % 60 %}
+
+                                <h3 class="text-lg font-semibold mt-6 mb-2">Compétence : <span class="font-normal" ><a href="#comp-{{ competence.id }}">{{ competence.title }}</a></span></h3>
+                                <h3 class="text-lg font-semibold mt-6 mb-2">Durée : <span class="font-normal" >{{ h }}h {{ m }}min</span></h3>
+                                <h3 class="text-lg font-semibold mt-6 mb-2">Crédits : <span class="font-normal" >{{ module.credit }}</span></h3>
+                                <h3 class="text-lg font-semibold mt-6 mb-2">Catégories :
+                                    {% for category in module.categories %}
+                                        <span class="text-sm text-primary">
+                                            {% if not loop.first %}, {% endif %}
+                                            {{ category.name }}
+                                        </span>
+
+                                    {% endfor %}
+                                </h3>
+
+                                <h3 class="text-xl text-center font-semibold mt-6 mb-4">Syllabus</h3>
+                                <div class="card-text">{{ module.syllabus | raw }}</div>
+                                <h3 class="text-xl text-center font-semibold mt-6 mb-4">Objectifs</h3>
+                                <div class="card-text">{{ module.goal | raw }}</div>
+                                <h3 class="text-xl text-center font-semibold mt-6 mb-4">Notes</h3>
+                                <div class="card-text">{{ module.comment | raw }}</div>
+                            </div>
+                        </div>
+
+                    {% endfor %}
+                {% endif %}
+
+            {% endfor %}
+        </div>
+
+    </div>
+
+</body>
+</html>

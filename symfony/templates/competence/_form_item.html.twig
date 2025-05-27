@@ -1,0 +1,37 @@
+<div x-data x-show="active === {{ index }}" data-tab="{{ index }}" class="p-4 border rounded bg-gray-50 space-y-4">
+    {{ form_label(form.title, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-1'}}) }}
+    {{ form_widget(form.title, {'attr': {class: 'w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm'}}) }}
+    {% if form_errors(form.title) %}
+        <p class="mt-1 text-sm text-red-600">{{ form_errors(form.title) }}</p>
+    {% endif %}
+
+    {{ form_label(form.RNCP, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-1'}}) }}
+    {{ form_widget(form.RNCP, {'attr': {'class': 'w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm'}}) }}
+    {% if form_errors(form.RNCP) %}
+        <p class="mt-1 text-sm text-red-600">{{ form_errors(form.RNCP) }}</p>
+    {% endif %}
+
+    {{ form_label(form.content, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-1'}}) }}
+    {{ form_widget(form.content, {'attr': {'class': 'trix-content bg-white border border-gray-300 rounded-md p-2 h-[300px]'}}) }}
+    {% if form_errors(form.content) %}
+        <p class="mt-1 text-sm text-red-600">{{ form_errors(form.content) }}</p>
+    {% endif %}
+
+
+    <button type="button"
+            class="text-red-600 text-sm"
+            @click="
+            const index = tabs.findIndex(t => t.id === {{ index }});
+            if (index !== -1) {
+                tabs.splice(index, 1);
+                const el = $refs.formContainer.querySelector('[data-tab=\'{{ index }}\']');
+            if (el) el.remove();
+                if (active === {{ index }}) {
+                    active = tabs.length ? tabs[0].id : null;
+                }
+            }
+            ">
+    Supprimer cette compétence
+    </button>
+
+</div>

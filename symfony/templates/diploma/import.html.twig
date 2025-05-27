@@ -1,0 +1,100 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Importer un diplôme{% endblock %}
+
+{% block body %}
+    <div class="max-w-7xl mx-auto px-6 py-10">
+        <h1 class="text-3xl font-bold title-primary mb-8">Vos modules</h1>
+        <a href="{{ path('app_diploma_create') }}" class="px-4 py-2 btn-primary">Ajouter un diplôme</a>
+        <a href="{{ path('app_diploma') }}" class="px-4 py-2 btn-danger">Retour aux diplômes</a>
+
+        {{ form_start(form, {'attr': {'data-turbo': 'false', 'class': 'space-y-6'}}) }}
+
+        <div class="my-8">
+            {{ form_label(form.RNCP, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700'}}) }}
+            {{ form_widget(form.RNCP, {
+                'attr': {
+                    'class': 'block w-full px-4 py-2 rounded-md shadow-sm focus:ring focus:ring-indigo-200 border border-gray-300'
+                }
+            }) }}
+
+            {% if form.RNCP.vars.errors|length > 0 %}
+                <p class="mt-1 text-sm text-red-600">{{ form_errors(form.RNCP) }}</p>
+            {% endif %}
+        </div>
+
+
+        <button type="submit" class="btn-primary">
+            Importer
+        </button>
+
+        {{ form_end(form) }}
+
+        {% if diploma is not null %}
+            <form method="POST" action="{{ path('app_diploma_store') }}">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token('validate_diploma') }}">
+
+
+                <input type="hidden" name="diploma_data" value="{{ diploma|json_encode(constant('JSON_HEX_TAG') b-or constant('JSON_HEX_AMP') b-or constant('JSON_HEX_APOS') b-or constant('JSON_HEX_QUOT'))|e('html_attr') }}">
+
+                <div class="container my-4">
+                <div class="mb-4">
+                    <h2 class="text-center text-3xl font-bold title-primary mb-8">{{ diploma.title }}</h2>
+                </div>
+
+                <div class="mb-5">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">
+                            <strong>Code de la fiche :</strong> {{ diploma.code }}
+                        </li>
+                        {% for item in diploma.essential %}
+                            <li class="list-group-item">
+                                <strong>{{ item.title }} :</strong> {{ item.text }}
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+
+
+                <p class="mb-5">
+                    {% for section in diploma.summary %}
+                        <div class="bg-primary text-white fw-bold p-4 my-4">
+                            {{ section.title }}
+                        </div>
+                        <p>
+                            {{ section.text | raw }}
+                        </p>
+                    {% endfor %}
+                </div>
+
+                <div class="mb-5">
+                    <h2 class="text-center text-3xl font-bold title-primary my-8">Blocs de compétences</h2>
+                    {% for bloc in diploma.competences %}
+                        <div class="card mb-4">
+                            <div class="card-header bg-primary text-white fw-bold p-4">
+                                {{ bloc.title }}
+                            </div>
+                            <div class="card-body">
+                                <h5 class="card-title text-xl font-bold title-primary my-8">Compétences</h5>
+                                <ul class="list-disc list-inside text-gray-700 px-4">{{ bloc.competences | raw }}</ul>
+                                <h5 class="card-title text-xl font-bold title-primary my-8">Modalités d’évaluation</h5>
+                                <div class="card-text">{{ bloc.evaluation | raw }}</div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <div class="text-center">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        Valider et insérer en base
+                    </button>
+                </div>
+            </form>
+            </div>
+
+        {% endif %}
+
+
+
+    </div>
+{% endblock %}

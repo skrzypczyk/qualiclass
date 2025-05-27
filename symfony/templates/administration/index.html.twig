@@ -1,0 +1,94 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Administration - Utilisateurs{% endblock %}
+
+{% block body %}
+    <div class="max-w-6xl mx-auto px-4 py-8">
+        <h1 class="text-3xl font-bold title-primary mb-8">Gestion des utilisateurs</h1>
+
+        <table class="min-w-full bg-white border border-gray-200 shadow-sm rounded-lg overflow-hidden">
+            <thead>
+            <tr>
+                <th class="px-6 py-3 text-left">ID</th>
+                <th class="px-6 py-3 text-left">Nom</th>
+                <th class="px-6 py-3 text-left">Prénom</th>
+                <th class="px-6 py-3 text-left">Email</th>
+                <th class="px-6 py-3 text-left">Rôle</th>
+                <th class="px-6 py-3 text-left">Compte gratuit</th>
+                <th class="px-6 py-3 text-left">Abonnement</th>
+                <th class="px-6 py-3 text-left">Surcharge</th>
+                <th class="px-6 py-3 text-center">Actions</th>
+            </tr>
+            </thead>
+            <tbody class="text-gray-800 text-sm divide-y divide-gray-200">
+            {% for user in users %}
+                <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4 font-semibold">{{ user.id }}</td>
+                    <td class="px-6 py-4">{{ user.lastName }}</td>
+                    <td class="px-6 py-4">{{ user.firstName }}</td>
+                    <td class="px-6 py-4">{{ user.email }}</td>
+                    <td class="px-6 py-4">
+                        {% for role in user.roles %}
+                            <span class="inline-block bg-gray-200 text-gray-700 px-2 py-1 rounded-full text-xs font-semibold mr-2">{{ role|capitalize }}</span>
+                        {% endfor %}
+                    </td>
+                    <td class="px-6 py-4 text-center">{{ user.isFreeAccount ? '✅' : '❌' }}</td>
+                    <td class="px-6 py-4">
+                        {% set sub = user.getLastSubscription() %}
+                        {% set invoice = user.getLastInvoiceValid() %}
+                        {% if invoice %}
+                            {{ sub.limitSchools }} école(s)<br> {{ sub.limitUsers }} utilisateur(s)<br>
+                            <small class="text-gray-500">Dernière facture : {{ invoice.paidAt|date('d/m/Y') }}</small>
+                        {% else %}
+                            ❌ Aucun
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4">
+                        {% if user.limitSchools %}{{ user.limitSchools }} école(s)<br>{% endif %}
+                        {% if user.limitUsers %}{{ user.limitUsers }} utilisateur(s)<br>{% endif %}
+                    </td>
+                    <td class="px-6 py-4 text-center space-x-2">
+                        <a href="{{ path('app_admin_user_edit', { id: user.id }) }}" class="btn-primary">Modifier</a>
+                    </td>
+                </tr>
+
+                {% for subuser in user.getUsers() %}
+                    <tr class="bg-gray-50">
+                        <td class="px-6 py-4 pl-12 text-gray-500">{{ subuser.id }}</td>
+                        <td class="px-6 py-4 pl-12 text-gray-500">{{ subuser.lastName }}</td>
+                        <td class="px-6 py-4 text-gray-500">{{ subuser.firstName }}</td>
+                        <td class="px-6 py-4 text-gray-500">{{ subuser.email }}</td>
+                        <td class="px-6 py-4 text-gray-500">
+                            {% for role in subuser.roles %}
+                                <span class="inline-block bg-gray-100 text-gray-600 px-2 py-1 rounded-full text-xs font-semibold mr-2">{{ role|capitalize }}</span>
+                            {% endfor %}
+                        </td>
+                        <td class="px-6 py-4 text-center text-gray-500">{{ subuser.isFreeAccount ? '✅' : '❌' }}</td>
+                        <td class="px-6 py-4 text-gray-500">
+                            {% set sub = subuser.getLastSubscription() %}
+                            {% set invoice = subuser.getLastInvoiceValid() %}
+                            {% if invoice %}
+                                {{ sub.limitSchools }} école(s)<br> {{ sub.limitUsers }} utilisateur(s)<br>
+                                <small class="text-gray-400">Dernière facture : {{ invoice.paidAt|date('d/m/Y') }}</small>
+                            {% else %}
+                                ❌ Aucun
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 text-gray-500">
+                            {% if subuser.limitSchools %}{{ subuser.limitSchools }} école(s)<br>{% endif %}
+                            {% if subuser.limitUsers %}{{ subuser.limitUsers }} utilisateur(s)<br>{% endif %}
+                        </td>
+                        <td class="px-6 py-4 text-center space-x-2">
+                            <a href="{{ path('app_admin_user_edit', { id: subuser.id }) }}" class="btn-secondary text-xs">Modifier</a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            {% else %}
+                <tr>
+                    <td colspan="9" class="text-center py-6 text-gray-500">Aucun utilisateur trouvé.</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

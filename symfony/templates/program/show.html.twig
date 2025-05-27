@@ -1,0 +1,108 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Programme{% endblock %}
+
+{% block body %}
+    <div class="max-w-4xl mx-auto px-6 py-10 bg-white shadow rounded">
+        <h1 class="text-3xl font-bold title-primary mb-8">
+            {{ program.title }}<span class="text-sm font-normal text-gray-600 ml-4">
+                    — {{ program.year }} année
+                </span>
+        </h1>
+        <a href="{{ path('app_program') }}" class="px-4 py-2 btn-primary">Liste des programmes</a>
+        <a href="{{ path('app_program_assignment', {'id': program.id}) }}" class="px-4 py-2 btn-primary  ml-4">Affecter les modules</a>
+        <a href="{{ path('app_program_edit', {'id': program.id}) }}" class="px-4 py-2 btn-danger ml-4">Modifier le programme</a>
+
+
+        <h3 class="text-xl font-semibold mt-6 mb-2">Prérequis</h3>
+        <p class="text-gray-700 mb-4">{{ program.prerequisites|raw }}</p>
+        <h3 class="text-xl font-semibold mt-6 mb-2">Objectifs</h3>
+        <p class="text-gray-700 mb-4">{{ program.goals|raw }}</p>
+        <h3 class="text-xl font-semibold mt-6 mb-2">Commentaires</h3>
+        <p class="text-gray-700 mb-4">{{ program.notes|raw }}</p>
+
+
+
+        {% set grouped = {} %}
+        {% for affectation in program.affectations %}
+            {% set diplomaTitle = affectation.competence.diploma.title %}
+            {% set competenceTitle = affectation.competence.title %}
+
+            {% if grouped[diplomaTitle] is not defined %}
+                {% set grouped = grouped | merge({ (diplomaTitle): {} }) %}
+            {% endif %}
+
+            {% if grouped[diplomaTitle][competenceTitle] is not defined %}
+                {% set grouped = grouped | merge({
+                    (diplomaTitle): grouped[diplomaTitle] | merge({
+                        (competenceTitle): [affectation]
+                    })
+                }) %}
+            {% else %}
+                {% set grouped = grouped | merge({
+                    (diplomaTitle): grouped[diplomaTitle] | merge({
+                        (competenceTitle): grouped[diplomaTitle][competenceTitle] | merge([affectation])
+                    })
+                }) %}
+            {% endif %}
+        {% endfor %}
+
+
+        {% if grouped is not empty %}
+            {% for diplomaTitle, competences in grouped %}
+                {# Calcul total par diplôme #}
+                {% set totalMinutes = 0 %}
+                {% set totalCredits = 0 %}
+                {% for affectations in competences %}
+                    {% for affectation in affectations %}
+                        {% set totalMinutes = totalMinutes + (affectation.module.duration ?? 0) %}
+                        {% set totalCredits = totalCredits + (affectation.module.credit ?? 0) %}
+                    {% endfor %}
+                {% endfor %}
+                {% set h = totalMinutes // 60 %}
+                {% set m = totalMinutes % 60 %}
+
+                <div class="my-8">
+                    <h2 class="text-xl font-bold text-primary mb-2">
+                        {{ diplomaTitle }}
+                        <span class="text-sm font-normal text-gray-600 ml-4">
+                            {{ h }}h {{ m }}min / {{ totalCredits }} crédits
+                </span>
+                    </h2>
+
+                    {% for competenceTitle, affectations in competences %}
+                        {# Calcul total par compétence #}
+                        {% set cMinutes = 0 %}
+                        {% set cCredits = 0 %}
+                        {% for affectation in affectations %}
+                            {% set cMinutes = cMinutes + (affectation.module.duration ?? 0) %}
+                            {% set cCredits = cCredits + (affectation.module.credit ?? 0) %}
+                        {% endfor %}
+                        {% set ch = cMinutes // 60 %}
+                        {% set cm = cMinutes % 60 %}
+
+                        <h3 class="text-lg font-semibold text-indigo-700 mb-2 mt-4">
+                            {{ competenceTitle }}
+                            <span class="text-sm font-normal text-gray-600 ml-2">
+                        — {{ ch }}h {{ cm }}min / {{ cCredits }} crédits
+                    </span>
+                        </h3>
+
+                        {% for affectation in affectations %}
+                            <div class="mb-2 pl-4 border-l-4 border-indigo-300">
+                                <p>{{ affectation.module.title }} – {{ affectation.module.duration }} min – {{ affectation.module.credit }} Crédits</p>
+                            </div>
+                        {% endfor %}
+                    {% endfor %}
+                </div>
+            {% endfor %}
+        {% else %}
+            <p>Aucun module associé à ce programme.</p>
+        {% endif %}
+
+
+
+
+    </div>
+
+{% endblock %}

@@ -1,0 +1,118 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes utilisateurs{% endblock %}
+
+{% block body %}
+    <div class="max-w-2xl mx-auto px-4 py-8">
+
+        {% if limitUsers-(userConnected.getUsers(1)|length) > 0 or user.id %}
+            {%  if user.id is null %}
+                <h1 class="text-3xl font-bold title-primary mb-8">Ajouter un utilisateur</h1>
+                <p class="text-sm text-gray-600 mb-4">Vous pouvez ajouter jusqu'à {{ limitUsers }} utilisateurs. <b>Il vous reste {{ limitUsers-(userConnected.getUsers(1)|length) }} utilisateur(s) à ajouter</b>.</p>
+            {% else %}
+
+                <h1 class="text-3xl font-bold title-primary mb-8">Modifier cet utilisateur</h1>
+                <p class="text-red-600 mb-4">Attention, si vous modifiez l'adresse email, le mot de passe
+                sera réinitialisé et un mail sera envoyé afin de le modifier</p>
+            {% endif %}
+
+            {{ form_start(form, {'attr': {'enctype': 'multipart/form-data', 'class': 'space-y-6'}}) }}
+
+            <div>
+                {{ form_label(form.email, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700'}}) }}
+                {{ form_widget(form.email, {
+                    'attr': {
+                        'class': 'block w-full px-4 py-2 rounded-md shadow-sm focus:ring focus:ring-indigo-200 border border-gray-300'
+                    }
+                }) }}
+
+                {% if form.email.vars.errors|length > 0 %}
+                    <p class="mt-1 text-sm text-red-600">{{ form_errors(form.email) }}</p>
+                {% endif %}
+            </div>
+
+
+            <button type="submit" class="btn-primary">
+                Enregistrer
+            </button>
+
+            {% if user.id %}
+                <a href="{{ path('app_user') }}" class="btn-neutral">Annuler</a>
+            {% endif %}
+
+            {{ form_end(form) }}
+
+        {% else %}
+
+            <h1 class="text-3xl font-bold title-primary mb-8">Limite atteinte</h1>
+            <p class="text-sm text-red-600 mb-4">Vous avez atteint la limite de {{ limitUsers }} utilisateurs.</p>
+            <a href="{{ path('app_update_subscription',{'id':subscription.id} ) }}" class="btn-primary">Modifier mon abonnement</a>
+
+
+        {% endif %}
+
+
+
+
+        <h1 class="text-2xl font-bold text-[#142742] my-6">Liste des utilisateurs</h1>
+        <div x-data="{ showModal: false, modalUserId: null }">
+            <table class="min-w-full bg-white border border-gray-200 shadow-md rounded-lg overflow-hidden">
+                <thead class="bg-gray-100 text-gray-700 text-sm uppercase tracking-wide">
+                <tr>
+                    <th class="px-6 py-3 text-left">Email</th>
+                    <th class="px-6 py-3 text-left">Actions</th>
+                </tr>
+                </thead>
+                <tbody class="text-gray-800 text-sm divide-y divide-gray-100">
+                {% for user in userConnected.getUsers()|sort((a, b) => a.id <=> b.id) %}
+                    <tr class="transition {{ user.isDisable ? 'bg-gray-100' : ''  }}">
+                        <td class="px-6 py-4 font-medium">{{ user.email }}</td>
+                        <td class="px-6 py-4 space-x-4">
+
+                            <a href="{{ path('user_status', {'id': user.id}) }}"
+                               class="inline-block text-sm font-semibold hover:underline  {{ user.isDisable ? 'text-green-600' : 'text-yellow-600' }}">
+                                {{ user.isDisable ? 'Activer' : 'Désactiver' }}
+                            </a>
+                            <a href="{{ path('user_edit', {'id': user.id}) }}"
+                               class="inline-block text-sm text-blue-600 font-semibold hover:underline">
+                                Modifier
+                            </a>
+
+                            <button
+                                    type="button"
+                                    @click="modalUserlId = '{{ user.id }}'; showModal = true;"
+                                    class="inline-block text-sm text-red-600 font-semibold hover:underline"
+                            >
+                                Supprimer
+                            </button>
+
+                            <form method="post"
+                                  action="{{ path('user_delete', {'id': user.id}) }}"
+                                  id="delete-form-{{ user.id }}"
+                                  class="hidden">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete_user_' ~ user.id) }}">
+                            </form>
+
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+
+
+            {% include 'components/modal-confirmation.html.twig' with {
+                x_show: 'showModal',
+                title: 'Supprimer un utilisateur',
+                message: 'Souhaitez-vous vraiment supprimer cet utilisateur ?',
+                cancelLabel: 'Annuler',
+                confirmLabel: 'Supprimer',
+                confirmAction: "document.getElementById('delete-form-' + modalUserlId).submit()"
+            } %}
+        </div>
+
+
+    </div>
+
+
+
+{% endblock %}

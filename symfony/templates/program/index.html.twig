@@ -1,0 +1,124 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Programmes{% endblock %}
+
+{% block body %}
+    <div class="max-w-7xl mx-auto px-6 py-10">
+        <h1 class="text-3xl font-bold title-primary mb-8">Vos programmes</h1>
+        <a href="{{ path('app_program_create') }}" class="px-4 py-2 btn-primary">Ajouter un programme</a>
+
+
+
+        <div x-data="{ showModal: false, showModal2: false, modalProgramId: null }">
+            <table class="min-w-full my-6 bg-white border border-gray-200 shadow-md rounded-lg overflow-hidden">
+                <thead>
+                <tr>
+                    <th class="px-6 py-3 text-left">
+                        Programme
+                    </th>
+                    {% if app.user.isAdmin() %}
+                        <th class="px-6 py-3 text-left">Auteur</th>
+                    {% endif %}
+
+                    <th class="px-6 py-3 text-left">
+                        Diplômes
+                    </th>
+                    <th class="px-6 py-3 text-left">Actions</th>
+                </tr>
+                </thead>
+                <tbody class="text-gray-800 text-sm divide-y divide-gray-100">
+                {% for program in programs %}
+                    <tr class="transition">
+                        <td class="px-6 py-4 font-medium">
+                            <a href="{{ path('app_program_show', {'id': program.id}) }}"
+                               class="text-blue-600 hover:underline">
+                            {{ program.title }}
+                            </a>
+                        </td>
+
+                        {% if app.user.isAdmin() %}
+                            <td class="px-6 py-4 font-medium">
+                                {{ program.owner.lastname ?? program.owner.firstname ?? program.owner.email }}
+                            </td>
+                        {% endif %}
+
+                        <td class="px-6 py-4 font-medium">
+                            {% for diploma in program.diplomas %}
+                                <li>{{ diploma.title }} <small>({{ diploma.RNCP }})</small></li>
+                            {% endfor %}
+                        </td>
+
+                        <td class="px-6 py-4 space-x-2">
+
+                            <a href="{{ path('app_program_assignment', {'id': program.id}) }}"
+                               class="link-secondary">
+                                Modules
+                            </a>
+
+                            <a href="{{ path('app_program_edit', {'id': program.id}) }}"
+                               class="link-primary">
+                                Modifier
+                            </a>
+
+                            <button
+                                    type="button"
+                                    @click="modalProgramId = '{{ program.id }}'; showModal2 = true;"
+                                    class="link-primary"
+                            >
+                                Dupliquer
+                            </button>
+
+                            <form method="post"
+                                  action="{{ path('app_program_duplicate', {'id': program.id}) }}"
+                                  id="duplicate-form-{{ program.id }}"
+                                  class="hidden">
+                                <input type="hidden" name="_token" value="{{ csrf_token('duplicate_program_' ~ program.id) }}">
+                            </form>
+
+
+                            <button
+                                    type="button"
+                                    @click="modalProgramId = '{{ program.id }}'; showModal = true;"
+                                    class="link-danger"
+                            >
+                                Supprimer
+                            </button>
+
+                            <form method="post"
+                                  action="{{ path('app_program_delete', {'id': program.id}) }}"
+                                  id="delete-form-{{ program.id }}"
+                                  class="hidden">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete_program_' ~ program.id) }}">
+                            </form>
+
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+
+
+
+
+            {% include 'components/modal-confirmation.html.twig' with {
+                x_show: 'showModal',
+                title: 'Supprimer un programme',
+                message: 'Souhaitez-vous vraiment supprimer ce programme ?',
+                cancelLabel: 'Annuler',
+                confirmLabel: 'Supprimer',
+                confirmAction: "document.getElementById('delete-form-' + modalProgramId).submit()"
+            } %}
+
+            {% include 'components/modal-confirmation.html.twig' with {
+                x_show: 'showModal2',
+                title: 'Dupliquer un programme',
+                message: 'Souhaitez-vous vraiment dupliquer ce programme ?',
+                cancelLabel: 'Annuler',
+                confirmLabel: 'Dupliquer',
+                confirmAction: "document.getElementById('duplicate-form-' + modalProgramId).submit()"
+            } %}
+        </div>
+
+
+    </div>
+{% endblock %}

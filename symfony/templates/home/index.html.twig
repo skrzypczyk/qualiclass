@@ -6,9 +6,9 @@
         <!-- Hero -->
         <section class="text-center py-16 bg-gray-100 px-4">
             <img src="{{ asset('images/logo-qualiclass.png') }}" alt="Logo QualiClass" class="w-24 mx-auto mb-4">
-            <h1 class="text-4xl font-bold mb-2">Simplifiez vos audits QUALIOPI</h1>
+            <h1 class="text-4xl font-bold title-primary mb-4">Simplifiez vos audits QUALIOPI</h1>
             <p class="text-lg text-gray-600 mb-8">Une plateforme dédiée à la gestion pédagogique et à la conformité des formations</p>
-            <a href="{{ path('app_register') }}" class="bg-[#142742] text-white py-3 px-6 rounded-lg hover:bg-[#1a355c]">
+            <a href="{{ path('app_register') }}" class="btn-primary">
                 Créer un compte
             </a>
         </section>
@@ -60,7 +60,7 @@
         <!-- Formulaire de contact -->
         <section class=" bg-white py-20 px-6">
             <div class="max-w-3xl mx-auto bg-white shadow-md rounded-lg p-8">
-                <h2 class="text-3xl font-semibold text-center mb-6 text-[#142742]">Contactez-nous</h2>
+                <h2 class="text-3xl font-semibold text-center mb-6 text-primary">Contactez-nous</h2>
 
                 {{ form_start(form, {'attr': {'class': 'space-y-6'}}) }}
 
@@ -83,7 +83,7 @@
                 </div>
 
                 <div class="text-center">
-                    <button type="submit" class="bg-[#142742] text-white px-6 py-3 rounded hover:bg-[#1a355c] transition">
+                    <button type="submit" class="btn-primary">
                         Envoyer le message
                     </button>
                 </div>
@@ -97,7 +97,7 @@
         <!-- Appel à l'action -->
         <section class="text-center bg-gray-100 py-12 px-6">
             <h2 class="text-2xl font-semibold mb-8">Prêt à simplifier vos démarches qualité ?</h2>
-            <a href="{{ path('app_register') }}" class="bg-[#142742] text-white py-3 px-6 rounded-lg hover:bg-[#1a355c]">
+            <a href="{{ path('app_register') }}" class="btn-primary">
                 Créer un compte maintenant
             </a>
         </section>

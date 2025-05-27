@@ -1,0 +1,135 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mon profil{% endblock %}
+
+{% block body %}
+    <div class="max-w-2xl mx-auto px-4 py-8">
+        <h1 class="text-3xl font-bold title-primary mb-8">Modifier mes informations</h1>
+
+        {{ form_start(form, {
+            attr: {
+                'x-data': '{ showConfirm: false }',
+                '@submit.prevent': 'showConfirm = true',
+                'id': 'profil-form',
+                'data-turbo': 'false',
+                'class': 'space-y-6'
+            }
+        }) }}
+
+        <div>
+            {{ form_label(form.firstName, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700'}}) }}
+            {{ form_widget(form.firstName, {
+                'attr': {
+                    'class': 'block w-full px-4 py-2 rounded-md shadow-sm focus:ring focus:ring-indigo-200 ' ~
+                    (form.firstName.vars.errors|length > 0 ? 'border-red-500 border' : 'border border-gray-300')
+                }
+            }) }}
+            {% if form.firstName.vars.errors|length > 0 %}
+                <div class="text-red-600 text-sm mt-1">
+                    {{ form_errors(form.firstName) }}
+                </div>
+            {% endif %}
+        </div>
+
+        <div>
+            {{ form_label(form.lastName, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700'}}) }}
+            {{ form_widget(form.lastName, {
+                'attr': {
+                    'class': 'block w-full px-4 py-2 rounded-md shadow-sm focus:ring focus:ring-indigo-200 ' ~
+                    (form.lastName.vars.errors|length > 0 ? 'border-red-500 border' : 'border border-gray-300')
+                }
+            }) }}
+            {% if form.lastName.vars.errors|length > 0 %}
+                <div class="text-red-600 text-sm mt-1">
+                    {{ form_errors(form.lastName) }}
+                </div>
+            {% endif %}
+        </div>
+
+        <div>
+            {{ form_label(form.email, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700'}}) }}
+            <p class="text-sm font-medium text-red-600">
+                (Attention, si vous changez d'email, vous serez déconnecté et devrez le valider de nouveau)
+            </p>
+            {{ form_widget(form.email, {
+                'attr': {
+                    'placeholder': user.email,
+                    'class': 'block w-full px-4 py-2 rounded-md shadow-sm focus:ring focus:ring-indigo-200 ' ~
+                    (form.email.vars.errors|length > 0 ? 'border-red-500 border' : 'border border-gray-300')
+                }
+            }) }}
+            {% if form.email.vars.errors|length > 0 %}
+                <div class="text-red-600 text-sm mt-1">
+                    {{ form_errors(form.email) }}
+                </div>
+            {% endif %}
+        </div>
+
+        <div>
+            {{ form_label(form.plainPassword.first, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700'}}) }}
+            {{ form_widget(form.plainPassword.first, {
+                'attr': {
+                    'class': 'block w-full px-4 py-2 rounded-md shadow-sm focus:ring focus:ring-indigo-200 ' ~
+                    (form.plainPassword.first.vars.errors|length > 0 ? 'border-red-500 border' : 'border border-gray-300')
+                }
+            }) }}
+            {% if form.plainPassword.first.vars.errors|length > 0 %}
+                <div class="text-red-600 text-sm mt-1">
+                    {{ form_errors(form.plainPassword.first) }}
+                </div>
+            {% endif %}
+        </div>
+
+        <div>
+            {{ form_label(form.plainPassword.second, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700'}}) }}
+            {{ form_widget(form.plainPassword.second, {
+                'attr': {
+                    'class': 'block w-full px-4 py-2 rounded-md shadow-sm focus:ring focus:ring-indigo-200 ' ~
+                    (form.plainPassword.second.vars.errors|length > 0 ? 'border-red-500 border' : 'border border-gray-300')
+                }
+            }) }}
+            {% if form.plainPassword.second.vars.errors|length > 0 %}
+                <div class="text-red-600 text-sm mt-1">
+                    {{ form_errors(form.plainPassword.second) }}
+                </div>
+            {% endif %}
+        </div>
+
+        <div>
+            {{ form_label(form.country, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700'}}) }}
+            {{ form_widget(form.country, {
+                'attr': {
+                    'class': 'block w-full px-4 py-2 rounded-md shadow-sm focus:ring focus:ring-indigo-200 ' ~
+                    (form.country.vars.errors|length > 0 ? 'border-red-500 border' : 'border border-gray-300')
+                }
+            }) }}
+            {% if form.country.vars.errors|length > 0 %}
+                <div class="text-red-600 text-sm mt-1">
+                    {{ form_errors(form.country) }}
+                </div>
+            {% endif %}
+        </div>
+
+        {{ form_rest(form) }}
+
+        <button type="submit"
+                class="btn-primary">
+            Enregistrer
+        </button>
+
+        {% include 'components/modal-confirmation.html.twig' with {
+            title: 'Valider les modifications',
+            message: 'Souhaitez-vous enregistrer les changements apportés à votre profil, <b>attention si vous
+            changer votre email vous devrez la reconfirmer</b> ?',
+            cancelLabel: 'Annuler',
+            confirmLabel: 'Modifier mon profil',
+            confirmAction: "document.getElementById('profil-form').submit()"
+        } %}
+
+
+        {{ form_end(form) }}
+
+
+
+    </div>
+{% endblock %}

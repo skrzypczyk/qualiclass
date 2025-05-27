@@ -1,0 +1,117 @@
+<header class="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
+    <nav class="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4" x-data="{ menuOpen: false }">
+        <a href="/" class="text-xl font-bold text-[#1a355c] flex items-center gap-2">
+            <img src="{{ asset('images/logo-qualiclass-small.png') }}" alt="Logo QualiClass" width="30">
+            QualiClass
+        </a>
+
+        {% if app.user %}
+            <button @click="menuOpen = !menuOpen"
+                    type="button"
+                    class="inline-flex items-center p-2 w-10 h-10 justify-center text-gray-500 rounded-lg sm:hidden hover:bg-gray-100 focus:outline-none">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M4 6h16M4 12h16M4 18h16"/>
+                </svg>
+            </button>
+        {% endif %}
+
+        <div :class="{ 'hidden': !menuOpen }" class="w-full sm:flex sm:w-auto sm:block hidden" id="navbar-default">
+            <ul class="flex flex-col font-medium p-4 sm:p-0 sm:flex-row sm:space-x-6 mt-4 sm:mt-0">
+
+                {% if app.user %}
+                    <li>
+                        <a href="{{ path('app_dashboard') }}" class="flex items-center gap-2 py-2 text-primary hover:underline">
+                            <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" stroke-width="2"
+                                 viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M13 5v6h6" />
+                            </svg>
+                            Tableau de bord
+                        </a>
+                    </li>
+
+                    <li x-data="{ open: false }" @mouseenter="open = true" @mouseleave="open = false" class="relative">
+                        <button type="button" class="flex items-center gap-2 py-2 text-primary hover:underline">
+                            <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" stroke-width="2"
+                                 viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                            </svg>
+                            Pédagogie
+                            <svg class="w-4 h-4 ml-1 text-primary" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+
+                        <ul x-show="open" x-cloak x-transition
+                            class="absolute left-0 mt-2 w-56 bg-white border border-gray-200 rounded shadow z-50">
+                            <li><a href="{{ path('app_module') }}" class="block px-4 py-2 text-primary hover:bg-gray-100">Modules</a></li>
+                            <li><a href="{{ path('app_program') }}" class="block px-4 py-2 text-primary hover:bg-gray-100">Programmes</a></li>
+                            {% if app.user.isSuperAdmin() or app.user.isAdmin() %}
+                                <li><a href="{{ path('app_assessment') }}" class="block px-4 py-2 text-primary hover:bg-gray-100">Evaluations</a></li>
+                                <li><a href="{{ path('app_category') }}" class="block px-4 py-2 text-primary hover:bg-gray-100">Catégories</a></li>
+                                <li><a href="{{ path('app_diploma') }}" class="block px-4 py-2 text-primary hover:bg-gray-100">Diplômes</a></li>
+                            {% endif %}
+                        </ul>
+                    </li>
+
+
+                    {% if app.user.isSuperAdmin() or app.user.isAdmin() %}
+                        <li x-data="{ open: false }" @mouseenter="open = true" @mouseleave="open = false" class="relative">
+                            <button type="button" class="flex items-center gap-2 py-2 text-primary hover:underline">
+                                <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" stroke-width="2"
+                                     viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M5.121 17.804A4 4 0 017.757 16H16a4 4 0 004-4V7a4 4 0 00-4-4H8a4 4 0 00-4 4v9a4 4 0 001.121 2.804z" />
+                                </svg>
+                                Administration
+                                <svg class="w-4 h-4 ml-1 text-primary" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </button>
+
+                            <ul x-show="open" x-cloak x-transition
+                                class="absolute left-0 mt-2 w-56 bg-white border border-gray-200 rounded shadow z-50">
+                                {% if app.user.isSuperAdmin() %}
+                                    <li><a href="{{ path('app_admin') }}" class="block px-4 py-2 text-primary hover:bg-gray-100">Gestion globale</a></li>
+                                {% endif %}
+                                {% if app.user.isAdmin() %}
+                                    <li><a href="{{ path('app_school') }}" class="block px-4 py-2 text-primary hover:bg-gray-100">Ecoles</a></li>
+                                    <li><a href="{{ path('app_user') }}" class="block px-4 py-2 text-primary hover:bg-gray-100">Utilisateurs</a></li>
+                                    <li><a href="{{ path('app_assignment') }}" class="block px-4 py-2 text-primary hover:bg-gray-100">Gestion des droits</a></li>
+                                    <li><a href="{{ path('app_subscription') }}" class="block px-4 py-2 text-primary hover:bg-gray-100">Mon abonnement</a></li>
+                                {% endif %}
+                            </ul>
+                        </li>
+                    {% endif %}
+
+                    <li>
+                        <a href="{{ path('app_profil') }}" class="flex items-center gap-2 py-2 text-primary hover:underline">
+                            <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" stroke-width="2"
+                                 viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M5.121 17.804A4 4 0 017.757 16h8.486a4 4 0 012.636 1.804M12 14a5 5 0 100-10 5 5 0 000 10z" />
+                            </svg>
+                            Mon compte
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="{{ path('app_logout') }}" class="flex items-center gap-2 py-2 text-red-600 hover:underline">
+                            <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" stroke-width="2"
+                                 viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                      d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h6a2 2 0 012 2v1"/>
+                            </svg>
+                            Déconnexion
+                        </a>
+                    </li>
+
+                {% else %}
+                    <li><a href="/" class="block py-2 text-primary hover:underline">Accueil</a></li>
+                    <li><a href="{{ path('app_pricing') }}" class="block py-2 text-primary hover:underline">Nos tarifs</a></li>
+                    <li><a href="{{ path('app_login') }}" class="block py-2 text-primary hover:underline">Connexion</a></li>
+                    <li><a href="{{ path('app_register') }}" class="block py-2 text-primary hover:underline">Inscription</a></li>
+                {% endif %}
+
+            </ul>
+        </div>
+    </nav>
+</header>

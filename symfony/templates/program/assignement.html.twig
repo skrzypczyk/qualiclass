@@ -1,0 +1,208 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Affectation des modules{% endblock %}
+
+{% block body %}
+    <div class="max-w-8xl mx-auto px-6 py-10">
+        <h1 class="text-3xl font-bold title-primary mb-8">Affectation des modules</h1>
+        <a href="{{ path('app_program') }}" class="px-4 py-2 btn-danger">Retour aux programmes</a>
+        <form method="post">
+            <div class="overflow-auto max-h-[80vh] rounded mt-4">
+                <table class="border-separate border-spacing-0 min-w-full">
+                    <thead>
+                    <tr>
+                        <th class="sticky top-0 left-0 z-30 bg-primary text-white px-4 py-2 text-left border border-gray-200" rowspan="2">
+                            Module
+                        </th>
+                        {% for diploma in program.diplomas %}
+                            {% set bgClass = loop.index0 is even ? 'bg-primary' : 'bg-primary-light' %}
+                            <th class="sticky top-0 z-20 {{ bgClass }} text-white px-4 py-2 text-center border border-gray-200"
+                                colspan="{{ diploma.competences|length }}">
+                                {{ diploma.title }}<br>
+                                <small>
+                                    <span data-diploma-total-duration="{{ diploma.id }}">0h 0min</span> <br>
+                                    <span data-diploma-total-ects="{{ diploma.id }}">0</span> ECTS
+                                </small>
+
+                            </th>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        {% for diploma in program.diplomas %}
+                            {% set bgClass = loop.index0 is even ? 'bg-primary' : 'bg-primary-light' %}
+                            {% for competence in diploma.competences %}
+                                <th class="sticky top-[81px] z-20 {{ bgClass }} text-white px-4 py-2 text-center border border-gray-200">
+                                    <small>{{ competence.title }}</small><br>
+                                    <small>
+                                        <span data-competence-total-duration="{{ competence.id }}">0h 0min</span> <br>
+                                        <span data-competence-total-ects="{{ competence.id }}">0</span> ECTS
+                                    </small>
+
+                                </th>
+                            {% endfor %}
+                        {% endfor %}
+                    </tr>
+                    </thead>
+
+
+
+                    <tbody>
+                    {% for module in modules %}
+                        <tr class="'odd:bg-gray-50'">
+                            <td class="sticky left-0 z-10 bg-white px-4 py-2 font-medium whitespace-nowrap border border-gray-200">
+                                {{ module.title }} {{  module.isArchived ? '(Archivé)' :'' }}<br>
+                                <small>{{ module.duration }} min – {{ module.credit }} ECTS</small>
+                            </td>
+                            {% for diploma in program.diplomas %}
+                                {% for competence in diploma.competences %}
+                                    <td class="px-4 py-2 text-center border border-gray-200 cursor-pointer {{  module.isArchived ? 'bg-neutral' :'odd:bg-gray-50' }}"
+                                        data-competence-id="{{ competence.id }}"
+                                        data-diploma-id="{{ diploma.id }}"
+                                        data-module-id="{{ module.id }}"
+                                        data-duration="{{ module.duration }}"
+                                        data-credit="{{ module.credit }}"
+                                        onclick="toggleCheckboxAndUpdate(this)">
+                                        <input type="checkbox"
+                                               name="mapping[{{ module.id }}][]"
+                                               value="{{ competence.id }}"
+                                               class="hidden"
+                                               {% if existingMapping[module.id] is defined and competence.id in existingMapping[module.id] %}checked{% endif %}>
+                                    </td>
+
+                                {% endfor %}
+                            {% endfor %}
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="100%" class="px-4 py-2 text-center border border-gray-200">Aucun module disponible.</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="mt-6 text-right">
+                <button type="submit" class="btn-primary px-6 py-2">Enregistrer les affectations</button>
+            </div>
+        </form>
+    </div>
+    <script>
+        function toggleCheckboxAndUpdate(cell) {
+            const checkbox = cell.querySelector('input[type="checkbox"]');
+            const moduleId = cell.dataset.moduleId;
+            const diplomaId = cell.dataset.diplomaId;
+            const compId = cell.dataset.competenceId;
+            const duration = parseInt(cell.dataset.duration || "0");
+            const credit = parseInt(cell.dataset.credit || "0");
+
+            const isChecked = checkbox.checked;
+            checkbox.checked = !isChecked;
+
+            // Ajout : on décoche les autres pour ce module + ce diplôme
+            if (checkbox.checked) {
+                document.querySelectorAll(`input[name="mapping[${moduleId}][]"]`).forEach(otherCheckbox => {
+                    const otherCell = otherCheckbox.closest('td');
+                    if (
+                        otherCheckbox !== checkbox &&
+                        otherCell.dataset.diplomaId === diplomaId
+                    ) {
+                        if (otherCheckbox.checked) {
+                            const otherCompId = otherCell.dataset.competenceId;
+                            const otherDuration = parseInt(otherCell.dataset.duration || "0");
+                            const otherCredit = parseInt(otherCell.dataset.credit || "0");
+
+                            // Mise à jour visuelle
+                            otherCheckbox.checked = false;
+                            otherCell.classList.remove('bg-primary-light');
+                            updateTotal('competence', otherCompId, -otherDuration, -otherCredit);
+                            updateTotal('diploma', diplomaId, -otherDuration, -otherCredit);
+                        }
+                    }
+                });
+            }
+
+            // Mise à jour de l'affichage visuel
+            cell.classList.toggle('bg-primary-light', checkbox.checked);
+
+            const diff = checkbox.checked ? 1 : -1;
+            updateTotal('competence', compId, duration * diff, credit * diff);
+            updateTotal('diploma', diplomaId, duration * diff, credit * diff);
+        }
+
+        function updateTotal(type, id, deltaMinutes, deltaCredits) {
+            const durationEl = document.querySelector(`[data-${type}-total-duration="${id}"]`);
+            const ectsEl = document.querySelector(`[data-${type}-total-ects="${id}"]`);
+
+            // lecture
+            const currentDuration = parseInt(durationEl.dataset.total || "0");
+            const currentCredits = parseInt(ectsEl.dataset.total || "0");
+
+            const newDuration = Math.max(0, currentDuration + deltaMinutes);
+            const newCredits = Math.max(0, currentCredits + deltaCredits);
+
+            durationEl.dataset.total = newDuration;
+            durationEl.innerText = formatDuration(newDuration);
+
+            ectsEl.dataset.total = newCredits;
+            ectsEl.innerText = newCredits;
+        }
+
+        function formatDuration(minutes) {
+            const h = Math.floor(minutes / 60);
+            const m = minutes % 60;
+            return `${h}h ${m}min`;
+        }
+
+        function initTotals() {
+            setTimeout(() => {
+                // Réinitialiser tous les totaux à 0
+                document.querySelectorAll('[data-competence-total-duration]').forEach(el => {
+                    el.dataset.total = 0;
+                    el.innerText = '0h 0min';
+                });
+
+                document.querySelectorAll('[data-competence-total-ects]').forEach(el => {
+                    el.dataset.total = 0;
+                    el.innerText = '0';
+                });
+
+                document.querySelectorAll('[data-diploma-total-duration]').forEach(el => {
+                    el.dataset.total = 0;
+                    el.innerText = '0h 0min';
+                });
+
+                document.querySelectorAll('[data-diploma-total-ects]').forEach(el => {
+                    el.dataset.total = 0;
+                    el.innerText = '0';
+                });
+
+                // Recalcule les totaux à partir des cases cochées
+                document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+                    if (checkbox.checked) {
+                        const cell = checkbox.closest('td');
+                        if (!cell) return;
+
+                        const duration = parseInt(cell.dataset.duration || "0");
+                        const credit = parseInt(cell.dataset.credit || "0");
+                        const compId = cell.dataset.competenceId;
+                        const dipId = cell.dataset.diplomaId;
+
+                        cell.classList.add('bg-primary-light');
+
+                        updateTotal('competence', compId, duration, credit);
+                        updateTotal('diploma', dipId, duration, credit);
+                    }
+                });
+            }, 0);
+        }
+
+
+        document.addEventListener('DOMContentLoaded', initTotals);
+        document.addEventListener('turbo:load', initTotals);
+
+
+
+    </script>
+
+
+{% endblock %}

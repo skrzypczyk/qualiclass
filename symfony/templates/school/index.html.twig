@@ -1,0 +1,137 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes écoles{% endblock %}
+
+{% block body %}
+    <div class="max-w-2xl mx-auto px-4 py-8">
+
+        {% if limitSchools-(user.getSchools(1)|length) > 0 or school.id %}
+            {%  if school.id is null %}
+                <h1 class="text-3xl font-bold title-primary mb-8">Ajouter une école</h1>
+                <p class="text-sm text-gray-600 mb-4">Vous pouvez ajouter jusqu'à {{ limitSchools }} écoles. <b>Il vous reste {{ limitSchools-(user.getSchools(1)|length) }} école(s) à ajouter.</b></p>
+            {% else %}
+
+                <h1 class="text-3xl font-bold title-primary mb-8">Modifier cette école</h1>
+            {% endif %}
+
+            {{ form_start(form, {'attr': {'enctype': 'multipart/form-data', 'class': 'space-y-6'}}) }}
+
+            <div>
+                {{ form_label(form.name, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700'}}) }}
+                {{ form_widget(form.name, {
+                    'attr': {
+                        'class': 'block w-full px-4 py-2 rounded-md shadow-sm focus:ring focus:ring-indigo-200 border border-gray-300'
+                    }
+                }) }}
+
+                {% if form.name.vars.errors|length > 0 %}
+                    <p class="mt-1 text-sm text-red-600">{{ form_errors(form.name) }}</p>
+                {% endif %}
+            </div>
+
+            <div>
+                {{ form_label(form.logo, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700'}}) }}
+                {{ form_widget(form.logo, {
+                    'attr': {
+                        'class': 'block w-full px-4 py-2 rounded-md shadow-sm focus:ring focus:ring-indigo-200 border border-gray-300'
+                    }
+                }) }}
+
+                {% if form.logo.vars.errors|length > 0 %}
+                    <p class="mt-1 text-sm text-red-600">{{ form_errors(form.logo) }}</p>
+                {% endif %}
+            </div>
+
+
+            <button type="submit" class="btn-primary">
+                Enregistrer
+            </button>
+
+            {% if school.id %}
+                <a href="{{ path('app_school') }}" class="btn-neutral">Annuler</a>
+            {% endif %}
+
+            {{ form_end(form) }}
+
+        {% else %}
+
+            <h1 class="text-2xl font-bold text-[#142742] mb-6">Limite atteinte</h1>
+            <p class="text-sm text-red-600 mb-4">Vous avez atteint la limite de {{ limitSchools }} écoles.</p>
+            <a href="{{ path('app_update_subscription',{'id':subscription.id} ) }}" class="btn-primary">Modifier mon abonnement</a>
+
+
+        {% endif %}
+
+
+
+
+        <h1 class="text-2xl font-bold text-[#142742] my-6">Liste des écoles</h1>
+        <div x-data="{ showModal: false, modalSchoolId: null }">
+            <table class="min-w-full bg-white border border-gray-200 shadow-md rounded-lg overflow-hidden">
+                <thead>
+                <tr>
+                    <th class="px-6 py-3 text-left">Logo</th>
+                    <th class="px-6 py-3 text-left">Nom de l'école</th>
+                    <th class="px-6 py-3 text-left">Actions</th>
+                </tr>
+                </thead>
+                <tbody class="text-gray-800 text-sm divide-y divide-gray-100">
+                {% for school in user.getSchools()|sort((a, b) => a.id <=> b.id) %}
+                    <tr class="transition  {{ school.isDisable ? 'bg-gray-100' : '' }}">
+                        <td class="px-6 py-4">
+                            {% if school.logo %}
+                                <img src="{{ asset(school.logo) }}" alt="{{ school.name }}"
+                                     class="h-14 w-14 object-cover rounded shadow border border-gray-200">
+                            {% else %}
+                                <span class="italic text-gray-400">Aucun logo</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 font-medium">{{ school.name }}</td>
+                        <td class="px-6 py-4 space-x-4">
+                            <a href="{{ path('school_status', {'id': school.id}) }}"
+                               class="inline-block text-sm font-semibold {{ school.isDisable ? '' : 'text-yellow-600' }} hover:underline">
+                                {{ school.isDisable ? 'Activer' : 'Désactiver' }}
+                            </a>
+
+                            <a href="{{ path('school_edit', {'id': school.id}) }}"
+                               class="inline-block text-sm text-blue-600 font-semibold hover:underline">
+                                Modifier
+                            </a>
+
+                            <button
+                                    type="button"
+                                    @click="modalSchoolId = '{{ school.id }}'; showModal = true;"
+                                    class="inline-block text-sm text-red-600 font-semibold hover:underline"
+                            >
+                                Supprimer
+                            </button>
+
+                            <form method="post"
+                                  action="{{ path('school_delete', {'id': school.id}) }}"
+                                  id="delete-form-{{ school.id }}"
+                                  class="hidden">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete_school_' ~ school.id) }}">
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+
+
+            {% include 'components/modal-confirmation.html.twig' with {
+                x_show: 'showModal',
+                title: 'Supprimer une école',
+                message: 'Souhaitez-vous vraiment supprimer cette école et tous les programmes associés ?',
+                cancelLabel: 'Annuler',
+                confirmLabel: 'Supprimer',
+                confirmAction: "document.getElementById('delete-form-' + modalSchoolId).submit()"
+            } %}
+        </div>
+
+
+    </div>
+
+
+
+{% endblock %}

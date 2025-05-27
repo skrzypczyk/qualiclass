@@ -1,0 +1,117 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Diplômes{% endblock %}
+
+{% block body %}
+    <div class="max-w-7xl mx-auto px-6 py-10">
+        <h1 class="text-3xl font-bold title-primary mb-8">Vos modules</h1>
+        <a href="{{ path('app_diploma_create') }}" class="px-4 py-2 btn-primary">Ajouter un diplôme</a>
+        <a href="{{ path('app_diploma_import') }}" class="px-4 py-2 btn-primary">Importer un diplôme</a>
+
+        <div x-data="{ showModal: false, showModal2: false, modalModuleId: null }">
+            <table class="min-w-full my-6 bg-white border border-gray-200 shadow-md rounded-lg overflow-hidden">
+                <thead>
+                <tr>
+                    <th class="px-6 py-3 text-left">
+                        Titre
+                    </th>
+                    <th class="px-6 py-3 text-left">
+                        RNCP
+                    </th>
+                    <th class="px-6 py-3 text-left">
+                        Ecole(s)
+                    </th>
+                    <th class="px-6 py-3 text-left">
+                        Compétences
+                    </th>
+                    <th class="px-6 py-3 text-left">Actions</th>
+                </tr>
+                </thead>
+                <tbody class="text-gray-800 text-sm divide-y divide-gray-100">
+                {% for diploma in diplomas %}
+                    <tr class="transition">
+                        <td class="px-6 py-4 font-medium">{{ diploma.title }}</td>
+                        <td class="px-6 py-4 font-medium">{{ diploma.RNCP }}</td>
+                        {% if diploma.schools is empty %}
+                            <td class="px-6 py-4 font-medium">Aucune école</td>
+                        {% else %}
+                            {% set schoolNames = diploma.schools|map(school => school.name)|join(', ') %}
+                            <td class="px-6 py-4 font-medium">{{ schoolNames }}</td>
+                        {% endif %}
+                        <td class="px-6 py-4 font-medium">
+                            {% for competence in diploma.competences|sort((a, b) => a.title <=> b.title) %}
+                                <span class="inline-block bg-gray-200 text-gray-700 text-xs font-semibold mr-2 px-2.5 py-0.5 rounded">
+                                    {{ competence.title }}
+                                </span>
+                            {% endfor %}
+                        </td>
+
+                        <td class="px-6 py-4 space-x-2">
+
+                            <a href="{{ path('app_diploma_edit', {'id': diploma.id}) }}"
+                               class="link-primary">
+                                Modifier
+                            </a>
+
+                            <button
+                                    type="button"
+                                    @click="modalDiplomaId = '{{ diploma.id }}'; showModal2 = true;"
+                                    class="link-primary"
+                            >
+                                Dupliquer
+                            </button>
+
+                            <form method="post"
+                                  action="{{ path('app_diploma_duplicate', {'id': diploma.id}) }}"
+                                  id="duplicate-form-{{ diploma.id }}"
+                                  class="hidden">
+                                <input type="hidden" name="_token" value="{{ csrf_token('duplicate_diploma_' ~ diploma.id) }}">
+                            </form>
+
+
+                            <button
+                                    type="button"
+                                    @click="modalDiplomaId = '{{ diploma.id }}'; showModal = true;"
+                                    class="link-danger"
+                            >
+                                Supprimer
+                            </button>
+
+                            <form method="post"
+                                  action="{{ path('app_diploma_delete', {'id': diploma.id}) }}"
+                                  id="delete-form-{{ diploma.id }}"
+                                  class="hidden">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete_diploma_' ~ diploma.id) }}">
+                            </form>
+
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+
+
+
+
+            {% include 'components/modal-confirmation.html.twig' with {
+                x_show: 'showModal',
+                title: 'Supprimer un diplôme',
+                message: 'Souhaitez-vous vraiment supprimer ce diplôme ?',
+                cancelLabel: 'Annuler',
+                confirmLabel: 'Supprimer',
+                confirmAction: "document.getElementById('delete-form-' + modalDiplomaId).submit()"
+            } %}
+
+            {% include 'components/modal-confirmation.html.twig' with {
+                x_show: 'showModal2',
+                title: 'Dupliquer un diplôme',
+                message: 'Souhaitez-vous vraiment dupliquer ce diplôme ?',
+                cancelLabel: 'Annuler',
+                confirmLabel: 'Dupliquer',
+                confirmAction: "document.getElementById('duplicate-form-' + modalDiplomaId).submit()"
+            } %}
+        </div>
+
+
+    </div>
+{% endblock %}

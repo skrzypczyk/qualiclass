@@ -1,0 +1,196 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modules{% endblock %}
+
+{% block body %}
+    <div class="max-w-7xl mx-auto px-6 py-10">
+        <h1 class="text-3xl font-bold title-primary mb-8">Vos modules</h1>
+        <a href="{{ path('app_module_create') }}" class="px-4 py-2 btn-primary">Ajouter un module</a>
+
+        <form method="get" data-turbo='false' class="mb-6 bg-gray-50 border border-gray-200 rounded-lg p-6 shadow-sm mt-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <div>
+                    <label for="search" class="block text-sm font-semibold text-gray-700 mb-1">Recherche par titre</label>
+                    <input
+                            type="text"
+                            id="search"
+                            name="search"
+                            value="{{ search }}"
+                            placeholder="Ex : HTML"
+                            class="block w-full px-4 py-2 rounded-md shadow-sm focus:ring focus:ring-indigo-200"
+                    >
+                </div>
+                <div>
+                    <label for="category" class="block text-sm font-semibold text-gray-700 mb-1">Filtrer par catégorie</label>
+                    <select
+                            id="category"
+                            name="category"
+                            class="block w-full px-4 py-2 rounded-md shadow-sm focus:ring focus:ring-indigo-200"
+                    >
+                        <option value="">Toutes les catégories</option>
+                        {% for cat in categories %}
+                            <option value="{{ cat.id }}" {% if categoryId == cat.id %}selected{% endif %}>
+                                {{ cat.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label for="limit" class="block text-sm font-semibold text-gray-700 mb-1">Résultats par page</label>
+                    <select
+                            id="limit"
+                            name="limit"
+                            class="block w-full px-4 py-2 rounded-md shadow-sm focus:ring focus:ring-indigo-200"
+                    >
+                        {% for val in [5, 10, 20, 50, 100] %}
+                            <option value="{{ val }}" {% if limit == val %}selected{% endif %}>
+                                {{ val }} par page
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label for="sort" class="block text-sm font-semibold text-gray-700 mb-1">Archivé</label>
+                    <select
+                            id="archived"
+                            name="archived"
+                            class="block w-full px-4 py-2 rounded-md shadow-sm focus:ring focus:ring-indigo-200">
+                        <option value="0" {% if archived is null  or archived == false %}selected{% endif %}>Non</option>
+                        <option value="1" {% if archived == true %}selected{% endif %}>Oui</option>
+                    </select>
+
+                </div>
+            </div>
+
+            <div class="mt-6 flex justify-end gap-4">
+                <button type="submit" class="btn-primary px-4 py-2 text-sm">Appliquer les filtres</button>
+                <a href="{{ path(app.request.attributes.get('_route')) }}" class="btn-secondary px-4 py-2 text-sm">Réinitialiser</a>
+            </div>
+        </form>
+
+
+
+        <div x-data="{ showModal: false, showModal2: false, modalModuleId: null }">
+            <table class="min-w-full my-6 bg-white border border-gray-200 shadow-md rounded-lg overflow-hidden">
+                <thead>
+                {% set dir = direction == 'asc' ? 'desc' : 'asc' %}
+                <tr>
+                    <th class="px-6 py-3 text-left">
+                        <a href="{{ path(app.request.attributes.get('_route'), app.request.query.all | merge({'sort': 'm.title', 'direction': sort == 'm.title' ? dir : 'asc'})) }}">
+                            Titre {% if sort == 'm.title' %}{{ direction == 'asc' ? '↑' : '↓' }}{% endif %}
+                        </a>
+                    </th>
+                    <th class="px-6 py-3 text-left">
+                        <a href="{{ path(app.request.attributes.get('_route'), app.request.query.all | merge({'sort': 'm.duration', 'direction': sort == 'm.duration' ? dir : 'asc'})) }}">
+                            Durée {% if sort == 'm.duration' %}{{ direction == 'asc' ? '↑' : '↓' }}{% endif %}
+                        </a>
+                    </th>
+
+                    <th class="px-6 py-3 text-left">
+                        <a href="{{ path(app.request.attributes.get('_route'), app.request.query.all | merge({'sort': 'm.credit', 'direction': sort == 'm.credit' ? dir : 'asc'})) }}">
+                            Crédit(s) {% if sort == 'm.credit' %}{{ direction == 'asc' ? '↑' : '↓' }}{% endif %}
+                        </a>
+                    </th>
+
+                    <th class="px-6 py-3 text-left">Catégorie(s)</th>
+
+
+                    <th class="px-6 py-3 text-left">Actions</th>
+                </tr>
+                </thead>
+                <tbody class="text-gray-800 text-sm divide-y divide-gray-100">
+                {% for module in modules %}
+                    <tr class="transition {% if module.isArchived() %} bg-neutral {% endif %}">
+                        <td class="px-6 py-4 font-medium">{{ module.title }} {% if app.user.isAdmin() %}
+                                <small>
+                                   <br> {{ module.owner.email }}
+                                </small>
+                            {% endif %} </td>
+
+                        <td class="px-6 py-4 font-medium text-center">{{ module.duration }} min</td>
+                        <td class="px-6 py-4 font-medium text-center">{{ module.credit }}</td>
+
+                        <td class="px-6 py-4 font-medium">
+                            {% for category in module.categories|sort((a, b) => a.name <=> b.name) %}
+                                <span class="inline-block bg-gray-200 text-gray-700 text-xs font-semibold mr-2 px-2.5 py-0.5 rounded">
+                                    {{ category.name }}
+                                </span>
+                            {% endfor %}
+                        </td>
+                        <td class="px-6 py-4 space-x-2">
+
+                            <a href="{{ path('app_module_edit', {'id': module.id}) }}"
+                               class="link-primary">
+                                Modifier
+                            </a>
+
+                            <a href="{{ path('app_module_archive', {'id': module.id}) }}"
+                               class="link-primary">
+                                {% if module.isArchived() %}Restaurer{% else %}Archiver{% endif %}
+                            </a>
+
+                            <button
+                                    type="button"
+                                    @click="modalModuleId = '{{ module.id }}'; showModal2 = true;"
+                                    class="link-primary"
+                            >
+                                Dupliquer
+                            </button>
+
+                            <form method="post"
+                                  action="{{ path('app_module_duplicate', {'id': module.id}) }}"
+                                  id="duplicate-form-{{ module.id }}"
+                                  class="hidden">
+                                <input type="hidden" name="_token" value="{{ csrf_token('duplicate_module_' ~ module.id) }}">
+                            </form>
+
+
+                            <button
+                                    type="button"
+                                    @click="modalModuleId = '{{ module.id }}'; showModal = true;"
+                                    class="link-danger"
+                            >
+                                Supprimer
+                            </button>
+
+                            <form method="post"
+                                  action="{{ path('app_module_delete', {'id': module.id}) }}"
+                                  id="delete-form-{{ module.id }}"
+                                  class="hidden">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete_module_' ~ module.id) }}">
+                            </form>
+
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            <div class="mt-6">
+                {{ knp_pagination_render(modules) }}
+            </div>
+
+
+
+
+            {% include 'components/modal-confirmation.html.twig' with {
+                x_show: 'showModal',
+                title: 'Supprimer un module',
+                message: 'Souhaitez-vous vraiment supprimer ce module ?',
+                cancelLabel: 'Annuler',
+                confirmLabel: 'Supprimer',
+                confirmAction: "document.getElementById('delete-form-' + modalModuleId).submit()"
+            } %}
+
+            {% include 'components/modal-confirmation.html.twig' with {
+                x_show: 'showModal2',
+                title: 'Dupliquer un module',
+                message: 'Souhaitez-vous vraiment dupliquer ce module ?',
+                cancelLabel: 'Annuler',
+                confirmLabel: 'Dupliquer',
+                confirmAction: "document.getElementById('duplicate-form-' + modalModuleId).submit()"
+            } %}
+        </div>
+
+
+    </div>
+{% endblock %}

@@ -1,0 +1,135 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Tableau de bord{% endblock %}
+
+{% block body %}
+    <div class="max-w-7xl mx-auto px-6 py-10">
+        <h1 class="text-3xl font-bold title-primary mb-8">Tableau de bord</h1>
+
+
+        {# ✅ 4 compteurs globaux #}
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
+            <div class="bg-white shadow rounded-lg p-6 text-center">
+                <div class="text-4xl font-bold text-[#1a355c]">{{ user.programs|length }}</div>
+                <div class="mt-2 text-gray-600">Programmes</div>
+            </div>
+            <div class="bg-white shadow rounded-lg p-6 text-center">
+                <div class="text-4xl font-bold text-[#1a355c]">{{ user.modules|length }}</div>
+                <div class="mt-2 text-gray-600">Modules</div>
+            </div>
+            <div class="bg-white shadow rounded-lg p-6 text-center">
+                <div class="text-4xl font-bold text-[#1a355c]">{{ user.schools|length }}</div>
+                <div class="mt-2 text-gray-600">Écoles</div>
+            </div>
+        </div>
+
+        {% set summary = [] %}
+
+        {% for program in user.programs %}
+            {% set grouped = {} %}
+            {% for affectation in program.affectations %}
+                {% set diplomaId = affectation.competence.diploma.id %}
+                {% set diplomaTitle = affectation.competence.diploma.title %}
+                {% set diplomaRncp = affectation.competence.diploma.rncp ?? '—' %}
+                {% set competenceTitle = affectation.competence.title %}
+
+                {% if grouped[diplomaTitle] is not defined %}
+                    {% set grouped = grouped | merge({ (diplomaTitle): {
+                        'id': diplomaId,
+                        'rncp': diplomaRncp,
+                        'competences': {}
+                    } }) %}
+                {% endif %}
+
+                {% if grouped[diplomaTitle]['competences'][competenceTitle] is not defined %}
+                    {% set grouped = grouped | merge({
+                        (diplomaTitle): grouped[diplomaTitle] | merge({
+                            'competences': grouped[diplomaTitle]['competences'] | merge({
+                                (competenceTitle): [affectation]
+                            })
+                        })
+                    }) %}
+                {% else %}
+                    {% set grouped = grouped | merge({
+                        (diplomaTitle): grouped[diplomaTitle] | merge({
+                            'competences': grouped[diplomaTitle]['competences'] | merge({
+                                (competenceTitle): grouped[diplomaTitle]['competences'][competenceTitle] | merge([affectation])
+                            })
+                        })
+                    }) %}
+                {% endif %}
+            {% endfor %}
+
+            {# => Résumé par programme+diplôme #}
+            {% for diplomaTitle, diplomaData in grouped %}
+                {% set totalMinutes = 0 %}
+                {% set totalCredits = 0 %}
+                {% set moduleIds = [] %}
+
+                {% for affectations in diplomaData.competences %}
+                    {% for affectation in affectations %}
+                        {% set totalMinutes = totalMinutes + (affectation.module.duration ?? 0) %}
+                        {% set totalCredits = totalCredits + (affectation.module.credit ?? 0) %}
+                        {% if affectation.module.id not in moduleIds %}
+                            {% set moduleIds = moduleIds | merge([affectation.module.id]) %}
+                        {% endif %}
+                    {% endfor %}
+                {% endfor %}
+
+                {% set summary = summary | merge([{
+                    programid: program.id,
+                    diplomaid: diplomaData.id,
+                    program: program.title,
+                    diploma: diplomaTitle,
+                    rncp: diplomaData.rncp,
+                    moduleCount: moduleIds|length,
+                    duration: totalMinutes,
+                    credits: totalCredits
+                }]) %}
+
+            {% endfor %}
+        {% endfor %}
+
+
+        <div class="bg-white shadow rounded-lg overflow-hidden">
+            <table class="w-full table-auto text-left">
+                <thead>
+                <tr>
+                    <th class="px-6 py-4">Programme <br> Diplôme - RNCP</th>
+                    <th class="px-6 py-4 text-center">Nombre de modules</th>
+                    <th class="px-6 py-4 text-center">Durée totale</th>
+                    <th class="px-6 py-4 text-center">Total crédits</th>
+                    <th class="px-6 py-4 text-center">Actions</th>
+                </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200">
+                {% for row in summary %}
+                    <tr>
+                        <td class="px-6 py-3 font-medium"><a href="{{ path('app_program_show', {'id': row.programid}) }}" class="text-blue-600 hover:underline">{{ row.program }}</a>
+                            <br>
+                            {{ row.diploma }}
+                            <br>
+                            {{ row.rncp }}</td>
+                        <td class="px-6 py-3 text-center">{{ row.moduleCount }}</td>
+                        <td class="px-6 py-3 text-center">
+                            {% set h = row.duration // 60 %}
+                            {% set m = row.duration % 60 %}
+                            {{ h }}h {{ m }}min
+                        </td>
+                        <td class="px-6 py-3 text-center">{{ row.credits }}</td>
+                        <td class="px-6 py-3 text-center space-x-2">
+                            <a href="{{ path('app_program_diploma_show', {'program': row.programid,'diploma': row.diplomaid}) }}" class="link-primary">Voir</a>
+                            <a href="{{ path('app_program_diploma_show', {'program': row.programid,'diploma': row.diplomaid,'format':'pdf'}) }}" class="link-primary ">PDF</a>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="6" class="text-center px-6 py-4 text-gray-500">Aucune donnée disponible</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+
+        </div>
+    </div>
+{% endblock %}
