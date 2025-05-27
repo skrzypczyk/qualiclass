@@ -67,9 +67,10 @@
     </style>
 </head>
 <body>
+{% set logo = user.getSchoolImg ? 'uploads/schools/'~user.getSchoolImg: 'images/logo-qualiclass.png' %}
 
 <div style="page-break-after: always; padding: 50px; height: 820px; text-align: center;background-color: {{ user.getSchoolPrimaryColor ?? '#fff' }}">
-    <img src="uploads/schools/{{ user.getSchoolImg }}" alt="Page de garde" style="width: 40%; height: auto; margin: auto">
+    <img src="{{ logo }}" alt="Page de garde" style="width: 40%; height: auto; margin: auto">
 
     <h1 style="font-size: 40px">
         {{ diploma.title }} <br><br> {{ diploma.RNCP }}
@@ -94,7 +95,7 @@
 <footer>
     <table >
         <tr>
-            <td style="text-align: center; border: 0px"><img src="uploads/schools/{{ user.getSchoolImg }}" alt="Page de garde" style="height: 60px;"></td>
+            <td style="text-align: center; border: 0px"><img src="{{ logo }}" alt="Page de garde" style="height: 60px;"></td>
             <td style="text-align: center; border: 0px">Page <span class="pagenum"></span></td>
             <td style="text-align: center; border: 0px"><img src="images/logo-qualiclass.png" alt="Qualiclass" style="height: 60px;"></td>
         </tr>
@@ -243,7 +244,7 @@
 
 <div class="page-break"></div>
 <div style=" padding: 50px; margin-top: 280px; text-align: center;}">
-    <img src="uploads/schools/{{ user.getSchoolImg }}" alt="Page de garde" style="width: 40%; height: auto; margin: auto">
+    <img src="{{ logo }}" alt="Page de garde" style="width: 40%; height: auto; margin: auto">
 </div>
 
 </body>
