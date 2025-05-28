@@ -7,6 +7,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Mime\Address;
+use Symfony\Component\Mime\Email;
 use Symfony\Component\Routing\Attribute\Route;
 
 final class HomeController extends AbstractController
@@ -21,7 +22,7 @@ final class HomeController extends AbstractController
             $data = $form->getData();
 
             // 👉 Exemple simple d'envoi avec Mailer
-            $email = (new \Symfony\Component\Mime\Email())
+            $email = (new Email())
                 ->from(new Address('contact@qualiclass.com', 'QualiClass'))
                 ->to(new Address('y.skrzypczyk@gmail.com', 'Yves SKRZYPCZYK'))
                 ->subject('Message depuis QualiClass')
