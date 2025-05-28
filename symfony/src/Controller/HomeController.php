@@ -21,10 +21,10 @@ final class HomeController extends AbstractController
 
             // 👉 Exemple simple d'envoi avec Mailer
             $email = (new \Symfony\Component\Mime\Email())
-                ->from($data['email'])
+                ->from('contact@qualiclass.com')
                 ->to('contact@qualiclass.com') // adapt à ton domaine
                 ->subject('Message depuis QualiClass')
-                ->text("Nom : {$data['name']}\n\nMessage : {$data['message']}");
+                ->text("Nom : {$data['name']}\n\nEmail: {$data['email']} \n\nMessage : {$data['message']}");
 
             $mailer->send($email);
 
