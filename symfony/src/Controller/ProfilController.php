@@ -44,7 +44,7 @@ final class ProfilController extends AbstractController
                 $user->setIsVerified(false);
                 $this->emailVerifier->sendEmailConfirmation('app_verify_email', $user,
                     (new TemplatedEmail())
-                        ->from(new Address('contact@qualiclass.fr', 'QualiClass'))
+                        ->from(new Address('contact@qualiclass.com', 'QualiClass'))
                         ->to((string) $user->getEmail())
                         ->subject('Veuillez confirmer votre adresse email')
                         ->htmlTemplate('registration/confirmation_email.html.twig')

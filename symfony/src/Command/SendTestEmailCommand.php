@@ -32,8 +32,8 @@ class SendTestEmailCommand extends Command
 
         try {
             $email = (new Email())
-                ->from(new Address('contact@qualiclass.fr', 'QualiClass'))
-                ->to(new Address('test@qualiclass.fr', 'Test User'))
+                ->from(new Address('contact@qualiclass.com', 'QualiClass'))
+                ->to(new Address('y.skrzypczyk@gmail.com', 'Test User'))
                 ->subject('🧪 Test Symfony Mailer')
                 ->text('Voici un mail de test envoyé depuis Symfony.')
                 ->html('<p><strong>Hello!</strong> Ceci est un mail de test.</p>');

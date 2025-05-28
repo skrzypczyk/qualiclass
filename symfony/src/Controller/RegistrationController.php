@@ -43,7 +43,7 @@ class RegistrationController extends AbstractController
             // generate a signed url and email it to the user
             $this->emailVerifier->sendEmailConfirmation('app_verify_email', $user,
                 (new TemplatedEmail())
-                    ->from(new Address('contact@qualiclass.fr', 'QualiClass'))
+                    ->from(new Address('contact@qualiclass.com', 'QualiClass'))
                     ->to((string) $user->getEmail())
                     ->subject('Veuillez confirmer votre adresse email')
                     ->htmlTemplate('registration/confirmation_email.html.twig')
@@ -98,7 +98,7 @@ class RegistrationController extends AbstractController
                     'app_verify_email',
                     $user,
                     (new TemplatedEmail())
-                        ->from(new Address('contact@qualiclass.fr', 'QualiClass'))
+                        ->from(new Address('contact@qualiclass.com', 'QualiClass'))
                         ->to($user->getEmail())
                         ->subject('Nouveau lien de confirmation')
                         ->htmlTemplate('registration/confirmation_email.html.twig')

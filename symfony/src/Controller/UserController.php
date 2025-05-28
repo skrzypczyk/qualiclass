@@ -58,7 +58,7 @@ final class UserController extends AbstractController
 
             $resetToken = $resetPasswordHelper->generateResetToken($user);
             $email = (new TemplatedEmail())
-                ->from(new Address('contact@qualiclass.fr', 'QualiClass'))
+                ->from(new Address('contact@qualiclass.com', 'QualiClass'))
                 ->to($user->getEmail())
                 ->subject('Bienvenue sur QualiClass – Définissez votre mot de passe')
                 ->htmlTemplate('user/email.html.twig')
