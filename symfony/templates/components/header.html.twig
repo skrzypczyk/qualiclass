@@ -5,16 +5,14 @@
             QualiClass
         </a>
 
-        {% if app.user %}
-            <button @click="menuOpen = !menuOpen"
-                    type="button"
-                    class="inline-flex items-center p-2 w-10 h-10 justify-center text-gray-500 rounded-lg sm:hidden hover:bg-gray-100 focus:outline-none">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="M4 6h16M4 12h16M4 18h16"/>
-                </svg>
-            </button>
-        {% endif %}
+        <button @click="menuOpen = !menuOpen"
+                type="button"
+                class="inline-flex items-center p-2 w-10 h-10 justify-center text-gray-500 rounded-lg sm:hidden hover:bg-gray-100 focus:outline-none">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M4 6h16M4 12h16M4 18h16"/>
+            </svg>
+        </button>
 
         <div :class="{ 'hidden': !menuOpen }" class="w-full sm:flex sm:w-auto sm:block hidden" id="navbar-default">
             <ul class="flex flex-col font-medium p-4 sm:p-0 sm:flex-row sm:space-x-6 mt-4 sm:mt-0">
