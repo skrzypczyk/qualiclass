@@ -30,7 +30,6 @@ final class ProfilController extends AbstractController
 
         $form = $this->createForm(ProfilType::class, $user);
         $form->handleRequest($request);
-        dump((string) $form->getErrors(true, false));
 
 
         if ($form->isSubmitted() && $form->isValid()) {
