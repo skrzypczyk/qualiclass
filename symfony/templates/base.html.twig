@@ -15,14 +15,14 @@
 
     <script>
         tarteaucitron.init({
-            "privacyUrl": "", /* URL de la politique de confidentialité */
+            "privacyUrl": "{{ path('app_privacy_policy') }}", /* URL de la politique de confidentialité */
 
             "hashtag": "#tarteaucitron",
             "cookieName": "tarteaucitron",
 
             "orientation": "bottom",
-            "showAlertSmall": true,
-            "cookieslist": true,
+            "showAlertSmall": false,
+            "cookieslist": false,
 
             "closePopup": false,
             "showIcon": false,
