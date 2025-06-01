@@ -10,7 +10,64 @@
     <script src="https://unpkg.com/alpinejs" defer></script>
     <link rel="stylesheet" href="https://unpkg.com/trix@2.0.0/dist/trix.css">
     <script src="https://unpkg.com/trix@2.0.0/dist/trix.umd.min.js"></script>
+    <link rel="stylesheet" href="{{ asset('vendor/tarteaucitron/css/tarteaucitron.css') }}">
+    <script src="{{ asset('vendor/tarteaucitron/tarteaucitron.js') }}"></script>
 
+    <script>
+        tarteaucitron.init({
+            "privacyUrl": "", /* URL de la politique de confidentialité */
+
+            "hashtag": "#tarteaucitron",
+            "cookieName": "tarteaucitron",
+
+            "orientation": "bottom",
+            "showAlertSmall": true,
+            "cookieslist": true,
+
+            "closePopup": false,
+            "showIcon": false,
+            "iconPosition": "BottomRight",
+
+            "adblocker": false,
+            "DenyAllCta": true,
+            "AcceptAllCta": true,
+            "highPrivacy": true,
+            "handleBrowserDNTRequest": false,
+            "removeCredit": true,
+            "moreInfoLink": true,
+            "useExternalCss": false,
+            "useExternalJs": false
+        });
+
+        tarteaucitron.job = tarteaucitron.job || [];
+        tarteaucitron.job.push('gtag');
+
+        tarteaucitron.services.gtag = {
+            "key": "gtag",
+            "type": "analytic",
+            "name": "Google Analytics 4",
+            "uri": "https://policies.google.com/privacy",
+            "needConsent": true,
+            "cookies": ['_ga', '_ga_' + 'XXR4PZVBJ8'], // remplace XXXX par le suffixe de ton ID GA4
+
+            "js": function () {
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                gtag('js', new Date());
+                gtag('config', 'G-XXR4PZVBJ8'); // Ton propre ID ici
+
+                const gtagScript = document.createElement('script');
+                gtagScript.async = true;
+                gtagScript.src = 'https://www.googletagmanager.com/gtag/js?id=G-XXR4PZVBJ8';
+                document.head.appendChild(gtagScript);
+            },
+
+            "fallback": function () {
+                // Pas besoin de fallback particulier ici
+            }
+        };
+
+    </script>
 
 
 </head>
