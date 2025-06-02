@@ -18,16 +18,14 @@ class Category
     #[ORM\Column(length: 255)]
     private ?string $name = null;
 
-
-    #[ORM\ManyToOne(inversedBy: 'categories')]
-    #[ORM\JoinColumn(nullable: false)]
-    private ?User $owner = null;
-
     /**
      * @var Collection<int, Module>
      */
     #[ORM\ManyToMany(targetEntity: Module::class, mappedBy: 'categories')]
     private Collection $modules;
+
+    #[ORM\ManyToOne(inversedBy: 'categories')]
+    private ?School $school = null;
 
 
     public function __construct()
@@ -87,6 +85,18 @@ class Category
         if ($this->modules->removeElement($module)) {
             $module->removeCategory($this);
         }
+
+        return $this;
+    }
+
+    public function getSchool(): ?School
+    {
+        return $this->school;
+    }
+
+    public function setSchool(?School $school): static
+    {
+        $this->school = $school;
 
         return $this;
     }

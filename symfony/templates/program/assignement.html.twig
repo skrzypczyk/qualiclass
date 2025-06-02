@@ -52,6 +52,9 @@
                             <td class="sticky left-0 z-10 bg-white px-4 py-2 font-medium whitespace-nowrap border border-gray-200">
                                 {{ module.title }} {{  module.isArchived ? '(Archivé)' :'' }}<br>
                                 <small>{{ module.duration }} min – {{ module.credit }} ECTS</small>
+                                {% if module.isShared %}
+                                    <br><small class="text-red-500">Module partagé</small>
+                                {% endif %}
                             </td>
                             {% for diploma in program.diplomas %}
                                 {% for competence in diploma.competences %}

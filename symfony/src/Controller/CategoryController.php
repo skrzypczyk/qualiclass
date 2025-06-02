@@ -19,10 +19,11 @@ final class CategoryController extends AbstractController
     {
         $create = false;
         $user = $this->getUser();
+        $school = $user->getSchool();
         if (is_null($category)){
             $category = new Category();
             $create = true;
-        }else if ($category->getOwner() !== $user)
+        }else if ($category->getSchool() !== $school)
         {
             $this->addFlash('error', 'Vous ne pouvez pas modifier cette catégorie !');
             return $this->redirectToRoute('app_category');
@@ -31,7 +32,7 @@ final class CategoryController extends AbstractController
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
             $category = $form->getData();
-            $category->setOwner($user);
+            $category->setSchool($school);
             $em->persist($category);
             $em->flush();
             $this->addFlash('success', ($create ? 'Catégorie créée avec succès !' : 'Catégorie modifiée avec succès !'));
@@ -40,7 +41,7 @@ final class CategoryController extends AbstractController
         return $this->render('category/index.html.twig', [
             'form' => $form->createView(),
             'category' => $category,
-            'categories' => $user->getCategories(),
+            'categories' => $school->getCategories(),
             'create' => $create,
         ]);
     }

@@ -80,6 +80,15 @@
                             Titre {% if sort == 'm.title' %}{{ direction == 'asc' ? '↑' : '↓' }}{% endif %}
                         </a>
                     </th>
+
+                    {% if app.user.isAdmin() %}
+                        <th class="px-6 py-3 text-left">
+                            <a href="{{ path(app.request.attributes.get('_route'), app.request.query.all | merge({'sort': 'm.isShared', 'direction': sort == 'm.isShared' ? dir : 'asc'})) }}">
+                                Partagé {% if sort == 'm.isShared' %}{{ direction == 'asc' ? '↑' : '↓' }}{% endif %}
+                            </a>
+                        </th>
+                    {% endif %}
+
                     <th class="px-6 py-3 text-left">
                         <a href="{{ path(app.request.attributes.get('_route'), app.request.query.all | merge({'sort': 'm.duration', 'direction': sort == 'm.duration' ? dir : 'asc'})) }}">
                             Durée {% if sort == 'm.duration' %}{{ direction == 'asc' ? '↑' : '↓' }}{% endif %}
@@ -107,6 +116,12 @@
                                 </small>
                             {% endif %} </td>
 
+                        {% if app.user.isAdmin() %}
+                            <td class="px-6 py-4 font-medium">
+                                    {{ module.isShared() ? '✅' : '' }}
+                            </td>
+                        {% endif %}
+
                         <td class="px-6 py-4 font-medium text-center">{{ module.duration }} min</td>
                         <td class="px-6 py-4 font-medium text-center">{{ module.credit }}</td>
 
@@ -124,15 +139,20 @@
                                 Modifier
                             </a>
 
-                            <a href="{{ path('app_module_archive', {'id': module.id}) }}"
-                               class="link-primary">
-                                {% if module.isArchived() %}Restaurer{% else %}Archiver{% endif %}
-                            </a>
+                            <form method="post"
+                                  action="{{ path('app_module_archive', {'id': module.id}) }}"
+                                  class="inline-block" data-turbo="false">
+                                <input type="hidden" name="_token" value="{{ csrf_token('toggle_archived_' ~ module.id) }}">
+                                <button type="submit" class="link-primary">
+                                    {% if module.isArchived() %}Restaurer{% else %}Archiver{% endif %}
+                                </button>
+                            </form>
 
                             <button
                                     type="button"
                                     @click="modalModuleId = '{{ module.id }}'; showModal2 = true;"
                                     class="link-primary"
+                                    data-turbo="false"
                             >
                                 Dupliquer
                             </button>

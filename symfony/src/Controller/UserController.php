@@ -29,15 +29,16 @@ final class UserController extends AbstractController
         ResetPasswordHelperInterface $resetPasswordHelper,
         MailerInterface $mailer): Response
     {
-        $subscription = $this->getUser()->getLastSubscription();
-        $limitUsers = $this->getUser()->getLimitUsers() ?? $subscription->getLimitUsers(true);
+        $school = $this->getUser()->getSchool();
+        $subscription = $school->getLastSubscription();
+        $limitUsers = $school->getLimitUsers() ?? (empty($subscription)?0:$subscription->getLimitUsers(true));
 
         $isNewUser = false;
         if (is_null($user)) {
             $user = new User();
             $isNewUser = true;
         }else {
-            if ($user->getOwner() !== $this->getUser()) {
+            if ($user->getSchool() !== $this->getUser()->getSchool()) {
                 $this->addFlash('error', 'Vous ne pouvez pas modifier cet utilisateur.');
                 return $this->redirectToRoute('app_user');
             }
@@ -48,7 +49,7 @@ final class UserController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             /** @var User $user */
             $user = $form->getData();
-            $user->setOwner($this->getUser());
+            $user->setSchool($school);
             $user->setIsVerified(true);
             $user->setPassword(password_hash($user->getPassword(), PASSWORD_BCRYPT));
             $user->setRoles(['ROLE_USER']);
@@ -82,22 +83,23 @@ final class UserController extends AbstractController
             'form' => $form->createView(),
             'limitUsers'=>$limitUsers,
             'subscription' => $subscription,
-            'user'=>$user,
-            'userConnected'=>$this->getUser(),
+            'user'=>$this->getUser(),
+            'isNewUser' => $isNewUser,
         ]);
     }
 
     #[Route('/status/{id}', name: 'user_status')]
     public function status(User $user, EntityManagerInterface $em): Response
     {
-        if($user->getOwner() !== $this->getUser()) {
+        $school = $user->getSchool();
+        if ($school !== $this->getUser()->getSchool()) {
             $this->addFlash('error', 'Vous ne pouvez pas modifier cet utilisateur.');
             return $this->redirectToRoute('app_user');
         }
 
-        $subscription = $this->getUser()->getLastSubscription();
+        $subscription = $school->getLastSubscription();
         $limitUsers = $this->getUser()->getLimitUsers() ?? $subscription->getLimitUsers(true);
-        $users = $this->getUser()->getUsers(true);
+        $users = $school->getUsers();
 
         if ($user->isDisable()) {
             if (count($users) >= $limitUsers) {
@@ -105,7 +107,6 @@ final class UserController extends AbstractController
                 return $this->redirectToRoute('app_user');
             }
         }
-
 
         $user->setIsDisable(!$user->isDisable());
         $em->persist($user);
@@ -118,7 +119,7 @@ final class UserController extends AbstractController
     #[Route('/delete/{id}', name: 'user_delete')]
     public function delete(User $user, EntityManagerInterface $em): Response
     {
-        if($user->getOwner() !== $this->getUser()) {
+        if ($user->getSchool() !== $this->getUser()->getSchool()) {
             $this->addFlash('error', 'Vous ne pouvez pas supprimer cet utilisateur.');
             return $this->redirectToRoute('app_user');
         }

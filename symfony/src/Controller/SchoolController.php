@@ -16,24 +16,26 @@ final class SchoolController extends AbstractController
     public function index(Request $request, EntityManagerInterface $em): Response
     {
         $user = $this->getUser();
-        $form = $this->createForm(SchoolType::class, $user);
+        $school = $user->getSchool();
+        $form = $this->createForm(SchoolType::class, $school);
         $form->handleRequest($request);
+
         if ($form->isSubmitted() && $form->isValid()) {
-            $user = $form->getData();
-            $schoolImg = $form->get('schoolImg')->getData();
+            $school = $form->getData();
+            $schoolImg = $form->get('img')->getData();
             if ($schoolImg) {
                 $fileName = uniqid() . '.' . $schoolImg->guessExtension();
                 $schoolImg->move($this->getParameter('school_directory'), $fileName);
-                $user->setSchoolImg($fileName);
+                $school->setImg($fileName);
             }
 
-            $em->persist($user);
+            $em->persist($school);
             $em->flush();
 
             $this->addFlash('success', 'Les informations de l\'école ont été mises à jour avec succès.');
         }
         return $this->render('school/index.html.twig', [
-            'user' => $user,
+            'school' => $school,
             'form' => $form->createView(),
         ]);
     }

@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\School;
 use App\Entity\User;
 use App\Form\RegistrationFormType;
 use App\Security\EmailVerifier;
@@ -36,7 +37,9 @@ class RegistrationController extends AbstractController
             // encode the plain password
             $user->setPassword($userPasswordHasher->hashPassword($user, $plainPassword));
             $user->setRoles(['ROLE_ADMIN']);
-
+            $school = new School();
+            $school->setName("Etablissement sans nom");
+            $user->setSchool($school);
             $entityManager->persist($user);
             $entityManager->flush();
 

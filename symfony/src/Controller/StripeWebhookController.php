@@ -130,7 +130,7 @@ class StripeWebhookController extends AbstractController
         EntityManagerInterface $em,
         string $stripeSubId,
         string $customerId,
-                               $user,
+        User $user,
         array $limits
     ): AppSubscription {
         $subscription = $em->getRepository(AppSubscription::class)->findOneBy([
@@ -141,7 +141,7 @@ class StripeWebhookController extends AbstractController
             $subscription = new AppSubscription();
             $subscription->setStripeSubscriptionId($stripeSubId);
             $subscription->setStripeCustomerId($customerId);
-            $subscription->setOwner($user);
+            $subscription->setSchool($user->getSchool());
         }
 
         $subscription->setLimitUsers($limits['user']);
@@ -154,8 +154,8 @@ class StripeWebhookController extends AbstractController
     function adjustLimits(\App\Entity\Subscription $subscription, User $user, EntityManagerInterface $em): void
     {
 
-        $limitUsers = $user->getLimitUsers() ?? $subscription->getLimitUsers(true);
-        $users = $user->getUsers(true)->toArray(); // true = toutes les écoles, actives ou non
+        $limitUsers = $user->getSchool()->getLimitUsers() ?? $subscription->getLimitUsers(true);
+        $users = $user->getSchool()->getUsers(true)->toArray(); // true = toutes les écoles, actives ou non
 
         if (count($users) > $limitUsers) {
             // On trie pour garder les plus anciennes actives

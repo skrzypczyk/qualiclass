@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Category;
+use App\Entity\School;
 use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
@@ -17,15 +18,11 @@ class CategoryRepository extends ServiceEntityRepository
         parent::__construct($registry, Category::class);
     }
 
-    public function findByOwnerOrSelf(User $user): array
+    public function findByOwnerOrSelf(School $school): array
     {
         $qb = $this->createQueryBuilder('c')
-            ->leftJoin('c.owner', 'o')
-            ->where('c.owner = :user')
-            ->orWhere('c.owner = :owner')
-            ->setParameter('user', $user)
-            ->setParameter('owner', $user->getOwner());
-
+            ->where('c.school = :school')
+            ->setParameter('school', $school);
         return $qb->getQuery()->getResult();
     }
 

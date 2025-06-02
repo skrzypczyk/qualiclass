@@ -18,10 +18,15 @@ class UserEditAdminType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
+        $isFreeAccount = $options['isFreeAccount'] ?? false;
+        $limitUsers = $options['limitUsers'] ?? null;
+
         $builder
             ->add('isFreeAccount', CheckboxType::class, [
                 'label' => 'Compte gratuit',
+                'data' => $isFreeAccount,
                 'required' => false,
+                'mapped' => false,
             ])
             ->add('email', EmailType::class, [
                 'label' => 'Adresse email',
@@ -57,6 +62,8 @@ class UserEditAdminType extends AbstractType
             ->add('limitUsers', IntegerType::class, [
                 'label' => 'Surcharge du nombre d\'utilisateurs',
                 'required' => false,
+                'data' => $limitUsers,
+                'mapped' => false,
             ]);
     }
 
@@ -64,6 +71,8 @@ class UserEditAdminType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => User::class,
+            'isFreeAccount' => false, // pour le champ isFreeAccount
+            'limitUsers' => null, // pour le champ limitUsers
         ]);
     }
 }

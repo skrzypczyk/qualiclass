@@ -56,7 +56,7 @@ final class SubscriptionController extends AbstractController
         Subscription $subscription,
         EntityManagerInterface $em
     ): Response {
-        if ($this->getUser() !== $subscription->getOwner()) {
+        if ($this->getUser()->getSchool() !== $subscription->getSchool()) {
             throw $this->createAccessDeniedException('Vous n\'êtes pas autorisé à modifier cet abonnement.');
         }
 
@@ -213,7 +213,7 @@ final class SubscriptionController extends AbstractController
         /** @var \App\Entity\User $user */
         $user = $this->getUser();
 
-        $subscriptions = $user->getSubscriptions(); // ou $em->getRepository(Invoice::class)->findBy(['owner' => $user])
+        $subscriptions = $user->getSchool()->getSubscriptions(); // ou $em->getRepository(Invoice::class)->findBy(['owner' => $user])
 
         return $this->render('subscription/show.html.twig', [
             'user' => $user,
@@ -224,7 +224,7 @@ final class SubscriptionController extends AbstractController
     #[Route('/unsubscribe/{id}', name: 'app_unsubscribe', methods: ['POST'])]
     public function unsubscribe(EntityManagerInterface $em, Subscription $subscription): Response
     {
-        if ($this->getUser() !== $subscription->getOwner()) {
+        if ($this->getUser()->getSchool() !== $subscription->getSchool()) {
             throw $this->createAccessDeniedException('Vous n\'êtes pas autorisé à modifier cet abonnement.');
         }
 

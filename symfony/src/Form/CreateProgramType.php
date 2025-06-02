@@ -72,13 +72,12 @@ class CreateProgramType extends AbstractType
                 'class' => 'App\Entity\User',
                 'query_builder' => function (\Doctrine\ORM\EntityRepository $er) use ($user) {
                     return $er->createQueryBuilder('u')
-                        ->where('u.id = :userId')
-                        ->setParameter('userId', $user ? $user->getId() : null)
+                        ->where('u.school = :school')
+                        ->setParameter('school', $user->getSchool())
                         ->orderBy('u.email', 'ASC');
                 },
                 'choice_label' => 'email',
                 'label' => 'Propriétaire',
-                'required' => false,
             ])
         ;
     }

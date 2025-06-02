@@ -58,9 +58,10 @@
             <hr>
             <h2 class="text-lg font-semibold text-[#142742] mt-6 mb-4">Dernier contrat valide</h2>
 
-            {% set lastSubscription = user.getLastSubscription() %}
+            {% set school = user.getSchool() %}
+            {% set lastSubscription = school.getLastSubscription() %}
             {% if lastSubscription %}
-                {% set invoice = user.getLastInvoiceValid() %}
+                {% set invoice = school.getLastInvoiceValid() %}
 
                 <div class="bg-gray-50 border rounded p-4 space-y-2 text-sm text-gray-700">
                     <p><span class="font-medium">Date de paiement :</span> {{ invoice.paidAt|date('d/m/Y') }}</p>

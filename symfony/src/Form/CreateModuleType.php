@@ -9,6 +9,7 @@ use App\Form\Type\TrixType;
 use Doctrine\ORM\EntityRepository;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -27,6 +28,13 @@ class CreateModuleType extends AbstractType
                     'class' => 'form-control',
                 ],
             ])
+            ->add('isShared', CheckboxType::class, [
+                'label' => 'Module partagé',
+                'required' => false,
+                'attr' => [
+                    'class' => 'form-check-input',
+                ],
+            ])
             ->add('owner', EntityType::class, [
                 'class' => User::class,
                 'choice_label' => function (User $user) {
@@ -39,10 +47,9 @@ class CreateModuleType extends AbstractType
                 ],
                 'query_builder' => function (EntityRepository $er) use ($user) {
                     return $er->createQueryBuilder('u')
-                        ->where('u.owner = :owner')
+                        ->where('u.school = :school')
                         ->andWhere('u.isDisable = false OR u.isDisable IS NULL')
-                        ->orWhere('u.id = :owner')
-                        ->setParameter('owner', $user)
+                        ->setParameter('school', $user->getSchool())
                         ->orderBy('u.email', 'ASC');
                 }
             ])
@@ -87,22 +94,16 @@ class CreateModuleType extends AbstractType
                 'choice_label' => 'name',
                 'query_builder' => function (EntityRepository $er) use ($user) {
                     return $er->createQueryBuilder('c')
-                        ->leftJoin('c.school', 's')
-                        ->leftJoin('s.users', 'u')
-                        ->where('u = :user')
-                        ->setParameter('user', $user)
-                        ->orderBy('s.name', 'ASC')
-                        ->addOrderBy('c.name', 'ASC');
+                        ->where('c.school = :school')
+                        ->setParameter('school', $user->getSchool())
+                        ->orderBy('c.name', 'ASC');
                 },
                 'label' => 'Catégories',
                 'attr' => [
                     'placeholder' => 'Catégories du module',
                     'class' => 'form-control',
                 ],
-                'multiple' => true,
-                'group_by' => function ($category) {
-                    return $category->getSchool() ? $category->getSchool()->getName() : 'Sans école';
-                },
+                'multiple' => true
             ])
         ;
     }

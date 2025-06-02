@@ -22,6 +22,7 @@ final class ModuleController extends AbstractController
     {
 
         $user = $this->getUser();
+        $school = $user->getSchool();
 
         $search = $request->query->get('search');
         $categoryId = $request->query->get('category');
@@ -31,13 +32,15 @@ final class ModuleController extends AbstractController
         $archived = $request->query->get('archived', false);
 
         $queryBuilder = $moduleRepository->createQueryBuilder('m')
-            ->leftJoin('m.owner', 'u') // relation entre Module et User
-            ->leftJoin('m.affectations', 'a') // relation entre Module et ModuleCompetenceAffectation
-            ->leftJoin('a.program', 'p') // relation entre ModuleCompetenceAffectation et Competence
-            ->where('u = :user')
-            ->orWhere('u IN (:ledUsers)')
-            ->setParameter('user', $user)
-            ->setParameter('ledUsers', $user->getUsers());
+            ->leftJoin('m.owner', 'u');
+
+        if (in_array("ROLE_ADMIN", $this->getUser()->getRoles())){
+            $queryBuilder->andWhere('u.school = :school')
+                ->setParameter('school', $school);
+        }else{
+            $queryBuilder->andWhere('u = :user')
+                ->setParameter('user', $user);
+        }
 
         if ($archived == '0') {
             $queryBuilder->andWhere('m.isArchived = :archived or m.isArchived IS NULL')
@@ -64,7 +67,7 @@ final class ModuleController extends AbstractController
             $limit
         );
 
-        $categories = $categoryRepository->findByOwnerOrSelf($user);
+        $categories = $categoryRepository->findByOwnerOrSelf($school);
 
         return $this->render('module/index.html.twig', [
             'modules' => $pagination,
@@ -82,7 +85,10 @@ final class ModuleController extends AbstractController
     #[Route('/module/edit/{id}', name: 'app_module_edit')]
     public function createEdit(Request $request, EntityManagerInterface $em, Module $module = null, ModuleRepository $moduleRepository): Response
     {
-        if ($module && !$moduleRepository->userCanAccessModule($this->getUser(), $module)) {
+        if ($module && $module->getOwner() !== $this->getUser()
+            && (!in_array("ROLE_ADMIN", $this->getUser()->getRoles())
+                || $module->getOwner()->getSchool() !== $this->getUser()->getSchool())
+        ){
             $this->addFlash('error', 'Vous ne pouvez pas modifier ce module.');
             return $this->redirectToRoute('app_module');
         }
@@ -101,6 +107,7 @@ final class ModuleController extends AbstractController
 
         if(!in_array("ROLE_ADMIN", $this->getUser()->getRoles())){
             $form->remove('owner');
+            $form->remove('isShared');
         }
 
         $form->handleRequest($request);
@@ -122,7 +129,10 @@ final class ModuleController extends AbstractController
     #[Route('/module/delete/{id}', name: 'app_module_delete')]
     public function delete(Module $module, EntityManagerInterface $em): Response
     {
-        if($module->getOwner() !== $this->getUser()) {
+        if($module->getOwner() !== $this->getUser()
+            && (!in_array("ROLE_ADMIN", $this->getUser()->getRoles())
+                || $module->getOwner()->getSchool() !== $this->getUser()->getSchool())
+        ) {
             $this->addFlash('error', 'Vous ne pouvez pas supprimer ce module.');
             return $this->redirectToRoute('app_module');
         }
@@ -142,7 +152,10 @@ final class ModuleController extends AbstractController
     #[Route('/module/duplicate/{id}', name: 'app_module_duplicate')]
     public function duplicate(Module $module, EntityManagerInterface $em): Response
     {
-        if($module->getOwner() !== $this->getUser()) {
+        if($module->getOwner() !== $this->getUser()
+            && (!in_array("ROLE_ADMIN", $this->getUser()->getRoles())
+                || $module->getOwner()->getSchool() !== $this->getUser()->getSchool())
+        ) {
             $this->addFlash('error', 'Vous ne pouvez pas dupliquer ce module.');
             return $this->redirectToRoute('app_module');
         }
@@ -160,7 +173,10 @@ final class ModuleController extends AbstractController
     #[Route('/module/archive/{id}', name: 'app_module_archive')]
     public function archive(Module $module, EntityManagerInterface $em): Response
     {
-        if($module->getOwner() !== $this->getUser()) {
+        if($module->getOwner() !== $this->getUser()
+            && (!in_array("ROLE_ADMIN", $this->getUser()->getRoles())
+                || $module->getOwner()->getSchool() !== $this->getUser()->getSchool())
+        ) {
             $this->addFlash('error', 'Vous ne pouvez pas archiver ce module.');
             return $this->redirectToRoute('app_module');
         }

@@ -51,6 +51,9 @@ class Module
     #[ORM\OneToMany(mappedBy: 'module', targetEntity: ModuleCompetenceAffectation::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $affectations;
 
+    #[ORM\Column(nullable: true)]
+    private ?bool $isShared = null;
+
 
 
     public function __construct()
@@ -211,6 +214,18 @@ class Module
                 $affectation->setProgram(null);
             }
         }
+
+        return $this;
+    }
+
+    public function isShared(): ?bool
+    {
+        return $this->isShared;
+    }
+
+    public function setIsShared(?bool $isShared): static
+    {
+        $this->isShared = $isShared;
 
         return $this;
     }

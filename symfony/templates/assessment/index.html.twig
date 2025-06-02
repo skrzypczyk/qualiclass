@@ -66,7 +66,7 @@
                 {% for assessment in assessments|sort((a, b) => a.name <=> b.name) %}
                     <tr class="transition">
                         <td class="px-6 py-4 font-medium">{{ assessment.name }}</td>
-                        <td class="px-6 py-4 font-medium">{{ assessment.description }}</td>
+                        <td class="px-6 py-4 font-medium">{{ assessment.description|raw }}</td>
                         <td class="px-6 py-4 space-x-4">
 
                             <a href="{{ path('app_edit_assessment', {'id': assessment.id}) }}"

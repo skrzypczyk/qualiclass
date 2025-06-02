@@ -8,6 +8,7 @@ use App\Entity\Module;
 use App\Entity\ModuleCompetenceAffectation;
 use App\Entity\Program;
 use App\Form\CreateProgramType;
+use App\Repository\ModuleRepository;
 use App\Repository\ProgramRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Dompdf\Dompdf;
@@ -24,8 +25,11 @@ final class ProgramController extends AbstractController
     #[Route('/program', name: 'app_program')]
     public function index(ProgramRepository $programRepository): Response
     {
-        $programs = $programRepository->findAllForUserAndLeads($this->getUser());
-
+        if (in_array("ROLE_ADMIN", $this->getUser()->getRoles())){
+            $programs = $programRepository->findBySchool($this->getUser()->getSchool());
+        }else{
+            $programs = $this->getUser()->getPrograms();
+        }
         return $this->render('program/index.html.twig', [
             'controller_name' => 'ProgramController',
             'programs' => $programs,
@@ -36,8 +40,12 @@ final class ProgramController extends AbstractController
     #[Route('/program/edit/{id}', name: 'app_program_edit')]
     public function createEdit(Request $request, EntityManagerInterface $em, Program $program = null, ProgramRepository $programRepository): Response
     {
-        if ($program && !$programRepository->userCanAccessModule($this->getUser(), $program)) {
-            $this->addFlash('error', 'Vous ne pouvez pas modifier ce module.');
+        if($program
+            && $program->getOwner() !== $this->getUser()
+            && (!in_array("ROLE_ADMIN", $this->getUser()->getRoles())
+            || $program->getOwner()->getSchool() !== $this->getUser()->getSchool())
+        ) {
+            $this->addFlash('error', 'Vous ne pouvez pas modifier ce programme.');
             return $this->redirectToRoute('app_program');
         }
 
@@ -74,7 +82,10 @@ final class ProgramController extends AbstractController
     #[Route('/program/show/{id}', name: 'app_program_show')]
     public function show(Program $program, EntityManagerInterface $em): Response
     {
-        if($program->getOwner() !== $this->getUser() && $program->getOwner()->getOwner() !== $this->getUser() ) {
+        if($program->getOwner() !== $this->getUser()
+            && (!in_array("ROLE_ADMIN", $this->getUser()->getRoles())
+                || $program->getOwner()->getSchool() !== $this->getUser()->getSchool())
+        ) {
             $this->addFlash('error', 'Vous ne pouvez pas visualiser ce programme.');
             return $this->redirectToRoute('app_program');
         }
@@ -89,17 +100,12 @@ final class ProgramController extends AbstractController
     #[Route('/program/{program}/diploma/{diploma}', name: 'app_program_diploma_show')]
     public function showByDiploma(Program $program, Diploma $diploma, EntityManagerInterface $em, Request $request, Environment $twig): Response
     {
-        if (
-            $program->getOwner() !== $this->getUser()
-            && $program->getOwner()->getOwner() !== $this->getUser()
+        if($program->getOwner() !== $this->getUser()
+            && (!in_array("ROLE_ADMIN", $this->getUser()->getRoles())
+                || $program->getOwner()->getSchool() !== $this->getUser()->getSchool())
         ) {
             $this->addFlash('error', 'Vous ne pouvez pas visualiser ce programme.');
             return $this->redirectToRoute('app_program');
-        }
-
-        $user = $this->getUser();
-        if($user->getOwner() !== null) {
-            $user = $user->getOwner();
         }
 
         $moduleByCompetence = [];
@@ -141,7 +147,7 @@ final class ProgramController extends AbstractController
             'duration' => $duration,
             'credit' => $credit,
             'moduleByCompetence' => $moduleByCompetence,
-            'user' => $user,
+            'user' => $this->getUser(),
         ];
 
         // Mode PDF ?
@@ -179,7 +185,10 @@ final class ProgramController extends AbstractController
     #[Route('/program/delete/{id}', name: 'app_program_delete')]
     public function delete(Program $program, EntityManagerInterface $em): Response
     {
-        if($program->getOwner() !== $this->getUser()) {
+        if($program->getOwner() !== $this->getUser()
+            && (!in_array("ROLE_ADMIN", $this->getUser()->getRoles())
+                || $program->getOwner()->getSchool() !== $this->getUser()->getSchool())
+        ) {
             $this->addFlash('error', 'Vous ne pouvez pas supprimer ce programme.');
             return $this->redirectToRoute('app_program');
         }
@@ -194,7 +203,10 @@ final class ProgramController extends AbstractController
     #[Route('/program/duplicate/{id}', name: 'app_program_duplicate')]
     public function duplicate(Program $program, EntityManagerInterface $em): Response
     {
-        if ($program->getOwner() !== $this->getUser()) {
+        if($program->getOwner() !== $this->getUser()
+            && (!in_array("ROLE_ADMIN", $this->getUser()->getRoles())
+                || $program->getOwner()->getSchool() !== $this->getUser()->getSchool())
+        ) {
             $this->addFlash('error', 'Vous ne pouvez pas dupliquer ce programme.');
             return $this->redirectToRoute('app_program');
         }
@@ -224,11 +236,14 @@ final class ProgramController extends AbstractController
 
 
     #[Route('/program/assignment/{id}', name: 'app_program_assignment')]
-    public function assignment(Request $request, Program $program, EntityManagerInterface $em): Response
+    public function assignment(Request $request, Program $program, EntityManagerInterface $em, ModuleRepository $moduleRepository): Response
     {
         $user = $this->getUser();
 
-        if ($program->getOwner() !== $user) {
+        if($program->getOwner() !== $user
+            && (!in_array("ROLE_ADMIN", $this->getUser()->getRoles())
+                || $program->getOwner()->getSchool() !== $this->getUser()->getSchool())
+        ) {
             $this->addFlash('error', 'Vous ne pouvez pas éditer ce programme.');
             return $this->redirectToRoute('app_program');
         }
@@ -275,7 +290,8 @@ final class ProgramController extends AbstractController
         }
 
         // 3. Tri personnalisé des modules
-        $modules = $user->getModules()->toArray();
+        //$modules = $user->getModules()->toArray();
+        $modules = $moduleRepository->getModulesWithSharedAccess($user);
 
         $affectedModuleIds = array_keys($existingMapping);
 

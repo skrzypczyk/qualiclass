@@ -22,10 +22,6 @@ class Diploma
     #[ORM\Column(length: 255)]
     private ?string $RNCP = null;
 
-    #[ORM\ManyToOne(inversedBy: 'diplomas')]
-    #[ORM\JoinColumn(nullable: false)]
-    private ?User $owner = null;
-
     /**
      * @var Collection<int, Competence>
      */
@@ -40,6 +36,9 @@ class Diploma
      */
     #[ORM\ManyToMany(targetEntity: Program::class, mappedBy: 'diplomas')]
     private Collection $programs;
+
+    #[ORM\ManyToOne(inversedBy: 'diplomas')]
+    private ?School $school = null;
 
     public function __construct()
     {
@@ -72,18 +71,6 @@ class Diploma
     public function setRNCP(string $RNCP): static
     {
         $this->RNCP = $RNCP;
-
-        return $this;
-    }
-
-    public function getOwner(): ?User
-    {
-        return $this->owner;
-    }
-
-    public function setOwner(?User $owner): static
-    {
-        $this->owner = $owner;
 
         return $this;
     }
@@ -154,6 +141,18 @@ class Diploma
         if ($this->programs->removeElement($program)) {
             $program->removeDiploma($this);
         }
+
+        return $this;
+    }
+
+    public function getSchool(): ?School
+    {
+        return $this->school;
+    }
+
+    public function setSchool(?School $school): static
+    {
+        $this->school = $school;
 
         return $this;
     }

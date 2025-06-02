@@ -14,10 +14,6 @@ class Subscription
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
-
-    #[ORM\ManyToOne(inversedBy: 'subscriptions')]
-    private ?User $owner = null;
-
     #[ORM\Column(length: 255)]
     private ?string $stripeSubscriptionId = null;
 
@@ -36,6 +32,9 @@ class Subscription
     #[ORM\Column(nullable: true)]
     private ?bool $isUnsubscribed = null;
 
+    #[ORM\ManyToOne(inversedBy: 'subscriptions')]
+    private ?School $school = null;
+
     public function __construct()
     {
         $this->invoices = new ArrayCollection();
@@ -46,17 +45,6 @@ class Subscription
         return $this->id;
     }
 
-    public function getOwner(): ?User
-    {
-        return $this->owner;
-    }
-
-    public function setOwner(?User $owner): static
-    {
-        $this->owner = $owner;
-
-        return $this;
-    }
 
     public function getStripeSubscriptionId(): ?string
     {
@@ -157,6 +145,18 @@ class Subscription
     public function setIsUnsubscribed(?bool $isUnsubscribed): static
     {
         $this->isUnsubscribed = $isUnsubscribed;
+
+        return $this;
+    }
+
+    public function getSchool(): ?School
+    {
+        return $this->school;
+    }
+
+    public function setSchool(?School $school): static
+    {
+        $this->school = $school;
 
         return $this;
     }

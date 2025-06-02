@@ -39,17 +39,24 @@ final class AdministrationController extends AbstractController
         EntityManagerInterface $em,
         UserPasswordHasherInterface $passwordHasher
     ): Response {
-        $form = $this->createForm(UserEditAdminType::class, $user);
+
+        $school = $this->getUser()->getSchool();
+        $form = $this->createForm(UserEditAdminType::class, $user, [
+            'isFreeAccount' => $school->isFreeAccount(),
+            'limitUsers' => $school->getLimitUsers(),
+        ]);
+
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            // Si un mot de passe a été saisi, on le hashe
             $plainPassword = $form->get('password')->getData();
             if (!empty($plainPassword)) {
                 $user->setPassword(
                     $passwordHasher->hashPassword($user, $plainPassword)
                 );
             }
+            $school->setLimitUsers($form->get('limitUsers')->getData());
+            $school->setIsFreeAccount($form->get('isFreeAccount')->getData());
 
             $em->flush();
             $this->addFlash('success', 'Utilisateur mis à jour.');

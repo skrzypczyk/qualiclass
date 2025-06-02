@@ -8,14 +8,14 @@
         }
 
         @font-face {
-            font-family: '{{ user.getSchoolTypo }}';
-            src: url('fonts/{{ user.getSchoolTypo }}.ttf') format('truetype');
+            font-family: '{{ user.school.typo }}';
+            src: url('fonts/{{ user.school.typo }}.ttf') format('truetype');
         }
 
         body {
-            font-family: '{{ user.getSchoolTypo }}';
+            font-family: '{{ user.school.typo }}';
             font-size: 16px;
-            color: {{ user.getSchoolSecondaryColor ?? '#000' }};
+            color: {{ user.school.secondaryColor ?? '#000' }};
         }
 
         header {
@@ -67,7 +67,7 @@
     </style>
 </head>
 <body>
-{% set logo = user.getSchoolImg ? 'uploads/schools/'~user.getSchoolImg: 'images/logo-qualiclass.png' %}
+{% set logo = user.school.img ? 'uploads/schools/'~user.school.img: 'images/logo-qualiclass.png' %}
 
 <div style="page-break-after: always; padding: 50px; height: 820px; text-align: center;background-color: {{ user.getSchoolPrimaryColor ?? '#fff' }}">
     <img src="{{ logo }}" alt="Page de garde" style="width: 40%; height: auto; margin: auto">
@@ -83,7 +83,7 @@
         {{ program.year }} année
     </h2>
 
-    <img src="images/logo-qualiclass.png" alt="Qualiclass" style="width: 15%; height: auto; margin: auto; margin-top: 160px;">
+    <img src="images/logo-qualiclass.png" alt="Qualiclass" style="width: 14%;  position: absolute; bottom: 10px; left: 43%">
 
 </div>
 

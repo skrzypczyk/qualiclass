@@ -17,12 +17,12 @@ final class AssessmentController extends AbstractController
     #[Route('/edit/{id}', name: 'app_edit_assessment')]
     public function index( Request $request, EntityManagerInterface $em, Assessment $assessment = null): Response
     {
-
+        $school = $this->getUser()->getSchool();
         $create = false;
         if(!$assessment){
             $assessment = new Assessment();
             $create = true;
-        }else if($assessment->getOwner() !== $this->getUser()) {
+        }else if($assessment->getSchool() !== $school) {
             $this->addFlash('error', 'Vous ne pouvez pas modifier cette évaluation.');
             return $this->redirectToRoute('app_assessment');
         }
@@ -32,7 +32,7 @@ final class AssessmentController extends AbstractController
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
             $assessment = $form->getData();
-            $assessment->setOwner($this->getUser());
+            $assessment->setSchool($school);
             $em->persist($assessment);
             $em->flush();
             $this->addFlash('success', 'Evalution enregistrée avec succès !');
@@ -42,7 +42,7 @@ final class AssessmentController extends AbstractController
         return $this->render('assessment/index.html.twig', [
             'create' => $create,
             'form' => $form->createView(),
-            'assessments'=>$this->getUser()->getAssessments(),
+            'assessments'=>$school->getAssessments(),
         ]);
     }
 
@@ -51,7 +51,8 @@ final class AssessmentController extends AbstractController
     #[Route('/delete/{id}', name: 'assessment_delete')]
     public function delete(Assessment $assessment, EntityManagerInterface $em): Response
     {
-        if($assessment->getOwner() !== $this->getUser()) {
+        $school = $this->getUser()->getSchool();
+        if($assessment->getSchool() !== $school) {
             $this->addFlash('error', 'Vous ne pouvez pas supprimer cette évaluation.');
             return $this->redirectToRoute('app_assessment');
         }

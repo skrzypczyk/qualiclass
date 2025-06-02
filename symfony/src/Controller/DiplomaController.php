@@ -21,7 +21,7 @@ final class DiplomaController extends AbstractController
     #[Route('/diploma', name: 'app_diploma')]
     public function index(): Response
     {
-        $diplomas = $this->getUser()->getDiplomas();
+        $diplomas = $this->getUser()->getSchool()->getDiplomas();
         return $this->render('diploma/index.html.twig', [
             'controller_name' => 'DiplomaController',
             'diplomas' => $diplomas,
@@ -150,7 +150,7 @@ final class DiplomaController extends AbstractController
             $content .= "<h1><b>".trim($summary['title']) ."</b></h1> ".trim($summary['text']) ."<br>";
         }
         $diploma->setContent($content);
-        $diploma->setOwner($this->getUser());
+        $diploma->setSchool($this->getUser()->getSchool());
         foreach ($data['competences'] as $competenceData) {
             $competence = new Competence();
             $titleExploded = explode(' - ', $competenceData['title']);
@@ -173,12 +173,13 @@ final class DiplomaController extends AbstractController
     public function createEdit(Request $request, EntityManagerInterface $em, Diploma $diploma = null, DiplomaRepository $diplomaRepository): Response
     {
         $create = false;
+        $school = $this->getUser()->getSchool();
         if ($diploma === null) {
             $create = true;
             $diploma = new Diploma();
-            $diploma->setOwner($this->getUser());
+            $diploma->setSchool($school);
         } else {
-            if ($diploma->getOwner() !== $this->getUser()) {
+            if ($diploma->getSchool() !== $school) {
                 $this->addFlash('error', 'Vous ne pouvez pas modifier ce diplôme.');
                 return $this->redirectToRoute('app_diploma');
             }
@@ -205,7 +206,8 @@ final class DiplomaController extends AbstractController
     #[Route('/delete/{id}', name: 'app_diploma_delete')]
     public function delete(Diploma $diploma, EntityManagerInterface $em): Response
     {
-        if($diploma->getOwner() !== $this->getUser()) {
+        $school = $this->getUser()->getSchool();
+        if ($diploma->getSchool() !== $school) {
             $this->addFlash('error', 'Vous ne pouvez pas supprimer ce diplôme.');
             return $this->redirectToRoute('app_diploma');
         }
@@ -221,13 +223,14 @@ final class DiplomaController extends AbstractController
     #[Route('/duplicate/{id}', name: 'app_diploma_duplicate')]
     public function duplicate(Diploma $diploma, EntityManagerInterface $em): Response
     {
-        if($diploma->getOwner() !== $this->getUser()) {
+        $school = $this->getUser()->getSchool();
+        if ($diploma->getSchool() !== $school) {
             $this->addFlash('error', 'Vous ne pouvez pas dupliquer ce diplôme.');
             return $this->redirectToRoute('app_diploma');
         }
         $duplicateDiploma = clone $diploma;
         $duplicateDiploma->setTitle($diploma->getTitle() . ' (copie)');
-        $duplicateDiploma->setOwner($this->getUser());
+        $duplicateDiploma->setSchool($school);
         $em->persist($duplicateDiploma);
         $em->flush();
 

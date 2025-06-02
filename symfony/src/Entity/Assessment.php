@@ -22,9 +22,9 @@ class Assessment
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $description = null;
 
-
     #[ORM\ManyToOne(inversedBy: 'assessments')]
-    private ?User $owner = null;
+    private ?School $school = null;
+
 
     public function __construct()
     {
@@ -59,17 +59,17 @@ class Assessment
         return $this;
     }
 
-
-    public function getOwner(): ?User
+    public function getSchool(): ?School
     {
-        return $this->owner;
+        return $this->school;
     }
 
-    public function setOwner(?User $owner): static
+    public function setSchool(?School $school): static
     {
-        $this->owner = $owner;
+        $this->school = $school;
 
         return $this;
     }
+
 
 }

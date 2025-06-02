@@ -26,18 +26,19 @@ class SubscriptionRedirectSubscriber implements EventSubscriberInterface
         // Récupérer l'utilisateur via le token
         $token = $this->tokenStorage->getToken();
         $user = $token && $token->getUser() instanceof User ? $token->getUser() : null;
+        $school = $user ? $user->getSchool() : null;
 
         // Autorisé si aucun utilisateur ou SUPER_ADMIN
         if (!$user || in_array("ROLE_SUPER_ADMIN", $user->getRoles(), true)) {
             return;
         }
 
-        if($user->isFreeAccount()) {
+        if($school->isFreeAccount()) {
             return;
         }
 
         $now = (new \DateTimeImmutable())->setTime(0, 0);
-        $lastInvoice = $user->getLastInvoiceValid();
+        $lastInvoice = $school->getLastInvoiceValid();
 
 
         if(in_array('ROLE_ADMIN', $user->getRoles(), true)) {

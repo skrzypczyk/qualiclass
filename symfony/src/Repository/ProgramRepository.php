@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Entity\Module;
 use App\Entity\Program;
+use App\Entity\School;
 use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
@@ -18,31 +19,15 @@ class ProgramRepository extends ServiceEntityRepository
         parent::__construct($registry, Program::class);
     }
 
-    public function findAllForUserAndLeads(User $user): array
+    public function findBySchool(School $school): array
     {
-        $qb = $this->createQueryBuilder('p')
-            ->leftJoin('p.owner', 'u') // relation entre Module et User
-            ->where('u = :user')
-            ->orWhere('u IN (:ledUsers)')
-            ->setParameter('user', $user)
-            ->setParameter('ledUsers', $user->getUsers());
-
-        return $qb->getQuery()->getResult();
-    }
-
-
-    public function userCanAccessModule(User $user, Program $program): bool
-    {
-        $qb = $this->createQueryBuilder('p')
-            ->select('COUNT(p.id)')
+        return $this->createQueryBuilder('p')
             ->leftJoin('p.owner', 'u')
-            ->where('p = :program')
-            ->andWhere('u = :user OR u IN (:ledUsers)')
-            ->setParameter('program', $program)
-            ->setParameter('user', $user)
-            ->setParameter('ledUsers', $user->getUsers());
-
-        return (int) $qb->getQuery()->getSingleScalarResult() > 0;
+            ->where('u.school = :school')
+            ->setParameter('school', $school)
+            ->orderBy('p.id', 'ASC')
+            ->getQuery()
+            ->getResult();
     }
 
     //    /**
