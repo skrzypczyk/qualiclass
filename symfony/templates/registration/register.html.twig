@@ -46,6 +46,14 @@
                 {{ form_errors(registrationForm.agreeTerms, {'attr': {'class': 'text-red-600 text-sm mt-1'}}) }}
             </div>
 
+            <div class="flex justify-center my-4">
+                <div>
+                    {{ form_label(registrationForm.recaptcha, null, {'label_attr': {'class': 'block text-center text-gray-700 font-medium mb-2'}}) }}
+                    {{ form_widget(registrationForm.recaptcha) }}
+                    {{ form_errors(registrationForm.recaptcha) }}
+                </div>
+            </div>
+
             <!-- Liens -->
             <div class="text-sm text-right sm:text-left mt-4">
                 <a href="{{ path('app_login') }}" class="link-primary block">Se connecter</a>

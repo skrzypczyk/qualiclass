@@ -82,11 +82,14 @@
                     {{ form_errors(form.message) }}
                 </div>
 
-                <div>
-                    {{ form_label(form.recaptcha, null, {'label_attr': {'class': 'block text-gray-700 font-medium mb-2'}}) }}
-                    {{ form_widget(form.recaptcha, {'attr': {'class': 'w-full border border-gray-300 rounded px-4 py-2 resize-none'}}) }}
-                    {{ form_errors(form.recaptcha) }}
+                <div class="flex justify-center my-4">
+                    <div>
+                        {{ form_label(form.recaptcha, null, {'label_attr': {'class': 'block text-center text-gray-700 font-medium mb-2'}}) }}
+                        {{ form_widget(form.recaptcha) }}
+                        {{ form_errors(form.recaptcha) }}
+                    </div>
                 </div>
+
 
                 <div class="text-center">
                     <button type="submit" class="btn-primary">
