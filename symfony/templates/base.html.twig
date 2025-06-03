@@ -15,17 +15,6 @@
     <link rel="stylesheet" href="https://unpkg.com/trix@2.0.0/dist/trix.css">
     <script src="https://unpkg.com/trix@2.0.0/dist/trix.umd.min.js"></script>
 
-    <script>
-        window.addEventListener('UC_UI_INITIALIZED', function () {
-            console.log('✅ CMP Usercentrics initialisé');
-            if (typeof UC_UI !== 'undefined') {
-                console.log('UC_UI.getServicesBaseInfo() =', UC_UI.getServicesBaseInfo?.());
-            } else {
-                console.warn('⛔ UC_UI est undefined');
-            }
-        });
-    </script>
-
 
     <script>
         window.addEventListener("UC_UI_INITIALIZED", function () {
@@ -34,6 +23,8 @@
                 const hasAnalyticsConsent = consentedServices.some(service =>
                     service.templateId === 'BJ59EidsWQ' && service.consent.status
                 );
+
+                console.log('Liste des services consentis :', consentedServices);
 
                 if (hasAnalyticsConsent) {
                     console.log('✅ Consentement pour les services analytiques accordé');
