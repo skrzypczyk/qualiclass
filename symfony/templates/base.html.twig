@@ -13,18 +13,30 @@
     <script src="https://web.cmp.usercentrics.eu/modules/autoblocker.js"></script>
     <script id="usercentrics-cmp" src="https://web.cmp.usercentrics.eu/ui/loader.js" data-settings-id="F5dxCZcJ0qx12h" async></script>
 
-    <!-- Google Analytics (consentement requis) -->
-    <script type="text/plain" data-cookieconsent="statistics">
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        gtag('js', new Date());
-        gtag('config', 'G-XXR4PZVBJ8');
+    <script>
+        window.addEventListener("UC_UI_INITIALIZED", function () {
+            if (window?.UC_UI?.getServicesBaseInfo) {
+                const consentedServices = window.UC_UI.getServicesBaseInfo();
+                const hasAnalyticsConsent = consentedServices.some(service =>
+                    service.templateId === 'google-analytics' && service.consent.status
+                );
 
-        var gtagScript = document.createElement('script');
-        gtagScript.src = 'https://www.googletagmanager.com/gtag/js?id=G-XXR4PZVBJ8';
-        gtagScript.async = true;
-        document.head.appendChild(gtagScript);
+                if (hasAnalyticsConsent) {
+                    // Inject GA uniquement si l'utilisateur a consenti
+                    window.dataLayer = window.dataLayer || [];
+                    function gtag(){dataLayer.push(arguments);}
+                    gtag('js', new Date());
+                    gtag('config', 'G-XXR4PZVBJ8');
+
+                    const gtagScript = document.createElement('script');
+                    gtagScript.src = 'https://www.googletagmanager.com/gtag/js?id=G-XXR4PZVBJ8';
+                    gtagScript.async = true;
+                    document.head.appendChild(gtagScript);
+                }
+            }
+        });
     </script>
+
 
 
 </head>
