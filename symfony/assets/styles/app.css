@@ -178,3 +178,8 @@ trix-editor{
     text-transform: uppercase;
     font-size: var(--text-sm);
 }
+
+label.required::after {
+    content: " *";
+    color: red;
+}

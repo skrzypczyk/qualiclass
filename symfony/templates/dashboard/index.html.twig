@@ -63,9 +63,7 @@
                             {{ diploma.RNCP }}</td>
                         <td class="px-6 py-3 text-center">{{ diploma.counter }}</td>
                         <td class="px-6 py-3 text-center">
-                            {% set h = diploma.duration // 60 %}
-                            {% set m = diploma.duration % 60 %}
-                            {{ h }}h {{ m }}min
+                            {{ diploma.duration }} h
                         </td>
                         <td class="px-6 py-3 text-center">{{ diploma.credit }}</td>
                         <td class="px-6 py-3 text-center space-x-2">

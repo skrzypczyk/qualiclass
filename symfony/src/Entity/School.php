@@ -70,6 +70,9 @@ class School
     #[ORM\OneToMany(targetEntity: Diploma::class, mappedBy: 'school')]
     private Collection $diplomas;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $keyChatGpt = null;
+
     public function __construct()
     {
         $this->users = new ArrayCollection();
@@ -366,6 +369,18 @@ class School
                 $diploma->setSchool(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getKeyChatGpt(): ?string
+    {
+        return $this->keyChatGpt;
+    }
+
+    public function setKeyChatGpt(?string $keyChatGpt): static
+    {
+        $this->keyChatGpt = $keyChatGpt;
 
         return $this;
     }

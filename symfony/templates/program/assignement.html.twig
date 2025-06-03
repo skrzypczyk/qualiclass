@@ -20,7 +20,7 @@
                                 colspan="{{ diploma.competences|length }}">
                                 {{ diploma.title }}<br>
                                 <small>
-                                    <span data-diploma-total-duration="{{ diploma.id }}">0h 0min</span> <br>
+                                    <span data-diploma-total-duration="{{ diploma.id }}"> h</span> <br>
                                     <span data-diploma-total-ects="{{ diploma.id }}">0</span> ECTS
                                 </small>
 
@@ -34,7 +34,7 @@
                                 <th class="sticky top-[81px] z-20 {{ bgClass }} text-white px-4 py-2 text-center border border-gray-200">
                                     <small>{{ competence.title }}</small><br>
                                     <small>
-                                        <span data-competence-total-duration="{{ competence.id }}">0h 0min</span> <br>
+                                        <span data-competence-total-duration="{{ competence.id }}">0 h</span> <br>
                                         <span data-competence-total-ects="{{ competence.id }}">0</span> ECTS
                                     </small>
 
@@ -51,7 +51,7 @@
                         <tr class="'odd:bg-gray-50'">
                             <td class="sticky left-0 z-10 bg-white px-4 py-2 font-medium whitespace-nowrap border border-gray-200">
                                 {{ module.title }} {{  module.isArchived ? '(Archivé)' :'' }}<br>
-                                <small>{{ module.duration }} min – {{ module.credit }} ECTS</small>
+                                <small>{{ module.duration }} h – {{ module.credit }} ECTS</small>
                                 {% if module.isShared %}
                                     <br><small class="text-red-500">Module partagé</small>
                                 {% endif %}
@@ -132,7 +132,7 @@
             updateTotal('diploma', diplomaId, duration * diff, credit * diff);
         }
 
-        function updateTotal(type, id, deltaMinutes, deltaCredits) {
+        function updateTotal(type, id, deltaHours, deltaCredits) {
             const durationEl = document.querySelector(`[data-${type}-total-duration="${id}"]`);
             const ectsEl = document.querySelector(`[data-${type}-total-ects="${id}"]`);
 
@@ -140,7 +140,7 @@
             const currentDuration = parseInt(durationEl.dataset.total || "0");
             const currentCredits = parseInt(ectsEl.dataset.total || "0");
 
-            const newDuration = Math.max(0, currentDuration + deltaMinutes);
+            const newDuration = Math.max(0, currentDuration + deltaHours);
             const newCredits = Math.max(0, currentCredits + deltaCredits);
 
             durationEl.dataset.total = newDuration;
@@ -150,10 +150,8 @@
             ectsEl.innerText = newCredits;
         }
 
-        function formatDuration(minutes) {
-            const h = Math.floor(minutes / 60);
-            const m = minutes % 60;
-            return `${h}h ${m}min`;
+        function formatDuration(hours) {
+            return `${hours} h`;
         }
 
         function initTotals() {
@@ -161,7 +159,7 @@
                 // Réinitialiser tous les totaux à 0
                 document.querySelectorAll('[data-competence-total-duration]').forEach(el => {
                     el.dataset.total = 0;
-                    el.innerText = '0h 0min';
+                    el.innerText = '0 h';
                 });
 
                 document.querySelectorAll('[data-competence-total-ects]').forEach(el => {
@@ -171,7 +169,7 @@
 
                 document.querySelectorAll('[data-diploma-total-duration]').forEach(el => {
                     el.dataset.total = 0;
-                    el.innerText = '0h 0min';
+                    el.innerText = '0 h';
                 });
 
                 document.querySelectorAll('[data-diploma-total-ects]').forEach(el => {

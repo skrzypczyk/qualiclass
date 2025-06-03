@@ -65,6 +65,15 @@ class SchoolType extends AbstractType
                     'class' => 'form-control',
                 ],
             ])
+
+            ->add('keyChatGpt', TextType::class, [
+                'label' => 'Clé API ChatGPT',
+                'required' => false,
+                'attr' => [
+                    'placeholder' => 'Clé API ChatGPT',
+                    'class' => 'form-control',
+                ],
+            ])
         ;
     }
 

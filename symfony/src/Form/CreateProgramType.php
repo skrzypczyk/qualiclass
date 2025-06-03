@@ -59,8 +59,10 @@ class CreateProgramType extends AbstractType
             ->add('diplomas', EntityType::class, [
                 'label' => 'Diplômes associés',
                 'class' => Diploma::class,
-                'query_builder' => function (\Doctrine\ORM\EntityRepository $er) {
+                'query_builder' => function (\Doctrine\ORM\EntityRepository $er) use ($user) {
                     return $er->createQueryBuilder('d')
+                        ->where('d.school = :school')
+                        ->setParameter('school', $user ? $user->getSchool() : null)
                         ->orderBy('d.title', 'ASC');
                 },
                 'choice_label' => function (Diploma $diploma) {

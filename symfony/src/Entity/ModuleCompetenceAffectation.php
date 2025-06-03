@@ -17,6 +17,7 @@ class ModuleCompetenceAffectation
     private ?Module $module = null;
 
     #[ORM\ManyToOne(inversedBy: 'moduleCompetenceAffectations')]
+    #[ORM\JoinColumn(onDelete: 'CASCADE')]
     private ?Competence $competence = null;
 
     #[ORM\ManyToOne(inversedBy: 'moduleCompetenceAffectations')]

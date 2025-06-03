@@ -10,10 +10,8 @@
                 </small>
         </h1>
 
-        {% set h = duration // 60 %}
-        {% set m = duration % 60 %}
 
-        <h3 class="text-xl font-semibold mt-6 mb-2">Durée : <span class="font-normal" >{{ h }}h {{ m }}min</span></h3>
+        <h3 class="text-xl font-semibold mt-6 mb-2">Durée : <span class="font-normal" >{{ duration }} h</span></h3>
 
         <h3 class="text-xl font-semibold mt-6 mb-2">Crédits : <span class="font-normal" >{{ credit }}</span></h3>
 
@@ -53,7 +51,7 @@
                             {{ competence.title }}
                         </a>
                     </td>
-                    <td class="px-6 py-3 text-end">{{ moduleByCompetence[compId].duration // 60 }}h {{ moduleByCompetence[compId].duration % 60 }}min</td>
+                    <td class="px-6 py-3 text-end">{{ moduleByCompetence[compId].duration  }} h </td>
                     <td class="px-6 py-3 text-end">{{ moduleByCompetence[compId].credit }}</td>
                 </tr>
                     {% for module in moduleByCompetence[compId].modules %}
@@ -63,7 +61,7 @@
                                     {{ module.title }}
                                 </a>
                             </td>
-                            <td class="px-6 py-3 text-end">{{ module.duration // 60 }}h {{ module.duration % 60 }}min</td>
+                            <td class="px-6 py-3 text-end">{{ module.duration }} h </td>
                             <td class="px-6 py-3 text-end">{{ module.credit }}</td>
                         </tr>
                     {% endfor %}
@@ -74,7 +72,7 @@
                             {{ competence.title }}
                         </a>
                     </td>
-                    <td class="px-6 py-3 text-end">0h 0min</td>
+                    <td class="px-6 py-3 text-end">0 h</td>
                     <td class="px-6 py-3 text-end">0</td>
                 </tr>
                 {% endif %}
@@ -84,7 +82,7 @@
             <tfoot>
                 <tr>
                     <th class="px-6 py-3 text-end">Total</th>
-                    <th class="px-6 py-3 text-end">{{ h }}h {{ m }}min</th>
+                    <th class="px-6 py-3 text-end">{{ duration }} h</th>
                     <th class="px-6 py-3 text-end">{{ credit }}</th>
                 </tr>
             </tfoot>
@@ -120,7 +118,7 @@
                                             <a href="#module-{{ module.id }}">
                                                 {{ module.title }}</td>
                                             </a>
-                                        <td  class="px-6 py-3 text-end">{{ module.duration // 60 }}h {{ module.duration % 60 }}min</td>
+                                        <td  class="px-6 py-3 text-end">{{ module.duration  }} h</td>
                                         <td  class="px-6 py-3 text-end">{{ module.credit  }}</td>
                                     </tr>
                             {% endfor %}
@@ -128,7 +126,7 @@
                                 <tfoot class="bg-gray-200">
                                     <tr>
                                         <th class="px-6 py-3 text-end">Total</th>
-                                        <th class="px-6 py-3 text-end">{{ moduleByCompetence[compId].duration // 60 }}h {{ moduleByCompetence[compId].duration % 60 }}min</th>
+                                        <th class="px-6 py-3 text-end">{{ moduleByCompetence[compId].duration }} h</th>
                                         <th class="px-6 py-3 text-end">{{ moduleByCompetence[compId].credit }}</th>
                                     </tr>
                                 </tfoot>
@@ -154,11 +152,9 @@
                             </div>
                             <div class="card-body">
 
-                                {% set h = module.duration // 60 %}
-                                {% set m = module.duration % 60 %}
 
                                 <h3 class="text-lg font-semibold mt-6 mb-2">Compétence : <span class="font-normal" ><a href="#comp-{{ competence.id }}">{{ competence.title }}</a></span></h3>
-                                <h3 class="text-lg font-semibold mt-6 mb-2">Durée : <span class="font-normal" >{{ h }}h {{ m }}min</span></h3>
+                                <h3 class="text-lg font-semibold mt-6 mb-2">Durée : <span class="font-normal" >{{ module.duration }} h </span></h3>
                                 <h3 class="text-lg font-semibold mt-6 mb-2">Crédits : <span class="font-normal" >{{ module.credit }}</span></h3>
                                 <h3 class="text-lg font-semibold mt-6 mb-2">Catégories :
                                     {% for category in module.categories %}

@@ -14,8 +14,11 @@
 
         body {
             font-family: '{{ user.school.typo }}';
-            font-size: 16px;
+            font-size: 14px;
             color: {{ user.school.secondaryColor ?? '#000' }};
+        }
+        a{
+            text-decoration: none;
         }
 
         header {
@@ -46,8 +49,8 @@
 
         h1 { font-size: 24px; }
         h2 { font-size: 20px; }
-        h3 { font-size: 18px; }
-        p, li { font-size: 16px; }
+        h3 { font-size: 18px; margin-top: 50px;margin-bottom: 0px;}
+        p, li { font-size: 14px; }
 
         table {
             width: 100%;
@@ -109,12 +112,10 @@
         <small style="font-weight: normal; font-size: 14px;">– {{ program.year }} année</small>
     </h1>
 
-    {% set h = duration // 60 %}
-    {% set m = duration % 60 %}
-
-
-    <h3>Durée : <span style="font-weight: normal;">{{ h }}h {{ m }}min</span></h3>
-    <h3>Crédits : <span style="font-weight: normal;">{{ credit }}</span></h3>
+    <p>
+        <strong>Durée : </strong>{{ duration }} h <br>
+        <strong>Crédits : </strong>{{ credit }}
+    </p>
 
     <h3>Prérequis</h3>
     <p>{{ program.prerequisites|raw }}</p>
@@ -147,20 +148,20 @@
             {% if moduleByCompetence[compId] is defined %}
                 <tr style="background-color: #eee;">
                     <td><a href="#comp-{{ compId }}">{{ competence.title }}</a></td>
-                    <td style="text-align: center;">{{ moduleByCompetence[compId].duration // 60 }}h {{ moduleByCompetence[compId].duration % 60 }}min</td>
+                    <td style="text-align: center;">{{ moduleByCompetence[compId].duration }} h </td>
                     <td style="text-align: center;">{{ moduleByCompetence[compId].credit }}</td>
                 </tr>
                 {% for module in moduleByCompetence[compId].modules %}
                     <tr>
                         <td style="padding-left: 20px;"><a href="#module-{{ module.id }}">• {{ module.title }}</a></td>
-                        <td style="text-align: center;">{{ module.duration // 60 }}h {{ module.duration % 60 }}min</td>
+                        <td style="text-align: center;">{{ module.duration }} h</td>
                         <td style="text-align: center;">{{ module.credit }}</td>
                     </tr>
                 {% endfor %}
             {% else %}
                 <tr style="background-color: #eee;">
                     <td><a href="#comp-{{ compId }}">{{ competence.title }}</a></td>
-                    <td style="text-align: center;">0h 0min</td>
+                    <td style="text-align: center;">0 h</td>
                     <td style="text-align: center;">0</td>
                 </tr>
             {% endif %}
@@ -169,7 +170,7 @@
         <tfoot>
         <tr>
             <th style="text-align: right;">Total</th>
-            <th style="text-align: center;">{{ h }}h {{ m }}min</th>
+            <th style="text-align: center;">{{ duration }} h</th>
             <th style="text-align: center;">{{ credit }}</th>
         </tr>
         </tfoot>
@@ -194,7 +195,7 @@
                 {% for module in moduleByCompetence[compId].modules %}
                     <tr>
                         <td><a href="#module-{{ module.id }}">{{ module.title }}</a></td>
-                        <td style="text-align: center;">{{ module.duration // 60 }}h {{ module.duration % 60 }}min</td>
+                        <td style="text-align: center;">{{ module.duration }} h</td>
                         <td style="text-align: center;">{{ module.credit }}</td>
                     </tr>
                 {% endfor %}
@@ -202,7 +203,7 @@
                 <tfoot>
                 <tr>
                     <th style="text-align: right;">Total</th>
-                    <th style="text-align: center;">{{ moduleByCompetence[compId].duration // 60 }}h {{ moduleByCompetence[compId].duration % 60 }}min</th>
+                    <th style="text-align: center;">{{ moduleByCompetence[compId].duration }} h </th>
                     <th style="text-align: center;">{{ moduleByCompetence[compId].credit }}</th>
                 </tr>
                 </tfoot>
@@ -217,25 +218,23 @@
                 <div class="page-break"></div>
                 <h2 id="module-{{ module.id }}">{{ module.title }}</h2>
 
-                {% set h = module.duration // 60 %}
-                {% set m = module.duration % 60 %}
+                <p>
+                    <strong>Compétence : </strong><a href="#comp-{{ competence.id }}">{{ competence.title }}</a><br>
+                    <strong>Durée : </strong>{{ module.duration }} h<br>
+                    <strong>Crédits : </strong>{{ module.credit }}<br>
+                    <strong>Catégories : </strong>{% for category in module.categories %}
+                    {% if not loop.first %}, {% endif %}{{ category.name }}
+                    {% endfor %}<br>
+                </p>
 
-                <h3>Compétence : <a href="#comp-{{ competence.id }}">{{ competence.title }}</a></h3>
-                <h3>Durée : <span>{{ h }}h {{ m }}min</span></h3>
-                <h3>Crédits : <span>{{ module.credit }}</span></h3>
-                <h3>Catégories :
-                    {% for category in module.categories %}
-                        {% if not loop.first %}, {% endif %}{{ category.name }}
-                    {% endfor %}
-                </h3>
-
-                <h3 style="text-align: center;">Syllabus</h3>
-                <div>{{ module.syllabus | raw }}</div>
-
-                <h3 style="text-align: center;">Objectifs</h3>
+                <h2 style="text-align: center;">Objectifs</h2>
                 <div>{{ module.goal | raw }}</div>
 
-                <h3 style="text-align: center;">Notes</h3>
+                <h2 style="text-align: center;">Plan de cours</h2>
+                <div>{{ module.syllabus | raw }}</div>
+
+
+                <h2 style="text-align: center;">Notes</h2>
                 <div>{{ module.comment | raw }}</div>
             {% endfor %}
         {% endif %}

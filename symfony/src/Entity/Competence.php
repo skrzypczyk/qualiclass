@@ -28,8 +28,12 @@ class Competence
     #[ORM\ManyToOne(inversedBy: 'competences')]
     private ?Diploma $diploma = null;
 
+    #[ORM\OneToMany(mappedBy: 'competence', targetEntity: ModuleCompetenceAffectation::class, cascade: ['remove'], orphanRemoval: true)]
+    private Collection $moduleCompetenceAffectations;
+
     public function __construct()
     {
+        $this->moduleCompetenceAffectations = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -84,5 +88,36 @@ class Competence
 
         return $this;
     }
+
+    /**
+     * @return Collection<int, ModuleCompetenceAffectation>
+     */
+    public function getModuleCompetenceAffectations(): Collection
+    {
+        return $this->moduleCompetenceAffectations;
+    }
+
+    public function addModuleCompetenceAffectation(ModuleCompetenceAffectation $affectation): static
+    {
+        if (!$this->moduleCompetenceAffectations->contains($affectation)) {
+            $this->moduleCompetenceAffectations[] = $affectation;
+            $affectation->setCompetence($this);
+        }
+
+        return $this;
+    }
+
+    public function removeModuleCompetenceAffectation(ModuleCompetenceAffectation $affectation): static
+    {
+        if ($this->moduleCompetenceAffectations->removeElement($affectation)) {
+            // set the owning side to null (unless already changed)
+            if ($affectation->getCompetence() === $this) {
+                $affectation->setCompetence(null);
+            }
+        }
+
+        return $this;
+    }
+
 
 }

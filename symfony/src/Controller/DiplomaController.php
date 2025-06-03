@@ -145,9 +145,8 @@ final class DiplomaController extends AbstractController
         foreach ($data['essential'] as $essential) {
             $content .= "<b>".$essential['title'] ."</b> : ".trim($essential['text']) ."<br>";
         }
-        $content .= "<br>";
         foreach ($data['summary'] as $summary) {
-            $content .= "<h1><b>".trim($summary['title']) ."</b></h1> ".trim($summary['text']) ."<br>";
+            $content .= "<h3 class='text-xl font-semibold mt-6 mb-2'>".trim($summary['title']) ."</h3> <p>".trim($summary['text']) ."</p>";
         }
         $diploma->setContent($content);
         $diploma->setSchool($this->getUser()->getSchool());

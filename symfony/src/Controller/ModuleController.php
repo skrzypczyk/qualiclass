@@ -5,14 +5,19 @@ namespace App\Controller;
 use App\Entity\Module;
 use App\Entity\User;
 use App\Form\CreateModuleType;
+use App\Form\CreateModuleWithChatgptType;
 use App\Repository\CategoryRepository;
 use App\Repository\ModuleRepository;
+use App\Service\ChatGptClient;
 use Doctrine\ORM\EntityManagerInterface;
 use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Seld\JsonLint\JsonParser;
+use Seld\JsonLint\ParsingException;
+
 
 #[Route('/backoffice')]
 final class ModuleController extends AbstractController
@@ -78,7 +83,60 @@ final class ModuleController extends AbstractController
             'limit' => $limit,
             'direction' => $direction,
             'archived' => $archived,
+            'school' => $school,
         ]);
+    }
+
+    #[Route('/module/create/WithChatGpt', name: 'app_module_create_chatgpt')]
+    public function createWithChatGpt(Request $request, ChatGptClient $chatGptClient, ): Response
+    {
+        $syllabus = null;
+        $form = $this->createForm(CreateModuleWithChatgptType::class);
+        $form->handleRequest($request);
+        if ($form->isSubmitted() && $form->isValid()) {
+
+            $data = $form->getData();
+            $title = $data['title'];
+            $nbSessions = $data['nbSessions'] ?? 5;
+            $duration = $data['duration'];
+            $level = $data['level'] ?? 'débutant';
+
+            $chatGptClient->setApiKey($this->getUser()->getSchool()->getKeyChatGpt());
+            $syllabus = $chatGptClient->generateStructuredSyllabus($title, $duration, $level, $nbSessions);
+            $syllabus['title'] = $title;
+            $syllabus['duration'] = $duration;
+            $syllabusJson = json_encode($syllabus, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+        }
+
+
+        return $this->render('module/createWithChatGPT.html.twig', [
+            'form' => $form->createView(),
+            'syllabus' => $syllabus,
+            'syllabusJson' => isset($syllabusJson) ? $syllabusJson : null,
+        ]);
+    }
+    #[Route('/module/insert/WithChatGpt', name: 'app_module_store', methods: ['POST'])]
+    public function insertWithChatGpt(Request $request, ChatGptClient $chatGptClient, EntityManagerInterface $em): Response
+    {
+        $submittedToken = $request->request->get('_csrf_token');
+        if (!$this->isCsrfTokenValid('validate_module', $submittedToken)) {
+            throw $this->createAccessDeniedException('CSRF token invalid');
+        }
+
+        $json = $request->request->get('module_data');
+        $data = json_decode($json, true);
+        $module = new Module();
+        $module->setTitle($data['title']);
+        $module->setDuration($data['duration']);
+        $module->setGoal($data['description_and_objectives'] ?? 'Aucun objectif défini');
+        $module->setSyllabus($data['sessions'] ?? 'Aucun plan de séance défini');
+        $module->setComment($data['activities_and_resources'] ?? 'Aucun commentaire défini');
+        $module->setOwner($this->getUser());
+        $module->setIsShared( false);
+        $em->persist($module);
+        $em->flush();
+        $this->addFlash('success', 'Module créé avec succès !');
+        return $this->redirectToRoute('app_module');
     }
 
     #[Route('/module/create', name: 'app_module_create')]
