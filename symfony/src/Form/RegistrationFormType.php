@@ -3,6 +3,8 @@
 namespace App\Form;
 
 use App\Entity\User;
+use EWZ\Bundle\RecaptchaBundle\Form\Type\EWZRecaptchaType;
+use EWZ\Bundle\RecaptchaBundle\Validator\Constraints\IsTrue as RecaptchaTrue;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\CountryType;
@@ -85,6 +87,13 @@ class RegistrationFormType extends AbstractType
                 'label' => 'Pays',
                 'placeholder' => 'Sélectionnez un pays',
                 'required' => false,
+            ])
+            ->add('recaptcha', EWZRecaptchaType::class, [
+                'label' => false,
+                'mapped' => false,
+                'constraints' => [
+                    new RecaptchaTrue(),
+                ],
             ])
         ;
     }
