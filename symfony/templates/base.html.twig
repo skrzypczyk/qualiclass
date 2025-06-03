@@ -36,6 +36,7 @@
                 );
 
                 if (hasAnalyticsConsent) {
+                    console.log('✅ Consentement pour les services analytiques accordé');
                     // Inject GA uniquement si l'utilisateur a consenti
                     window.dataLayer = window.dataLayer || [];
                     function gtag(){dataLayer.push(arguments);}
@@ -46,6 +47,8 @@
                     gtagScript.src = 'https://www.googletagmanager.com/gtag/js?id=G-XXR4PZVBJ8';
                     gtagScript.async = true;
                     document.head.appendChild(gtagScript);
+                }else{
+                    console.warn('⛔ Consentement pour les services analytiques NON accordé');
                 }
             }
         });
