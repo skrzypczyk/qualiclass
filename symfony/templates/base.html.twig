@@ -14,6 +14,18 @@
     <script id="usercentrics-cmp" src="https://web.cmp.usercentrics.eu/ui/loader.js" data-settings-id="F5dxCZcJ0qx12h" async></script>
 
     <script>
+        window.addEventListener('UC_UI_INITIALIZED', function () {
+            console.log('✅ CMP Usercentrics initialisé');
+            if (typeof UC_UI !== 'undefined') {
+                console.log('UC_UI.getServicesBaseInfo() =', UC_UI.getServicesBaseInfo?.());
+            } else {
+                console.warn('⛔ UC_UI est undefined');
+            }
+        });
+    </script>
+
+
+    <script>
         window.addEventListener("UC_UI_INITIALIZED", function () {
             if (window?.UC_UI?.getServicesBaseInfo) {
                 const consentedServices = window.UC_UI.getServicesBaseInfo();
