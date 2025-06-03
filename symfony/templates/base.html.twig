@@ -17,39 +17,32 @@
 
 
     <script>
-        function injectGAIfConsented() {
+        window.addEventListener("UC_UI_INITIALIZED", function () {
             if (window?.UC_UI?.getServicesBaseInfo) {
-                const services = UC_UI.getServicesBaseInfo();
-                const hasConsent = services.some(service =>
+                const consentedServices = window.UC_UI.getServicesBaseInfo();
+                const hasAnalyticsConsent = consentedServices.some(service =>
                     service.templateId === 'BJ59EidsWQ' && service.consent.status
                 );
 
-                console.log('[Turbo] Services Usercentrics :', services);
+                console.log('Liste des services consentis :', consentedServices);
 
-                if (hasConsent) {
-                    console.log('✅ GA autorisé via consentement');
+                if (hasAnalyticsConsent) {
+                    console.log('✅ Consentement pour les services analytiques accordé');
+                    // Inject GA uniquement si l'utilisateur a consenti
+                    window.dataLayer = window.dataLayer || [];
+                    function gtag(){dataLayer.push(arguments);}
+                    gtag('js', new Date());
+                    gtag('config', 'G-XXR4PZVBJ8');
 
-                    if (!window.gtagAlreadyInjected) {
-                        const script = document.createElement('script');
-                        script.src = 'https://www.googletagmanager.com/gtag/js?id=G-XXR4PZVBJ8';
-                        script.async = true;
-                        document.head.appendChild(script);
-
-                        window.dataLayer = window.dataLayer || [];
-                        function gtag(){dataLayer.push(arguments);}
-                        window.gtag = gtag;
-                        gtag('js', new Date());
-                        gtag('config', 'G-XXR4PZVBJ8');
-
-                        window.gtagAlreadyInjected = true;
-                    }
-                } else {
-                    console.warn('❌ GA bloqué : consentement non accordé');
+                    const gtagScript = document.createElement('script');
+                    gtagScript.src = 'https://www.googletagmanager.com/gtag/js?id=G-XXR4PZVBJ8';
+                    gtagScript.async = true;
+                    document.head.appendChild(gtagScript);
+                }else{
+                    console.warn('⛔ Consentement pour les services analytiques NON accordé');
                 }
             }
-        }
-
-        document.addEventListener('turbo:load', injectGAIfConsented);
+        });
     </script>
 
 
