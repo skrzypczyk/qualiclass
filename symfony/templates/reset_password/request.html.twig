@@ -25,6 +25,23 @@
                     Annuler
                 </a>
             </div>
+            <div class="text-sm text-center mt-4">
+                <div>
+                    <a href="{{ path('app_login') }}" class="link-primary block">
+                        Se connecter
+                    </a>
+                </div>
+                <div>
+                    <a href="{{ path('app_register') }}" class="link-primary block">
+                        S'inscrire
+                    </a>
+                </div>
+                <div>
+                    <a href="{{ path('app_resend_confirmation') }}" class="link-primary block">
+                        Renvoyer le lien d’activation
+                    </a>
+                </div>
+            </div>
             {{ form_end(requestForm) }}
         </div>
     </div>

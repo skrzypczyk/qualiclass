@@ -35,17 +35,7 @@
                         Se souvenir de moi
                     </label>
 
-                    <div class="text-sm text-right sm:text-left sm:ml-auto">
-                        <a href="{{ path('app_register') }}" class="link-primary block">
-                            S'inscrire
-                        </a>
-                        <a href="{{ path('app_forgot_password_request') }}" class="link-primary block">
-                            Mot de passe oublié ?
-                        </a>
-                        <a href="{{ path('app_resend_confirmation') }}" class="link-primary block">
-                            Renvoyer le lien d’activation
-                        </a>
-                    </div>
+
                 </div>
 
 
@@ -53,6 +43,23 @@
                         class="w-full btn-primary">
                     Se connecter
                 </button>
+                <div class="text-sm text-center ">
+                    <div>
+                        <a href="{{ path('app_register') }}" class="link-primary block">
+                            S'inscrire
+                        </a>
+                    </div>
+                    <div>
+                        <a href="{{ path('app_forgot_password_request') }}" class="link-primary block">
+                            Mot de passe oublié ?
+                        </a>
+                    </div>
+                    <div>
+                        <a href="{{ path('app_resend_confirmation') }}" class="link-primary block">
+                            Renvoyer le lien d’activation
+                        </a>
+                    </div>
+                </div>
             </form>
         </div>
     </div>
