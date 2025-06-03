@@ -1,0 +1,17 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Erreur {{ status_code }} | QualiClass{% endblock %}
+
+{% block body %}
+    <div class="min-h-screen flex flex-col items-center justify-center text-center bg-gray-100 p-8">
+        <img src="{{ asset('images/logo-qualiclass-small.png') }}" alt="QualiClass" class="w-40 mb-8">
+
+        <h1 class="text-6xl font-bold text-red-500">{{ status_code }}</h1>
+        <p class="text-xl text-gray-700 mt-4">{{ status_text }}</p>
+
+        <a href="{{ path('app_home') }}"
+           class="mt-6 inline-block px-6 py-3 bg-blue-600 text-white font-semibold rounded hover:bg-blue-700 transition">
+            Retour à l’accueil
+        </a>
+    </div>
+{% endblock %}
