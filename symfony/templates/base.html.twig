@@ -5,13 +5,15 @@
     <title>{% block title %}QualiClass{% endblock %}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+    <script src="https://web.cmp.usercentrics.eu/modules/autoblocker.js"></script>
+    <script id="usercentrics-cmp" src="https://web.cmp.usercentrics.eu/ui/loader.js" data-settings-id="F5dxCZcJ0qx12h" async></script>
+
+
     {{ encore_entry_link_tags('app') }}
     {{ encore_entry_script_tags('app') }} {# Chargé ici pour Turbo #}
     <script src="https://unpkg.com/alpinejs" defer></script>
     <link rel="stylesheet" href="https://unpkg.com/trix@2.0.0/dist/trix.css">
     <script src="https://unpkg.com/trix@2.0.0/dist/trix.umd.min.js"></script>
-    <script src="https://web.cmp.usercentrics.eu/modules/autoblocker.js"></script>
-    <script id="usercentrics-cmp" src="https://web.cmp.usercentrics.eu/ui/loader.js" data-settings-id="F5dxCZcJ0qx12h" async></script>
 
     <script>
         window.addEventListener('UC_UI_INITIALIZED', function () {
@@ -30,7 +32,7 @@
             if (window?.UC_UI?.getServicesBaseInfo) {
                 const consentedServices = window.UC_UI.getServicesBaseInfo();
                 const hasAnalyticsConsent = consentedServices.some(service =>
-                    service.templateId === 'BJ59EidsWQ' && service.consent.status
+                    service.templateId === 'HkocEodjb7' && service.consent.status
                 );
 
                 if (hasAnalyticsConsent) {
