@@ -195,7 +195,9 @@ final class ModuleController extends AbstractController
             return $this->redirectToRoute('app_module');
         }
         if ($module->getAffectations()->count() > 0) {
-            $this->addFlash('error', 'Ce module ne peut pas être supprimé car il est utilisé dans un programme.');
+            $this->addFlash('error', 'Ce module ne peut pas être supprimé car il est utilisé dans le programme : '.
+                $module->getAffectations()->first()->getProgram()->getTitle() .
+                '. Veuillez le retirer du programme avant de le supprimer.');
             return $this->redirectToRoute('app_module');
         }
 

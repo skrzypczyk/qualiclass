@@ -3,10 +3,8 @@
 namespace App\Form;
 
 use App\Entity\Competence;
-use App\Entity\Diploma;
-use App\Form\Type\TrixType;
-use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
@@ -30,7 +28,7 @@ class CreateCompetenceType extends AbstractType
                     'class' => 'form-control',
                 ],
             ])
-            ->add('content', TrixType::class, [
+            ->add('content', TextareaType::class, [
                 'label' => 'Détails de la compétence',
                 'attr' => [
                     'placeholder' => 'Détails de la compétence',

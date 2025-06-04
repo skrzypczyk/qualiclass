@@ -28,11 +28,10 @@
 
         <div>
             {{ form_label(form.description, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700'}}) }}
-            {{ form_widget(form.description, {
-                'attr': {
-                    'class': 'block w-full px-4 py-2 rounded-md shadow-sm focus:ring focus:ring-indigo-200 border border-gray-300'
-                }
-            }) }}
+            <div data-controller="quill">
+                <div class="quill-editor" style="height: 300px;"></div>
+                {{ form_widget(form.description, { attr: { style: 'display:none;' } }) }}
+            </div>
 
             {% if form.description.vars.errors|length > 0 %}
                 <p class="mt-1 text-sm text-red-600">{{ form_errors(form.description) }}</p>

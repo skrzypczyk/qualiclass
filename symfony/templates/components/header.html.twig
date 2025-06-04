@@ -45,10 +45,11 @@
                             <li><a href="{{ path('app_module') }}" class="block px-4 py-2 text-primary hover:bg-gray-100">Modules</a></li>
                             <li><a href="{{ path('app_program') }}" class="block px-4 py-2 text-primary hover:bg-gray-100">Programmes</a></li>
                             {% if app.user.isSuperAdmin() or app.user.isAdmin() %}
+                                <hr>
+                                <li><a href="{{ path('app_diploma') }}" class="block px-4 py-2 text-primary hover:bg-gray-100">Diplômes RNCP</a></li>
                                 <li><a href="{{ path('app_assessment') }}" class="block px-4 py-2 text-primary hover:bg-gray-100">Evaluations</a></li>
                                 <li><a href="{{ path('app_category') }}" class="block px-4 py-2 text-primary hover:bg-gray-100">Catégories</a></li>
-                                <li><a href="{{ path('app_diploma') }}" class="block px-4 py-2 text-primary hover:bg-gray-100">Diplômes</a></li>
-                            {% endif %}
+                                                            {% endif %}
                         </ul>
                     </li>
 
@@ -73,7 +74,7 @@
                                 {% endif %}
                                 {% if app.user.isAdmin() %}
                                     <li><a href="{{ path('app_school') }}" class="block px-4 py-2 text-primary hover:bg-gray-100">Mon école</a></li>
-                                    <li><a href="{{ path('app_user') }}" class="block px-4 py-2 text-primary hover:bg-gray-100">Utilisateurs</a></li>
+                                    <li><a href="{{ path('app_user') }}" class="block px-4 py-2 text-primary hover:bg-gray-100">Mes utilisateurs</a></li>
                                     <li><a href="{{ path('app_subscription') }}" class="block px-4 py-2 text-primary hover:bg-gray-100">Mon abonnement</a></li>
                                 {% endif %}
                             </ul>

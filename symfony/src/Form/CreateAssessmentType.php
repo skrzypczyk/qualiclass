@@ -3,9 +3,8 @@
 namespace App\Form;
 
 use App\Entity\Assessment;
-use App\Form\Type\TrixType;
-use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -21,7 +20,7 @@ class CreateAssessmentType extends AbstractType
                     'placeholder' => 'Nom de l\'évaluation',
                 ],
             ])
-            ->add('description', TrixType::class, [
+            ->add('description', TextareaType::class, [
                 'label' => 'Description',
                 'attr' => [
                     'placeholder' => 'Description de l\'évaluation',

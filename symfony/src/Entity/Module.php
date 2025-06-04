@@ -54,12 +54,19 @@ class Module
     #[ORM\Column(nullable: true)]
     private ?bool $isShared = null;
 
+    /**
+     * @var Collection<int, Assessment>
+     */
+    #[ORM\ManyToMany(targetEntity: Assessment::class, inversedBy: 'modules')]
+    private Collection $assessments;
+
 
 
     public function __construct()
     {
         $this->categories = new ArrayCollection();
         $this->affectations = new ArrayCollection();
+        $this->assessments = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -226,6 +233,30 @@ class Module
     public function setIsShared(?bool $isShared): static
     {
         $this->isShared = $isShared;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Assessment>
+     */
+    public function getAssessments(): Collection
+    {
+        return $this->assessments;
+    }
+
+    public function addAssessment(Assessment $assessment): static
+    {
+        if (!$this->assessments->contains($assessment)) {
+            $this->assessments->add($assessment);
+        }
+
+        return $this;
+    }
+
+    public function removeAssessment(Assessment $assessment): static
+    {
+        $this->assessments->removeElement($assessment);
 
         return $this;
     }

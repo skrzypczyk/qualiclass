@@ -1,8 +1,8 @@
 @import "tailwindcss";
+@import 'quill/dist/quill.snow.css';
+
 [x-cloak] { display: none !important; }
-trix-toolbar [data-trix-button-group="file-tools"] {
-    display: none !important;
-}
+
 :root {
     --color-primary: #1a355c;
     --color-primary-dark: #122544;
@@ -169,9 +169,6 @@ table tfoot{
     text-decoration: underline !important;
 }
 
-trix-editor{
-    overflow: auto;
-}
 .bg-gray-200 {
     background-color: var(--color-gray-200);
     color: var(--color-primary);

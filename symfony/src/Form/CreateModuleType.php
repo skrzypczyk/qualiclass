@@ -5,12 +5,12 @@ namespace App\Form;
 use App\Entity\Category;
 use App\Entity\Module;
 use App\Entity\User;
-use App\Form\Type\TrixType;
 use Doctrine\ORM\EntityRepository;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
+use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -67,21 +67,21 @@ class CreateModuleType extends AbstractType
                     'class' => 'form-control',
                 ],
             ])
-            ->add('goal', TrixType::class, [
+            ->add('goal', TextareaType::class, [
                 'label' => 'Objectifs',
                 'attr' => [
                     'placeholder' => 'Objectifs du module',
                     'class' => 'form-control',
                 ],
             ])
-            ->add('syllabus', TrixType::class, [
+            ->add('syllabus', TextareaType::class, [
                 'label' => 'Syllabus',
                 'attr' => [
                     'placeholder' => 'Syllabus du module',
                     'class' => 'form-control',
                 ],
             ])
-            ->add('comment', TrixType::class, [
+            ->add('comment', TextareaType::class, [
                 'label' => 'Commentaire',
                 'attr' => [
                     'placeholder' => 'Commentaire sur le module',
@@ -104,6 +104,23 @@ class CreateModuleType extends AbstractType
                     'class' => 'form-control',
                 ],
                 'multiple' => true
+            ])
+            ->add('assessments', EntityType::class, [
+                'class' => 'App\Entity\Assessment',
+                'choice_label' => 'name',
+                'label' => 'Évaluations',
+                'query_builder' => function (EntityRepository $er) use ($user) {
+                    return $er->createQueryBuilder('a')
+                        ->where('a.school = :school')
+                        ->setParameter('school', $user->getSchool())
+                        ->orderBy('a.name', 'ASC');
+                },
+                'attr' => [
+                    'placeholder' => 'Sélectionnez les évaluations associées',
+                    'class' => 'form-control',
+                ],
+                'multiple' => true,
+                'required' => false,
             ])
         ;
     }

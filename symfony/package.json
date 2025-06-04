@@ -30,6 +30,8 @@
     "@tailwindcss/postcss": "^4.1.4",
     "core-js": "^3.41.0",
     "postcss-loader": "^8.1.1",
+    "quill": "^2.0.3",
+    "quill-html-edit-button": "^3.0.0",
     "regenerator-runtime": "^0.14.1"
   }
 }

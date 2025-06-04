@@ -59,7 +59,10 @@
         {# Objectif #}
         <div>
             {{ form_label(form.goals, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-1'}}) }}
-            {{ form_widget(form.goals, {'attr': {'class': 'trix-content bg-white border border-gray-300 rounded-md p-2 h-[300px]'}}) }}
+            <div data-controller="quill">
+                <div class="quill-editor" style="height: 300px;"></div>
+                {{ form_widget(form.goals, { attr: { style: 'display:none;' } }) }}
+            </div>
             {% if form_errors(form.goals) %}
                 <p class="mt-1 text-sm text-red-600">{{ form_errors(form.goals) }}</p>
             {% endif %}
@@ -68,7 +71,10 @@
         {# Syllabus #}
         <div>
             {{ form_label(form.prerequisites, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-1'}}) }}
-            {{ form_widget(form.prerequisites, {'attr': {'class': 'trix-content bg-white border border-gray-300 rounded-md p-2 h-[300px]'}}) }}
+            <div data-controller="quill">
+                <div class="quill-editor" style="height: 300px;"></div>
+                {{ form_widget(form.prerequisites, { attr: { style: 'display:none;' } }) }}
+            </div>
             {% if form_errors(form.prerequisites) %}
                 <p class="mt-1 text-sm text-red-600">{{ form_errors(form.prerequisites) }}</p>
             {% endif %}
@@ -77,7 +83,10 @@
         {# Commentaire #}
         <div>
             {{ form_label(form.notes, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-1'}}) }}
-            {{ form_widget(form.notes, {'attr': {'class': 'trix-content bg-white border border-gray-300 rounded-md p-2 h-[100px]'}}) }}
+            <div data-controller="quill">
+                <div class="quill-editor" style="height: 300px;"></div>
+                {{ form_widget(form.notes, { attr: { style: 'display:none;' } }) }}
+            </div>
             {% if form_errors(form.notes) %}
                 <p class="mt-1 text-sm text-red-600">{{ form_errors(form.notes) }}</p>
             {% endif %}

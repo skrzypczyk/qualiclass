@@ -25,9 +25,16 @@ class Assessment
     #[ORM\ManyToOne(inversedBy: 'assessments')]
     private ?School $school = null;
 
+    /**
+     * @var Collection<int, Module>
+     */
+    #[ORM\ManyToMany(targetEntity: Module::class, mappedBy: 'assessments')]
+    private Collection $modules;
+
 
     public function __construct()
     {
+        $this->modules = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -67,6 +74,33 @@ class Assessment
     public function setSchool(?School $school): static
     {
         $this->school = $school;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Module>
+     */
+    public function getModules(): Collection
+    {
+        return $this->modules;
+    }
+
+    public function addModule(Module $module): static
+    {
+        if (!$this->modules->contains($module)) {
+            $this->modules->add($module);
+            $module->addAssessment($this);
+        }
+
+        return $this;
+    }
+
+    public function removeModule(Module $module): static
+    {
+        if ($this->modules->removeElement($module)) {
+            $module->removeAssessment($this);
+        }
 
         return $this;
     }

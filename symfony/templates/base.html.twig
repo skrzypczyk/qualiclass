@@ -5,27 +5,29 @@
     <title>{% block title %}QualiClass{% endblock %}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <script src="https://web.cmp.usercentrics.eu/modules/autoblocker.js"></script>
-    <script id="usercentrics-cmp" src="https://web.cmp.usercentrics.eu/ui/loader.js" data-settings-id="F5dxCZcJ0qx12h" async></script>
-
+    {% if app.environment != 'dev' %}
+        <script src="https://web.cmp.usercentrics.eu/modules/autoblocker.js"></script>
+        <script id="usercentrics-cmp" src="https://web.cmp.usercentrics.eu/ui/loader.js" data-settings-id="F5dxCZcJ0qx12h" async></script>
+    {% endif %}
 
     {{ encore_entry_link_tags('app') }}
     {{ encore_entry_script_tags('app') }} {# Chargé ici pour Turbo #}
     <script src="https://unpkg.com/alpinejs" defer></script>
-    <link rel="stylesheet" href="https://unpkg.com/trix@2.0.0/dist/trix.css">
-    <script src="https://unpkg.com/trix@2.0.0/dist/trix.umd.min.js"></script>
 
-    <script type="text/plain" data-cookieconsent="fonctionnel">
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        gtag('js', new Date());
-        gtag('config', 'G-XXR4PZVBJ8');
 
-        var gtagScript = document.createElement('script');
-        gtagScript.src = 'https://www.googletagmanager.com/gtag/js?id=G-XXR4PZVBJ8';
-        gtagScript.async = true;
-        document.head.appendChild(gtagScript);
-    </script>
+    {% if app.environment != 'dev' %}
+        <script type="text/plain" data-cookieconsent="fonctionnel">
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-XXR4PZVBJ8');
+
+            var gtagScript = document.createElement('script');
+            gtagScript.src = 'https://www.googletagmanager.com/gtag/js?id=G-XXR4PZVBJ8';
+            gtagScript.async = true;
+            document.head.appendChild(gtagScript);
+        </script>
+    {% endif %}
 
 
 </head>

@@ -48,6 +48,11 @@ final class DiplomaController extends AbstractController
             try {
                 $response = $httpClient->request('GET', $rncp);
                 $html = $response->getContent();
+                // Supprimer tous les \n et \r
+                $html = str_replace(["\n", "\r"], '', $html);
+                $html = strip_tags($html, '<h2><p><ul><li><br><div><span><strong><table><thead><tbody><tr><td>');
+                $html = preg_replace('/\s+/', ' ', $html);
+
                 $crawler = new Crawler($html);
 
                 $diplomaData = [];
@@ -113,6 +118,10 @@ final class DiplomaController extends AbstractController
                     return $results;
                 })[0] ?? [];
             } catch (\Throwable $e) {
+                //Si on est en dev afficher l'erreur :
+                if ($this->getParameter('kernel.environment') === 'dev') {
+                    $this->addFlash('error', 'Impossible de récupérer les données depuis France Compétences. Erreur : ' . $e->getMessage());
+                }
                 $this->addFlash('error', 'Impossible de récupérer les données depuis France Compétences.');
             }
         }
@@ -143,10 +152,14 @@ final class DiplomaController extends AbstractController
         $diploma->setRNCP($data['code'] ?? 'Code non spécifié');
         $content = "";
         foreach ($data['essential'] as $essential) {
-            $content .= "<b>".$essential['title'] ."</b> : ".trim($essential['text']) ."<br>";
+            $content .= "<p><b>".$essential['title'] ."</b> : ".trim(strip_tags($essential['text'])) ."</p>";
         }
         foreach ($data['summary'] as $summary) {
-            $content .= "<h3 class='text-xl font-semibold mt-6 mb-2'>".trim($summary['title']) ."</h3> <p>".trim($summary['text']) ."</p>";
+            $summary['text'] = str_replace('</li>', "\r\n", $summary['text']);
+            $summary['text'] = preg_replace("/(\r\n|\n|\r){2,}/", "\n", $summary['text']);
+            $summary['text'] = preg_replace('#<p>\s*(?:&nbsp;|\s)*\s*</p>#i', '', $summary['text']);
+
+            $content .= "<br><h3 class='text-xl font-semibold mt-6 mb-2'>".trim(strip_tags($summary['title'])) ."</h3><br><p>".trim(strip_tags($summary['text'])) ."</p>";
         }
         $diploma->setContent($content);
         $diploma->setSchool($this->getUser()->getSchool());

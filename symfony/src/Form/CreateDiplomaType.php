@@ -3,12 +3,9 @@
 namespace App\Form;
 
 use App\Entity\Diploma;
-use App\Entity\School;
-use App\Entity\User;
-use App\Form\Type\TrixType;
-use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CollectionType;
+use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -32,7 +29,7 @@ class CreateDiplomaType extends AbstractType
                     'class' => 'form-control',
                 ],
             ])
-            ->add('content', TrixType::class, [
+            ->add('content', TextareaType::class, [
                 'label' => 'Détails du diplôme',
                 'attr' => [
                     'placeholder' => 'Détails du diplôme',

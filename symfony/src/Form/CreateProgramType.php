@@ -4,10 +4,10 @@ namespace App\Form;
 
 use App\Entity\Diploma;
 use App\Entity\Program;
-use App\Form\Type\TrixType;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
+use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -43,15 +43,18 @@ class CreateProgramType extends AbstractType
                     ]),
                 ],
             ])
-            ->add('prerequisites',TrixType::class, [
+            ->add('prerequisites',TextareaType::class, [
                 'label' => 'Prérequis',
-                'attr' => ['placeholder' => 'Prérequis pour le programme'],
+                'attr' => [
+                    'placeholder' => 'Prérequis pour suivre ce programme',
+                ],
+                'required' => false,
             ])
-            ->add('goals', TrixType::class, [
+            ->add('goals', TextareaType::class, [
                 'label' => 'Objectifs',
                 'attr' => ['placeholder' => 'Objectifs du programme'],
             ])
-            ->add('notes', TrixType::class, [
+            ->add('notes', TextareaType::class, [
                 'label' => 'Notes',
                 'attr' => ['placeholder' => 'Notes importantes concernant le programme'],
                 'required' => false,
