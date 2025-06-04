@@ -52,6 +52,9 @@
                     <tr class="bg-neutral ">
                         <td class="px-6 py-3 font-medium" colspan="5">
                             <a href="{{ path('app_program_show', {'id': program.id}) }}" class="text-primary hover:underline">{{ program.title }}</a>
+                            {%  if user.isAdmin() %}
+                            - {{ program.author }}
+                            {% endif %}
                         </td>
                     </tr>
 

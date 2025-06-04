@@ -18,11 +18,23 @@ final class BackofficeController extends AbstractController
     {
 
         $data = [];
+        $programs = [];
         $user = $this->getUser();
-        foreach ($user->getPrograms() as $program_id=>$program) {
+
+        if( $user->isAdmin()){
+            $users = $user->getSchool()->getUsers();
+            foreach ($users as $u) {
+                $programs = array_merge($programs, $u->getPrograms()->toArray());
+            }
+        }else{
+            $programs = $user->getPrograms();
+        }
+
+        foreach ($programs as $program_id=>$program) {
             foreach ($program->getDiplomas() as $diploma) {
                 $data[$program_id]["title"] = $program->getTitle();
                 $data[$program_id]["id"] = $program->getId();
+                $data[$program_id]["author"] = $program->getOwner()->getEmail();
                 $data[$program_id]["diplomas"][$diploma->getId()]["id"] = $diploma->getId();
                 $data[$program_id]["diplomas"][$diploma->getId()]["title"] = $diploma->getTitle();
                 $data[$program_id]["diplomas"][$diploma->getId()]["RNCP"] = $diploma->getRNCP();
