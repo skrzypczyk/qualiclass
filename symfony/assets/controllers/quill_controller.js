@@ -5,7 +5,6 @@ import htmlEditButton from 'quill-html-edit-button';
 Quill.register('modules/htmlEditButton', htmlEditButton);
 export default class extends Controller {
     connect() {
-        console.log('Quill connecté') // <-- Ajout temporaire
         const editorElement = this.element.querySelector('.quill-editor')
         const hiddenInput = this.element.querySelector('textarea, input[type=hidden]')
 
