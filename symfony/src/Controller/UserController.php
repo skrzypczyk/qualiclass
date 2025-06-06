@@ -52,10 +52,8 @@ final class UserController extends AbstractController
             $user->setSchool($school);
             $user->setIsVerified(true);
             $user->setPassword(password_hash($user->getPassword(), PASSWORD_BCRYPT));
-            $user->setRoles(['ROLE_USER']);
             $em->persist($user);
             $em->flush();
-
 
             $resetToken = $resetPasswordHelper->generateResetToken($user);
             $email = (new TemplatedEmail())

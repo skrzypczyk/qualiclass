@@ -8,7 +8,7 @@
         {% if limitUsers-(user.getSchool(1).getUsers()|length) > 0 or isNewUser == false %}
             {%  if isNewUser %}
                 <h1 class="text-3xl font-bold title-primary mb-8">Ajouter un utilisateur</h1>
-                <p class="text-sm text-gray-600 mb-4">Vous pouvez ajouter jusqu'à {{ limitUsers }} utilisateurs. <b>Il vous reste {{ limitUsers-(user.getSchool().getUsers(1)|length) }} utilisateur(s) à ajouter</b>.</p>
+                <p class="text-sm text-gray-600 mb-4">Votre offre permet l'utilisation de {{ limitUsers }} utilisateurs. <b>Il vous reste {{ limitUsers-(user.getSchool().getUsers(1)|length) }} utilisateur(s) à ajouter</b>.</p>
             {% else %}
                 <h1 class="text-3xl font-bold title-primary mb-8">Modifier cet utilisateur</h1>
                 <p class="text-red-600 mb-4">Attention, si vous modifiez l'adresse email, le mot de passe
@@ -27,6 +27,18 @@
 
                 {% if form.email.vars.errors|length > 0 %}
                     <p class="mt-1 text-sm text-red-600">{{ form_errors(form.email) }}</p>
+                {% endif %}
+            </div>
+            <div>
+                {{ form_label(form.roles, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700'}}) }}
+                {{ form_widget(form.roles, {
+                    'attr': {
+                        'class': 'block w-full px-4 py-2 rounded-md shadow-sm focus:ring focus:ring-indigo-200 border border-gray-300'
+                    }
+                }) }}
+
+                {% if form.roles.vars.errors|length > 0 %}
+                    <p class="mt-1 text-sm text-red-600">{{ form_errors(form.roles) }}</p>
                 {% endif %}
             </div>
 
@@ -63,36 +75,39 @@
                 </thead>
                 <tbody class="text-gray-800 text-sm divide-y divide-gray-100">
                 {% for user in user.getSchool().getUsers()|sort((a, b) => a.id <=> b.id) %}
-                    <tr class="transition {{ user.isDisable ? 'bg-gray-100' : ''  }}">
-                        <td class="px-6 py-4 font-medium">{{ user.email }}</td>
-                        <td class="px-6 py-4 space-x-4">
+                    {% if user != app.user %}
+                        <tr class="transition {{ user.isDisable ? 'bg-gray-100' : ''  }}">
+                            <td class="px-6 py-4 font-medium">{{ user.email }}</td>
+                            <td class="px-6 py-4 space-x-4">
 
-                            <a href="{{ path('user_status', {'id': user.id}) }}"
-                               class="inline-block text-sm font-semibold hover:underline  {{ user.isDisable ? 'text-green-600' : 'text-yellow-600' }}">
-                                {{ user.isDisable ? 'Activer' : 'Désactiver' }}
-                            </a>
-                            <a href="{{ path('user_edit', {'id': user.id}) }}"
-                               class="inline-block text-sm text-blue-600 font-semibold hover:underline">
-                                Modifier
-                            </a>
+                                <a href="{{ path('user_status', {'id': user.id}) }}"
+                                   class="inline-block text-sm font-semibold hover:underline  {{ user.isDisable ? 'text-green-600' : 'text-yellow-600' }}">
+                                    {{ user.isDisable ? 'Activer' : 'Désactiver' }}
+                                </a>
+                                <a href="{{ path('user_edit', {'id': user.id}) }}"
+                                   class="inline-block text-sm text-blue-600 font-semibold hover:underline">
+                                    Modifier
+                                </a>
 
-                            <button
-                                    type="button"
-                                    @click="modalUserlId = '{{ user.id }}'; showModal = true;"
-                                    class="inline-block text-sm text-red-600 font-semibold hover:underline"
-                            >
-                                Supprimer
-                            </button>
+                                <button
+                                        type="button"
+                                        @click="modalUserlId = '{{ user.id }}'; showModal = true;"
+                                        class="inline-block text-sm text-red-600 font-semibold hover:underline"
+                                >
+                                    Supprimer
+                                </button>
 
-                            <form method="post"
-                                  action="{{ path('user_delete', {'id': user.id}) }}"
-                                  id="delete-form-{{ user.id }}"
-                                  class="hidden">
-                                <input type="hidden" name="_token" value="{{ csrf_token('delete_user_' ~ user.id) }}">
-                            </form>
+                                <form method="post"
+                                      action="{{ path('user_delete', {'id': user.id}) }}"
+                                      id="delete-form-{{ user.id }}"
+                                      class="hidden">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete_user_' ~ user.id) }}">
+                                </form>
 
-                        </td>
-                    </tr>
+                            </td>
+                        </tr>
+
+                    {% endif %}
                 {% endfor %}
                 </tbody>
             </table>

@@ -117,11 +117,9 @@ final class SubscriptionController extends AbstractController
         }
         try {
             $stripeService->unsubscribe($subscription->getStripeSubscriptionId());
-
             $subscription->setIsUnsubscribed(true);
             $em->persist($subscription);
             $em->flush();
-
             $this->addFlash('success', 'Votre abonnement a été résilié avec succès.');
         } catch (\Exception $e) {
             $this->addFlash('danger', 'Erreur lors de la résiliation de votre abonnement : ' . $e->getMessage());

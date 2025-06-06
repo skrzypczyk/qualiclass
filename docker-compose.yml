@@ -18,17 +18,6 @@ services:
     volumes:
       - ./symfony:/app
       - /app/node_modules
-    environment:
-      DATABASE_URL: "pgsql://symfony:symfony@db:5432/symfony"
-      MAILER_DSN: smtp://mailpit:1025
-      STRIPE_SECRET_KEY: sk_test_51QArGrDfu0RxeeNH6S1ayZi8RsvzJ7HMGsiK72M8WNFFavQZ5DlgtYenFMYlG6m5yQRgq4dvzsOTqTA4VpiGm6AP00vXgyE8vw
-      STRIPE_PUBLIC_KEY: pk_test_51QArGrDfu0RxeeNHvSeJoy0v1w6THbOsawTvPUna95DdKkdPOdOIWHNXCaqLHXRFko6wQstgUM1NmabhjuXZGqpJ005tlr62RN
-      STRIPE_WEBHOOK_SECRET: whsec_9cbd2d3be5ae0c80084468c96372b801bef918549b8c48106863c855493d7100
-      STRIPE_PRODUCT_BASE: prod_SA1TaTHvW3he0q
-      STRIPE_PRODUCT_USER: prod_SA1TycBhEvU58s
-      EWZ_RECAPTCHA_PUBLIC_KEY: 6LeS0lQrAAAAAAgAIEru_Kk_8TLn94Tu3NUpL0qy
-      EWZ_RECAPTCHA_PRIVATE_KEY: 6LeS0lQrAAAAAI2qXlQYGkZok25rhEpDihreo_zB
-      APP_SECRET: 33007ba842beacb4b4124ffe81d9e503
 
   db:
     image: postgres:15

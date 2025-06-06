@@ -5,6 +5,7 @@ namespace App\Form;
 use App\Entity\User;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -20,6 +21,16 @@ class CreateUserType extends AbstractType
                     'placeholder' => 'Email',
                     'class' => 'form-control',
                 ],
+            ])
+            ->add('roles',ChoiceType::class, [
+                'label' => 'Rôle',
+                'choices' => [
+                    'Utilisateur' => 'ROLE_USER',
+                    'Administrateur' => 'ROLE_ADMIN',
+                ],
+                'multiple' => true,
+                'expanded' => false,
+                'attr' => ['class' => 'form-select'],
             ])
         ;
     }

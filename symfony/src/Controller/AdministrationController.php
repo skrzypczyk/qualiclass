@@ -2,9 +2,12 @@
 
 namespace App\Controller;
 
+use App\Entity\School;
 use App\Entity\Setting;
+use App\Form\SchoolEditAdminType;
 use App\Form\SettingsType;
 use App\Form\UserEditAdminType;
+use App\Repository\SchoolRepository;
 use App\Repository\SettingRepository;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -19,9 +22,9 @@ use App\Entity\User;
 final class AdministrationController extends AbstractController
 {
     #[Route('/', name: 'app_admin')]
-    public function index(UserRepository $userRepository, Request $request,EntityManagerInterface $em, SettingRepository $settingRepository): Response
+    public function index(SchoolRepository $schoolRepository, Request $request,EntityManagerInterface $em, SettingRepository $settingRepository): Response
     {
-        $allUsers = $userRepository->findAll();
+        $schools = $schoolRepository->findAll();
         $chatGPTSetting = $settingRepository->findOneBy(['name' => 'chatGPT']);
         if (!$chatGPTSetting) {
             $chatGPTSetting = new Setting();
@@ -44,16 +47,9 @@ final class AdministrationController extends AbstractController
             return $this->redirectToRoute('app_admin');
         }
 
-
-
-        $users = array_filter($allUsers, function ($user) {
-            return in_array('ROLE_ADMIN', $user->getRoles(), true)
-                || in_array('ROLE_SUPER_ADMIN', $user->getRoles(), true);
-        });
-
         return $this->render('administration/index.html.twig', [
             'controller_name' => 'AdministrationController',
-            'users' => $users,
+            'schools' => $schools,
             'form' => $form->createView(),
         ]);
     }
@@ -65,12 +61,7 @@ final class AdministrationController extends AbstractController
         EntityManagerInterface $em,
         UserPasswordHasherInterface $passwordHasher
     ): Response {
-
-        $school = $this->getUser()->getSchool();
-        $form = $this->createForm(UserEditAdminType::class, $user, [
-            'isFreeAccount' => $school->isFreeAccount(),
-            'limitUsers' => $school->getLimitUsers(),
-        ]);
+        $form = $this->createForm(UserEditAdminType::class, $user);
 
         $form->handleRequest($request);
 
@@ -81,18 +72,36 @@ final class AdministrationController extends AbstractController
                     $passwordHasher->hashPassword($user, $plainPassword)
                 );
             }
-            $school->setLimitUsers($form->get('limitUsers')->getData());
-            $school->setIsFreeAccount($form->get('isFreeAccount')->getData());
-
             $em->flush();
             $this->addFlash('success', 'Utilisateur mis à jour.');
-
             return $this->redirectToRoute('app_admin');
         }
 
         return $this->render('administration/editUser.html.twig', [
             'form' => $form->createView(),
             'user' => $user,
+        ]);
+    }
+
+    #[Route('/school/{id}/edit', name: 'app_admin_School_edit')]
+    public function editSchool(
+        Request $request,
+        School $school,
+        EntityManagerInterface $em,
+        UserPasswordHasherInterface $passwordHasher
+    ): Response {
+        $form = $this->createForm(SchoolEditAdminType::class, $school);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+
+            $em->flush();
+            $this->addFlash('success', 'Ecole mise à jour.');
+            return $this->redirectToRoute('app_admin');
+        }
+
+        return $this->render('administration/editSchool.html.twig', [
+            'form' => $form->createView(),
         ]);
     }
 }

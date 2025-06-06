@@ -4,22 +4,31 @@
 
 {% block body %}
     <div class="max-w-2xl mx-auto px-4 py-8">
-        <h1 class="text-2xl font-bold text-[#142742] mb-6">Modifier l'utilisateur #{{ user.id }}</h1>
+        <h1 class="text-2xl font-bold text-[#142742] mb-6">Modifier l'utilisateur</h1>
 
         {{ form_start(form, {'attr': {'class': 'space-y-6'}}) }}
+
+        <div>
+            <div class="flex items-center">
+                {{ form_label(form.isVerified, null, {'label_attr': {'class': 'inline-flex items-center space-x-2'}}) }}
+                {{ form_widget(form.isVerified, {'attr': {'class': 'form-checkbox h-5 w-5 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500 ml-4'}}) }}
+                {{ form_errors(form.isVerified) }}
+            </div>
+        </div>
+
+        <div>
+            <div class="flex items-center">
+                {{ form_label(form.isDisable, null, {'label_attr': {'class': 'inline-flex items-center space-x-2'}}) }}
+                {{ form_widget(form.isDisable, {'attr': {'class': 'form-checkbox h-5 w-5 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500 ml-4'}}) }}
+                {{ form_errors(form.isDisable) }}
+            </div>
+        </div>
 
         <div>
             {{ form_label(form.email, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-1'}}) }}
             {{ form_widget(form.email, {'attr': {'class': 'w-full px-4 py-2 border rounded shadow-sm'}}) }}
             {{ form_errors(form.email) }}
 
-        </div>
-        <div>
-            {{ form_label(form.isFreeAccount, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-1'}}) }}
-            <div class="flex items-center">
-                {{ form_widget(form.isFreeAccount, {'attr': {'class': 'mr-2'}}) }}
-                {{ form_errors(form.isFreeAccount) }}
-            </div>
         </div>
 
         <div>
@@ -35,14 +44,6 @@
         </div>
 
         <div>
-            {{ form_label(form.isVerified, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-1'}}) }}
-            <div class="flex items-center">
-                {{ form_widget(form.isVerified, {'attr': {'class': 'mr-2'}}) }}
-                {{ form_errors(form.isVerified) }}
-            </div>
-        </div>
-
-        <div>
             {{ form_label(form.firstname, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-1'}}) }}
             {{ form_widget(form.firstname, {'attr': {'class': 'w-full px-4 py-2 border rounded shadow-sm'}}) }}
             {{ form_errors(form.firstname) }}
@@ -54,34 +55,11 @@
             {{ form_errors(form.lastname) }}
         </div>
 
-        <div>
-            <hr>
-            <h2 class="text-lg font-semibold text-[#142742] mt-6 mb-4">Dernier contrat valide</h2>
-
-            {% set school = user.getSchool() %}
-            {% set lastSubscription = school.getLastSubscription() %}
-            {% if lastSubscription %}
-                {% set invoice = school.getLastInvoiceValid() %}
-
-                <div class="bg-gray-50 border rounded p-4 space-y-2 text-sm text-gray-700">
-                    <p><span class="font-medium">Date de paiement :</span> {{ invoice.paidAt|date('d/m/Y') }}</p>
-                    <p><span class="font-medium">Utilisateurs :</span> {{ lastSubscription.limitUsers }}</p>
-                </div>
-            {% else %}
-                <p class="text-sm text-gray-500 italic">Aucun contrat valide ce mois-ci.</p>
-            {% endif %}
-        </div>
 
         <div>
             {{ form_label(form.country, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-1'}}) }}
             {{ form_widget(form.country, {'attr': {'class': 'w-full px-4 py-2 border rounded shadow-sm'}}) }}
             {{ form_errors(form.country) }}
-        </div>
-
-        <div>
-            {{ form_label(form.limitUsers, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-1'}}) }}
-            {{ form_widget(form.limitUsers, {'attr': {'class': 'w-full px-4 py-2 border rounded shadow-sm'}}) }}
-            {{ form_errors(form.limitUsers) }}
         </div>
 
         <div class="flex items-center gap-4 mt-6">
@@ -90,12 +68,7 @@
                     class="btn-primary">
                 Enregistrer
             </button>
-
-            <a
-                    href="{{ path('app_admin') }}"
-                    class="btn-neutral">
-                Annuler
-            </a>
+            <a href="{{ path('app_admin') }}" class="btn-neutral">Annuler</a>
         </div>
 
         {{ form_end(form) }}

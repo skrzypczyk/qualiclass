@@ -26,15 +26,11 @@
 
         {{ form_end(form) }}
 
-        <h1 class="text-3xl font-bold title-primary mb-8">Gestion des utilisateurs</h1>
-
-        <table class="bg-white border border-gray-200 shadow-sm rounded-lg overflow-hidden">
+        <h1 class="text-3xl font-bold title-primary mb-8">Gestion des écoles</h1>
+        <table class="bg-white border border-gray-200 shadow-sm rounded-lg overflow-hidden min-w-full ">
             <thead>
             <tr>
-                <th class="px-6 py-3 text-left">ID</th>
-                <th class="px-6 py-3 text-left">Nom / Prénom / Email</th>
                 <th class="px-6 py-3 text-left">Ecole</th>
-                <th class="px-6 py-3 text-left">Rôle</th>
                 <th class="px-6 py-3 text-left">Compte gratuit</th>
                 <th class="px-6 py-3 text-left">Abonnement</th>
                 <th class="px-6 py-3 text-left">Surcharge</th>
@@ -42,59 +38,44 @@
             </tr>
             </thead>
             <tbody class="text-gray-800 text-sm divide-y divide-gray-200">
-            {% for user in users %}
-                {% set school = user.getSchool() %}
-                <tr class="hover:bg-gray-50">
-                    <td class="px-6 py-4 font-semibold">{{ user.id }}</td>
-                    <td class="px-6 py-4">{{ user.lastName }} {{ user.firstName }}<br> {{ user.email }}</td>
-                    <td class="px-6 py-4">{{ user.school.name }}</td>
-                    <td class="px-6 py-4">
-                        {% for role in user.roles %}
-                            <span class="inline-block bg-gray-200 text-gray-700 px-2 py-1 rounded-full text-xs font-semibold mr-2">{{ role|capitalize }}</span>
-                        {% endfor %}
-                    </td>
-                    <td class="px-6 py-4 text-center">{{ school.isFreeAccount ? '✅' : '❌' }}</td>
-                    <td class="px-6 py-4">
-                        {% set sub = school.getLastSubscription() %}
-                        {% set invoice = school.getLastInvoiceValid() %}
-                        {% if invoice %}
-                             {{ sub.limitUsers }} utilisateur(s)<br>
-                            <small class="text-gray-500">Dernière facture : {{ invoice.paidAt|date('d/m/Y') }}</small>
-                        {% else %}
-                            ❌ Aucun
-                        {% endif %}
-                    </td>
-                    <td class="px-6 py-4">
-                        {% if school.limitUsers %}{{ school.limitUsers }} utilisateur(s)<br>{% endif %}
-                    </td>
-                    <td class="px-6 py-4 text-center space-x-2">
-                        <a href="{{ path('app_admin_user_edit', { id: user.id }) }}" class="btn-primary">Modifier</a>
-                    </td>
-                </tr>
+                {% for school in schools %}
+                    <tr class="bg-neutral">
+                        <td class="px-6 py-3 text-left">
+                            {{ school.name }}
+                        </td>
+                        <td class="px-6 py-4 text-center">{{ school.isFreeAccount ? '✅' : '' }}</td>
+                        <td class="px-6 py-4">
+                            {% set sub = school.getLastSubscription() %}
+                            {% set invoice = school.getLastInvoiceValid() %}
+                            {% if invoice %}
+                                {{ sub.limitUsers }} utilisateur(s)<br>
+                                <small class="text-gray-500">Dernière facture : {{ invoice.paidAt|date('d/m/Y') }}</small>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4">
+                            {% if school.limitUsers %}{{ school.limitUsers }} utilisateur(s)<br>{% endif %}
+                        </td>
+                        <td class="px-6 py-4 text-center space-x-2">
+                            <a href="{{ path('app_admin_School_edit', { id: school.id }) }}" class="btn-primary">Modifier</a>
+                        </td>
+                    </tr>
+                    {% for user in school.getUsers() %}
+                        <tr>
+                            <td class="px-6 py-4">{{ user.email }}</td>
+                            <td class="px-6 py-4">{{ user.lastName }} {{ user.firstName }}</td>
 
-                {% for subuser in user.getSchool().getUsers() %}
-                    {% if subuser.isSuperAdmin == false and subuser.isAdmin == false %}
-                        <tr class="bg-gray-50">
-                            <td class="px-6 py-4 pl-12 text-gray-500">{{ subuser.id }}</td>
-                            <td class="px-6 py-4 pl-12 text-gray-500">{{ subuser.lastName }}</td>
-                            <td class="px-6 py-4 text-gray-500">{{ subuser.firstName }}</td>
-                            <td class="px-6 py-4 text-gray-500">{{ subuser.email }}</td>
-                            <td class="px-6 py-4 text-gray-500">
-                                {% for role in subuser.roles %}
-                                    <span class="inline-block bg-gray-100 text-gray-600 px-2 py-1 rounded-full text-xs font-semibold mr-2">{{ role|capitalize }}</span>
-                                {% endfor %}
-                            </td>
-                            <td class="px-6 py-4  space-x-2"  colspan="4">
-                                <a href="{{ path('app_admin_user_edit', { id: subuser.id }) }}" class="btn-primary">Modifier</a>
+                            <td class="px-6 py-4">{{ user.roles|join(', ') }}</td>
+                            <td class="px-6 py-4">{{ user.isDisable?"Désactivé":""}}</td>
+                            <td class="px-6 py-4 text-center space-x-2">
+                                <a href="{{ path('app_admin_user_edit', { id: user.id }) }}" class="btn-neutral">Modifier</a>
                             </td>
                         </tr>
-                    {% endif %}
+                    {% else %}
+                        <tr>
+                            <td colspan="9" class="text-center py-6 text-gray-500">Aucun utilisateur trouvé.</td>
+                        </tr>
+                    {% endfor %}
                 {% endfor %}
-            {% else %}
-                <tr>
-                    <td colspan="9" class="text-center py-6 text-gray-500">Aucun utilisateur trouvé.</td>
-                </tr>
-            {% endfor %}
             </tbody>
         </table>
     </div>
