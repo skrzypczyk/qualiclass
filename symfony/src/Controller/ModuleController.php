@@ -31,7 +31,7 @@ final class ModuleController extends AbstractController
 
         $user = $this->getUser();
         $school = $user->getSchool();
-        $subscription = $school->getLastInvoiceValid()->getSubscription();
+        $subscription = $school->getLastInvoiceValid()?$school->getLastInvoiceValid()->getSubscription(): null;
 
         $search = $request->query->get('search');
         $categoryId = $request->query->get('category');
@@ -89,6 +89,7 @@ final class ModuleController extends AbstractController
             'archived' => $archived,
             'school' => $school,
             'subscription' => $subscription,
+            'user' => $user,
         ]);
     }
 
@@ -99,6 +100,7 @@ final class ModuleController extends AbstractController
         $form = $this->createForm(CreateModuleWithChatgptType::class);
         $form->handleRequest($request);
         $school = $this->getUser()->getSchool();
+
         $solde = $creditRepository->getCreditsUsedThisMonth($school);
         if ($form->isSubmitted() && $form->isValid() && $solde < 200) {
             $data = $form->getData();
