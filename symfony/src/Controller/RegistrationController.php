@@ -11,6 +11,7 @@ use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Address;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
@@ -24,7 +25,10 @@ class RegistrationController extends AbstractController
     }
 
     #[Route('/register', name: 'app_register')]
-    public function register(Request $request, UserPasswordHasherInterface $userPasswordHasher, EntityManagerInterface $entityManager): Response
+    public function register(Request $request,
+                             UserPasswordHasherInterface $userPasswordHasher,
+                             EntityManagerInterface $entityManager,
+                             MailerInterface $mailer): Response
     {
         $user = new User();
         $form = $this->createForm(RegistrationFormType::class, $user);
@@ -38,10 +42,11 @@ class RegistrationController extends AbstractController
             $user->setPassword($userPasswordHasher->hashPassword($user, $plainPassword));
             $user->setRoles(['ROLE_ADMIN']);
             $school = new School();
-            $school->setName("Etablissement sans nom");
+            $school->setName($form->get('school')->getData());
             $user->setSchool($school);
             $entityManager->persist($user);
             $entityManager->flush();
+
 
             // generate a signed url and email it to the user
             $this->emailVerifier->sendEmailConfirmation('app_verify_email', $user,
@@ -55,7 +60,17 @@ class RegistrationController extends AbstractController
                     ])
             );
 
-            // do anything else you need here, like send an email
+            // 🔔 ENVOI DE L'EMAIL DE NOTIFICATION INTERNE
+            $adminNotification = (new TemplatedEmail())
+                ->from(new Address('contact@qualiclass.com', 'QualiClass'))
+                ->to('contact@qualiclass.com') // remplace par ton adresse réelle
+                ->subject('Nouveau compte créé sur QualiClass')
+                ->htmlTemplate('registration/admin_new_account.html.twig')
+                ->context([
+                    'user' => $user,
+                    'school' => $school,
+                ]);
+            $mailer->send($adminNotification);
 
             $this->addFlash('success', 'Veuillez activer votre compte en cliquant sur le lien que nous vous avons envoyé par email.');
             return $this->redirectToRoute('app_home');

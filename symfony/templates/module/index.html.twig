@@ -6,8 +6,9 @@
     <div class="max-w-7xl mx-auto px-6 py-10">
         <h1 class="text-3xl font-bold title-primary mb-8">Vos modules</h1>
         <a href="{{ path('app_module_create') }}" class="px-4 py-2 btn-primary">Ajouter un module</a>
-        {% if school.keyChatGpt is not empty %}
-            <a href="{{ path('app_module_create_chatgpt') }}" class="px-4 py-2 btn-neutral">Avec ChatGPT</a>
+
+        {% if subscription.chatgpt %}
+            <a href="{{ path('app_module_create_chatgpt') }}" class="px-4 py-2 btn-neutral">Générer automatiquement</a>
         {% endif %}
 
         <form method="get" data-turbo='false' class="mb-6 bg-gray-50 border border-gray-200 rounded-lg p-6 shadow-sm mt-4">

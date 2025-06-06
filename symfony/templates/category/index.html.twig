@@ -6,6 +6,13 @@
     <div class="max-w-2xl mx-auto px-4 py-8">
 
 
+
+        {% if category.id %}
+            <h1 class="text-2xl font-bold text-primary my-6">Modifier la catégorie</h1>
+        {% else %}
+            <h1 class="text-2xl font-bold text-primary my-6">Créer une nouvelle catégorie</h1>
+        {% endif %}
+
         {{ form_start(form, {'attr': {'enctype': 'multipart/form-data', 'class': 'space-y-6'}}) }}
 
         <div>
@@ -36,7 +43,7 @@
 
 
 
-        <h1 class="text-2xl font-bold text-[#142742] my-6">Liste des catégories</h1>
+        <h1 class="text-2xl font-bold text-primary my-6">Liste des catégories</h1>
         <div x-data="{ showModal: false, modalUserId: null }">
             <table class="min-w-full bg-white border border-gray-200 shadow-md rounded-lg overflow-hidden">
                 <thead class="bg-gray-100 text-gray-700 text-sm uppercase tracking-wide">

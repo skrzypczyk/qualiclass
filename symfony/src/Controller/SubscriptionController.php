@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Subscription;
+use App\Service\StripeService;
 use Doctrine\ORM\EntityManagerInterface;
 use Stripe\Price;
 use Stripe\Product;
@@ -18,186 +19,68 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 final class SubscriptionController extends AbstractController
 {
     #[Route('/new', name: 'app_new_subscription')]
-    public function create(): Response
+    public function new(StripeService $stripeService): Response
     {
-        Stripe::setApiKey($_ENV['STRIPE_SECRET_KEY']);
-
-        // IDs à charger (ou tu peux charger tous les produits si tu préfères)
-        $productIds = [
-            'base' => $_ENV['STRIPE_PRODUCT_BASE'],
-            'user' => $_ENV['STRIPE_PRODUCT_USER'],
-        ];
-
-        $products = [];
-
-        foreach ($productIds as $key => $id) {
-            $product = Product::retrieve($id);
-            $price = Price::all(['product' => $id, 'limit' => 1])->data[0] ?? null;
-
-            $products[$key] = [
-                'id' => $id,
-                'name' => $product->name,
-                'description' => $product->description,
-                'price_id' => $price?->id,
-                'price_amount' => $price ? $price->unit_amount / 100 : null,
-                'currency' => $price?->currency ?? 'eur',
-                'recurring' => $price?->recurring?->interval ?? null,
-            ];
-        }
+        $products = $stripeService->getProductsWithPrices();
 
         return $this->render('subscription/new.html.twig', [
             'products' => $products,
         ]);
     }
 
-    #[Route('/update/{id}', name: 'app_update_subscription')]
-    public function update(
+
+
+    #[Route('/create', name: 'app_subscription_store', methods: ['POST'])]
+    public function create(
+        Request $request,
+        StripeService $stripeService
+    ): Response {
+        $products = $stripeService->getProductsWithPrices();
+        $lineItems = $stripeService->getLineItemsFromRequest($request, $products);
+        return $this->redirect($stripeService->getCreateUrl($lineItems, $this->getUser()->getId()), 303);
+    }
+
+
+    #[Route('/change/{id}', name: 'app_change_subscription', methods: ['GET'])]
+    public function change(
         Request $request,
         Subscription $subscription,
-        EntityManagerInterface $em
+        StripeService $stripeService
     ): Response {
+
         if ($this->getUser()->getSchool() !== $subscription->getSchool()) {
             throw $this->createAccessDeniedException('Vous n\'êtes pas autorisé à modifier cet abonnement.');
         }
 
-        \Stripe\Stripe::setApiKey($_ENV['STRIPE_SECRET_KEY']);
-
-        $productIds = [
-            'base' => $_ENV['STRIPE_PRODUCT_BASE'],
-            'user' => $_ENV['STRIPE_PRODUCT_USER'],
-        ];
-        $products = [];
-
-        foreach ($productIds as $key => $id) {
-            $product = \Stripe\Product::retrieve($id);
-            $price = \Stripe\Price::all(['product' => $id, 'limit' => 1])->data[0] ?? null;
-
-            $products[$key] = [
-                'id' => $id,
-                'name' => $product->name,
-                'description' => $product->description,
-                'price_id' => $price?->id,
-                'price_amount' => $price ? $price->unit_amount / 100 : null,
-                'currency' => $price?->currency ?? 'eur',
-                'recurring' => $price?->recurring?->interval ?? null,
-            ];
-        }
-
-        if ($request->isMethod('POST')) {
-            $quantities = $request->request->all('quantities');
-            $stripeSub = \Stripe\Subscription::retrieve($subscription->getStripeSubscriptionId());
-
-            $itemsToUpdate = [];
-
-            foreach (['user'] as $key) {
-                $quantity = max(0, (int) ($quantities[$key] ?? 0));
-                $productId = $productIds[$key];
-                $priceId = $products[$key]['price_id'];
-
-                $existingItem = null;
-                foreach ($stripeSub->items->data as $subItem) {
-                    if ($subItem->price->product === $productId) {
-                        $existingItem = $subItem;
-                        break;
-                    }
-                }
-
-                if ($existingItem) {
-                    $itemsToUpdate[] = [
-                        'id' => $existingItem->id,
-                        'quantity' => $quantity,
-                    ];
-                } elseif ($quantity > 0) {
-                    $itemsToUpdate[] = [
-                        'price' => $priceId,
-                        'quantity' => $quantity,
-                    ];
-                }
-            }
-
-            try {
-                \Stripe\Subscription::update($subscription->getStripeSubscriptionId(), [
-                    'items' => $itemsToUpdate,
-                    'proration_behavior' => 'always_invoice',
-                ]);
-
-                $this->addFlash('success', 'Votre abonnement a été mis à jour avec succès.');
-            } catch (\Throwable $e) {
-                $this->addFlash('error', 'Erreur lors de la mise à jour de l’abonnement : ' . $e->getMessage());
-            }
-
-            return $this->redirectToRoute('app_subscription');
-        }
-
         return $this->render('subscription/update.html.twig', [
-            'products' => $products,
-            'subscription' => $subscription
+            'products' => $stripeService->getProductsWithPrices(),
+            'subscription' => $subscription,
         ]);
     }
 
 
-
-    #[Route('/create', name: 'app_subscription_store', methods: ['POST'])]
-    public function store(
+    #[Route('/update/{id}', name: 'app_update_subscription', methods: ['POST'])]
+    public function update(
         Request $request,
-        Security $security
+        Subscription $subscription,
+        StripeService $stripeService
     ): Response {
-        \Stripe\Stripe::setApiKey($_ENV['STRIPE_SECRET_KEY']);
-
-        $user = $security->getUser();
-        $quantities = $request->request->all('quantities');
-
-        // Mapping entre les clés HTML et les ID Stripe (depuis variables d'env)
-        $productIds = [
-            'base' => $_ENV['STRIPE_PRODUCT_BASE'],
-            'user' => $_ENV['STRIPE_PRODUCT_USER']
-        ];
-
-        $lineItems = [];
-
-        foreach ($productIds as $key => $productId) {
-            $price = \Stripe\Price::all([
-                'product' => $productId,
-                'limit' => 1,
-            ])->data[0] ?? null;
-
-            if (!$price) {
-                continue;
-            }
-
-            // Base est toujours incluse
-            if ($key === 'base') {
-                $lineItems[] = [
-                    'price' => $price->id,
-                    'quantity' => 1,
-                ];
-                continue;
-            }
-
-            // Sinon, uniquement si une quantité est définie
-            $qty = (int) ($quantities[$key] ?? 0);
-            if ($qty > 0) {
-                $lineItems[] = [
-                    'price' => $price->id,
-                    'quantity' => $qty,
-                ];
-            }
+        if ($this->getUser()->getSchool() !== $subscription->getSchool()) {
+            throw $this->createAccessDeniedException('Vous n\'êtes pas autorisé à modifier cet abonnement.');
+        }
+        $products = $stripeService->getProductsWithPrices();
+        $lineItems = $stripeService->getLineItemsFromRequest($request, $products);
+        try {
+            $stripeService->updateSubscriptionItems($subscription->getStripeSubscriptionId(), $lineItems);$this->addFlash('success', 'Votre abonnement a été mis à jour avec succès.');
+            $this->addFlash('success', 'Votre abonnement a été mis à jour avec succès.');
+        } catch (\Throwable $e) {
+            $this->addFlash('error', 'Erreur lors de la mise à jour de l’abonnement : ' . $e->getMessage());
         }
 
-        // Redirection vers Stripe Checkout
-        $session = \Stripe\Checkout\Session::create([
-            'payment_method_types' => ['card'],
-            'mode' => 'subscription',
-            'line_items' => $lineItems,
-            'subscription_data' => [
-                'metadata' => ['user_id' => $user->getId()],
-            ],
-            'success_url' => $this->generateUrl('app_subscription_success', [], UrlGeneratorInterface::ABSOLUTE_URL),
-            'cancel_url' => $this->generateUrl('app_new_subscription', [], UrlGeneratorInterface::ABSOLUTE_URL),
-        ]);
-
-        return $this->redirect($session->url, 303);
+        return $this->redirectToRoute('app_subscription');
     }
+
+
 
 
     #[Route('/success', name: 'app_subscription_success')]
@@ -208,36 +91,35 @@ final class SubscriptionController extends AbstractController
     }
 
     #[Route('/show', name: 'app_subscription')]
-    public function subscription(EntityManagerInterface $em): Response
+    public function subscription(EntityManagerInterface $em, StripeService $stripeService): Response
     {
         /** @var \App\Entity\User $user */
         $user = $this->getUser();
 
         $subscriptions = $user->getSchool()->getSubscriptions(); // ou $em->getRepository(Invoice::class)->findBy(['owner' => $user])
+        foreach ($subscriptions as $subscription)
+        {
+            $invoicesUpcoming[$subscription->GetId()] = $stripeService->getNextInvoice($subscription->getStripeCustomerId(), $subscription->getStripeSubscriptionId());
+        }
 
         return $this->render('subscription/show.html.twig', [
             'user' => $user,
             'subscriptions' => $subscriptions,
+            'invoicesUpcoming' => $invoicesUpcoming ?? [],
         ]);
     }
 
     #[Route('/unsubscribe/{id}', name: 'app_unsubscribe', methods: ['POST'])]
-    public function unsubscribe(EntityManagerInterface $em, Subscription $subscription): Response
+    public function unsubscribe(EntityManagerInterface $em, Subscription $subscription, StripeService $stripeService): Response
     {
         if ($this->getUser()->getSchool() !== $subscription->getSchool()) {
             throw $this->createAccessDeniedException('Vous n\'êtes pas autorisé à modifier cet abonnement.');
         }
-
-        Stripe::setApiKey($_ENV['STRIPE_SECRET_KEY']);
-
         try {
-            // 1. Récupérer l’abonnement
-            \Stripe\Subscription::update($subscription->getStripeSubscriptionId(), [
-                'cancel_at_period_end' => true,
-            ]);
+            $stripeService->unsubscribe($subscription->getStripeSubscriptionId());
 
-            // 3. Marquer l’utilisateur comme désabonné
             $subscription->setIsUnsubscribed(true);
+            $em->persist($subscription);
             $em->flush();
 
             $this->addFlash('success', 'Votre abonnement a été résilié avec succès.');

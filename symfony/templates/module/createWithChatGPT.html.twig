@@ -5,8 +5,9 @@
 {% block body %}
     <div class="max-w-4xl mx-auto px-6 py-10 bg-white shadow rounded">
         <h1 class="text-3xl font-bold title-primary mb-8">
-            Demander à ChatGPT de créer un module
+            Générer un module
         </h1>
+
 
         {{ form_start(form, {
             attr: {
@@ -53,15 +54,35 @@
 
 
         <div class="flex items-center gap-4 pt-6">
+            {%  if credit < 200 %}
             <button type="submit" class="btn-primary">
-                Envoyer la demande
+                Générer ( {{ 200 - credit  }} Crédits restants )
             </button>
+            {% else %}
+            <button type="submit" class="btn-primary" disabled>
+                Vous n'avez plus de crédit
+            </button>
+            {% endif %}
+
         </div>
 
         {{ form_end(form) }}
 
 
         {% if syllabus is not null %}
+
+
+            <form method="POST" action="{{ path('app_module_store') }}">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token('validate_module') }}">
+                <input type="hidden"  name="module_data" value='{{ syllabusJson }}'>
+                <div class=" my-4">
+                    <button type="submit" class="btn btn-danger btn-lg">
+                        Importer le module généré
+                    </button>
+                </div>
+            </form>
+
+
             <h2 class='text-2xl font-bold title-primary mb-8'>Description et Objectifs</h2>
             {{ syllabus.description_and_objectives|raw }}
 
@@ -76,8 +97,8 @@
                 <input type="hidden" name="_csrf_token" value="{{ csrf_token('validate_module') }}">
                 <input type="hidden"  name="module_data" value='{{ syllabusJson }}'>
                 <div class="text-center my-4">
-                    <button type="submit" class="btn btn-primary btn-lg">
-                        Créer le module
+                    <button type="submit" class="btn btn-danger btn-lg">
+                        Importer le module généré
                     </button>
                 </div>
             </form>

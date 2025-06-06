@@ -2,12 +2,15 @@
 
 namespace App\Controller;
 
+use App\Entity\Credit;
 use App\Entity\Module;
 use App\Entity\User;
 use App\Form\CreateModuleType;
 use App\Form\CreateModuleWithChatgptType;
 use App\Repository\CategoryRepository;
+use App\Repository\CreditRepository;
 use App\Repository\ModuleRepository;
+use App\Repository\SettingRepository;
 use App\Service\ChatGptClient;
 use Doctrine\ORM\EntityManagerInterface;
 use Knp\Component\Pager\PaginatorInterface;
@@ -28,6 +31,7 @@ final class ModuleController extends AbstractController
 
         $user = $this->getUser();
         $school = $user->getSchool();
+        $subscription = $school->getLastInvoiceValid()->getSubscription();
 
         $search = $request->query->get('search');
         $categoryId = $request->query->get('category');
@@ -84,25 +88,34 @@ final class ModuleController extends AbstractController
             'direction' => $direction,
             'archived' => $archived,
             'school' => $school,
+            'subscription' => $subscription,
         ]);
     }
 
-    #[Route('/module/create/WithChatGpt', name: 'app_module_create_chatgpt')]
-    public function createWithChatGpt(Request $request, ChatGptClient $chatGptClient, ): Response
+    #[Route('/module/create/WithAI', name: 'app_module_create_chatgpt')]
+    public function createWithChatGpt(Request $request, CreditRepository $creditRepository, ChatGptClient $chatGptClient, EntityManagerInterface $em, SettingRepository $settingRepository ): Response
     {
         $syllabus = null;
         $form = $this->createForm(CreateModuleWithChatgptType::class);
         $form->handleRequest($request);
-        if ($form->isSubmitted() && $form->isValid()) {
-
+        $school = $this->getUser()->getSchool();
+        $solde = $creditRepository->getCreditsUsedThisMonth($school);
+        if ($form->isSubmitted() && $form->isValid() && $solde < 200) {
             $data = $form->getData();
             $title = $data['title'];
             $nbSessions = $data['nbSessions'] ?? 5;
             $duration = $data['duration'];
             $level = $data['level'] ?? 'débutant';
 
-            $chatGptClient->setApiKey($this->getUser()->getSchool()->getKeyChatGpt());
+            $chatGptClient->setApiKey($settingRepository->findOneBy(['name' => 'chatGPT'])->getValue());
             $syllabus = $chatGptClient->generateStructuredSyllabus($title, $duration, $level, $nbSessions);
+            $credit = new Credit();
+            $credit->setSchool($school);
+            $credit->setQuery('module_creation');
+            $credit->setCreatedAt(new \DateTimeImmutable());
+            $em->persist($credit);
+            $em->flush();
+
             $syllabus['title'] = $title;
             $syllabus['duration'] = $duration;
             $syllabusJson = json_encode($syllabus, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
@@ -112,11 +125,12 @@ final class ModuleController extends AbstractController
         return $this->render('module/createWithChatGPT.html.twig', [
             'form' => $form->createView(),
             'syllabus' => $syllabus,
+            'credit' => $solde ?? null,
             'syllabusJson' => isset($syllabusJson) ? $syllabusJson : null,
         ]);
     }
-    #[Route('/module/insert/WithChatGpt', name: 'app_module_store', methods: ['POST'])]
-    public function insertWithChatGpt(Request $request, ChatGptClient $chatGptClient, EntityManagerInterface $em): Response
+    #[Route('/module/insert/WithAI', name: 'app_module_store', methods: ['POST'])]
+    public function insertWithChatGpt(Request $request, EntityManagerInterface $em): Response
     {
         $submittedToken = $request->request->get('_csrf_token');
         if (!$this->isCsrfTokenValid('validate_module', $submittedToken)) {

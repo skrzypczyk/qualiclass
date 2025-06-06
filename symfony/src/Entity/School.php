@@ -70,8 +70,11 @@ class School
     #[ORM\OneToMany(targetEntity: Diploma::class, mappedBy: 'school')]
     private Collection $diplomas;
 
-    #[ORM\Column(length: 255, nullable: true)]
-    private ?string $keyChatGpt = null;
+    /**
+     * @var Collection<int, Credit>
+     */
+    #[ORM\OneToMany(targetEntity: Credit::class, mappedBy: 'school')]
+    private Collection $credits;
 
     public function __construct()
     {
@@ -80,6 +83,7 @@ class School
         $this->assessments = new ArrayCollection();
         $this->categories = new ArrayCollection();
         $this->diplomas = new ArrayCollection();
+        $this->credits = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -373,17 +377,36 @@ class School
         return $this;
     }
 
-    public function getKeyChatGpt(): ?string
+    /**
+     * @return Collection<int, Credit>
+     */
+    public function getCredits(): Collection
     {
-        return $this->keyChatGpt;
+        return $this->credits;
     }
 
-    public function setKeyChatGpt(?string $keyChatGpt): static
+    public function addCredit(Credit $credit): static
     {
-        $this->keyChatGpt = $keyChatGpt;
+        if (!$this->credits->contains($credit)) {
+            $this->credits->add($credit);
+            $credit->setSchool($this);
+        }
 
         return $this;
     }
+
+    public function removeCredit(Credit $credit): static
+    {
+        if ($this->credits->removeElement($credit)) {
+            // set the owning side to null (unless already changed)
+            if ($credit->getSchool() === $this) {
+                $credit->setSchool(null);
+            }
+        }
+
+        return $this;
+    }
+
 
 
 }

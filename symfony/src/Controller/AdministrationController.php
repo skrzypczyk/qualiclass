@@ -2,9 +2,11 @@
 
 namespace App\Controller;
 
+use App\Entity\Setting;
+use App\Form\SettingsType;
 use App\Form\UserEditAdminType;
+use App\Repository\SettingRepository;
 use App\Repository\UserRepository;
-use Cassandra\Type\UserType;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -17,9 +19,32 @@ use App\Entity\User;
 final class AdministrationController extends AbstractController
 {
     #[Route('/', name: 'app_admin')]
-    public function index(UserRepository $userRepository): Response
+    public function index(UserRepository $userRepository, Request $request,EntityManagerInterface $em, SettingRepository $settingRepository): Response
     {
         $allUsers = $userRepository->findAll();
+        $chatGPTSetting = $settingRepository->findOneBy(['name' => 'chatGPT']);
+        if (!$chatGPTSetting) {
+            $chatGPTSetting = new Setting();
+            $chatGPTSetting->setName('chatGPT');
+            $em->persist($chatGPTSetting);
+            $em->flush();
+        }
+
+        $form = $this->createForm(SettingsType::class);
+        $form->get('chatGPT')->setData($chatGPTSetting->getValue());
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $data = $form->getData();
+            $chatGPTSetting->setValue($data['chatGPT']);
+            $em->persist($chatGPTSetting);
+            $em->flush();
+
+            $this->addFlash('success', 'Paramètres mis à jour avec succès.');
+            return $this->redirectToRoute('app_admin');
+        }
+
+
 
         $users = array_filter($allUsers, function ($user) {
             return in_array('ROLE_ADMIN', $user->getRoles(), true)
@@ -28,7 +53,8 @@ final class AdministrationController extends AbstractController
 
         return $this->render('administration/index.html.twig', [
             'controller_name' => 'AdministrationController',
-            'users' => $users
+            'users' => $users,
+            'form' => $form->createView(),
         ]);
     }
 

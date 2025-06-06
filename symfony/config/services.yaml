@@ -6,12 +6,17 @@
 parameters:
     school_directory: '%kernel.project_dir%/public/uploads/schools'
     google_recaptcha_site_key: '%env(GOOGLE_RECAPTCHA_SITE_KEY)%'
+    stripe.product_ids:
+        base: '%env(STRIPE_PRODUCT_BASE)%'
+        user: '%env(STRIPE_PRODUCT_USER)%'
+        gpt: '%env(STRIPE_PRODUCT_GPT)%'
 
 services:
     # default configuration for services in *this* file
     _defaults:
         autowire: true      # Automatically injects dependencies in your services.
         autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
+
 
     # makes classes in src/ available to be used as services
     # this creates a service per class whose id is the fully-qualified class name
@@ -24,3 +29,9 @@ services:
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
+    App\Service\StripeService:
+        autowire: false
+        arguments:
+            $stripeSecretKey: '%env(STRIPE_SECRET_KEY)%'
+            $productIds: '%stripe.product_ids%'
+            $urlGenerator: '@router'

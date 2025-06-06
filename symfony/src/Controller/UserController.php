@@ -98,8 +98,8 @@ final class UserController extends AbstractController
         }
 
         $subscription = $school->getLastSubscription();
-        $limitUsers = $this->getUser()->getLimitUsers() ?? $subscription->getLimitUsers(true);
-        $users = $school->getUsers();
+        $limitUsers = $school->getLimitUsers() ?? $subscription->getLimitUsers(true);
+        $users = $school->getUsers(true);
 
         if ($user->isDisable()) {
             if (count($users) >= $limitUsers) {

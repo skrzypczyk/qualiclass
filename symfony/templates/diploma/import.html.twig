@@ -4,7 +4,7 @@
 
 {% block body %}
     <div class="max-w-7xl mx-auto px-6 py-10">
-        <h1 class="text-3xl font-bold title-primary mb-8">Vos modules</h1>
+        <h1 class="text-3xl font-bold title-primary mb-8">Importer un diplôme</h1>
         <a href="{{ path('app_diploma_create') }}" class="px-4 py-2 btn-primary">Ajouter un diplôme</a>
         <a href="{{ path('app_diploma') }}" class="px-4 py-2 btn-danger">Retour aux diplômes</a>
 
@@ -28,9 +28,16 @@
             Importer
         </button>
 
+
         {{ form_end(form) }}
 
         {% if diploma is not null %}
+
+
+            <button type="submit" class="btn btn-danger btn-lg">
+                Valider le diplôme
+            </button>
+
             <form method="POST" action="{{ path('app_diploma_store') }}">
                 <input type="hidden" name="_csrf_token" value="{{ csrf_token('validate_diploma') }}">
 
@@ -85,8 +92,8 @@
                 </div>
 
                 <div class="text-center">
-                    <button type="submit" class="btn btn-primary btn-lg">
-                        Valider et insérer en base
+                    <button type="submit" class="btn btn-danger btn-lg">
+                        Valider le diplôme
                     </button>
                 </div>
             </form>

@@ -3,92 +3,130 @@
 {% block title %}Mon abonnement{% endblock %}
 
 {% block body %}
-    <div class="max-w-3xl mx-auto px-4 py-8">
+    <div class="max-w-3xl mx-auto px-4 py-12">
 
-        {% if user.school.limitUsers %}
-            <h1 class="text-3xl font-bold title-primary mb-8">Offre spéciale</h1>
-        {% endif %}
-        {% if user.school.limitUsers %}
-            {{ user.school.limitUsers }} utilisateur(s)<br>
-        {% endif %}
+        <div class="mb-10">
+            <h1 class="text-3xl font-bold text-primary mb-4">Mon offre actuelle</h1>
+            <p  class="text-primary mb-4"><b>Adaptez votre abonnement en toute liberté</b> : les ajouts prennent effet immédiatement dès validation
+                du paiement pour ne pas freiner votre croissance, tandis que les réductions sont automatiquement
+                appliquées à la prochaine échéance, vous laissant profiter pleinement de vos avantages jusqu’au bout.</p>
+
+            {% if user.school.limitUsers %}
+                <p class="text-lg text-gray-700">
+                    Offre spéciale active : <strong>{{ user.school.limitUsers }}</strong> utilisateur(s)
+                </p>
+            {% endif %}
+
+            {% if user.school.isFreeAccount %}
+                <p class="text-gray-500 mt-2 italic">
+                    Vous êtes actuellement sur un abonnement <strong>gratuit</strong>.
+                </p>
+            {% endif %}
+        </div>
+
+        {% if not user.school.isFreeAccount %}
+            {% for subscription in subscriptions | sort((a, b) => b.id <=> a.id) %}
+                <div class="bg-white shadow rounded-lg p-6 mb-10 border border-gray-200">
+                    <h2 class="text-2xl font-semibold text-primary mb-4">
+                        Abonnement Stripe : <br><span class="text-base font-normal text-gray-700">{{ subscription.stripeSubscriptionId }}</span>
+                    </h2>
+
+                    <ul class="text-gray-700 space-y-1 mb-4">
+                        <li>✔️ <strong>4 utilisateurs</strong> inclus par défaut</li>
+                        <li>➕ {{ subscription.limitUsers }} utilisateur(s) supplémentaire(s)</li>
+                        <li>
+                            ⚙️ Génération automatique :
+                            <strong class="{{ subscription.chatgpt ? 'text-green-600' : 'text-red-600' }}">
+                                {{ subscription.chatgpt ? 'activée' : 'désactivée' }}
+                            </strong>
+                        </li>
+                    </ul>
+
+                    {% if invoicesUpcoming[subscription.id] is defined and invoicesUpcoming[subscription.id] is not empty %}
+                        <div class="mt-4 border border-yellow-300 bg-yellow-50 rounded p-4">
+                            <h3 class="text-md font-semibold text-yellow-700 mb-2">📅 Prochaine facture prévue</h3>
+                            <p class="text-sm text-yellow-800 mb-2">
+                                Montant estimé : <strong>{{ invoicesUpcoming[subscription.id].amount_due / 100 }} {{ invoicesUpcoming[subscription.id].currency|upper }}</strong><br>
+                                Date d’émission prévue : <strong>{{ invoicesUpcoming[subscription.id].next_payment_attempt|date('d/m/Y à H:i') }}</strong>
+                            </p>
+
+                            {% if invoicesUpcoming[subscription.id].lines.data is defined and invoicesUpcoming[subscription.id].lines.data is not empty %}
+                                <ul class="text-sm text-yellow-800 list-disc list-inside">
+                                    {% for item in invoicesUpcoming[subscription.id].lines.data %}
+                                        <li>
+                                            {{ item.description|split(' (')[0] }}
+                                            –  {{ item.amount / item.quantity / 100 }} {{ item.currency|upper }}
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            {% else %}
+                                <p class="text-sm text-yellow-700 italic">Aucune ligne détaillée disponible.</p>
+                            {% endif %}
+                        </div>
+                    {% endif %}
 
 
+                    <div class="mt-6">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-2">Mes factures</h3>
 
-
-
-        {% if user.school.isFreeAccount %}
-            <p class="text-gray-500 mt-4">Vous êtes actuellement sur un abonnement gratuit.</p>
-        {% else %}
-            {%  for subscription in subscriptions %}
-                <h1 class="text-2xl font-bold title-primary my-8">Abonnement Stripe : <br> {{ subscription.stripeSubscriptionId }}</h1>
-                <p>L'abonnement inclus par défaut 4 utilisateurs</p>
-                <p class="text-gray-500 mt-4">Vos option supplémentaires : </p>
-                <li>{{ subscription.limitUsers }} Utilisateur(s)</li>
-
-                <h1 class="text-3xl font-bold title-primary my-8">Mes factures</h1>
-
-                {% if subscription.invoices is not empty %}
-                    <table class="min-w-full bg-white border border-gray-200 shadow-sm rounded-lg overflow-hidden my-8">
-                        <thead>
-                        <tr>
-                            <th class="p-2">Date</th>
-                            <th class="p-2">Montant</th>
-                            <th class="p-2">État</th>
-                            <th class="p-2">Facture</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        {% for invoice in subscription.invoices %}
-                            <tr class="border-t">
-                                <td class="p-2">{{ invoice.paidAt|date('d/m/Y') }}</td>
-                                <td class="p-2">{{ invoice.amount / 100 }} {{ invoice.currency|upper }}</td>
-                                <td class="p-2">✅ Payée</td>
-                                <td>
-                                    <a href="{{ invoice.invoiceUrl }}" target="_blank" class="text-primary underline">
-                                        Télécharger la facture PDF
-                                    </a>
-                                </td>
-                            </tr>
-                        {% endfor %}
-                        </tbody>
-                    </table>
-                {% else %}
-                    <p class="my-4">Vous n'avez encore effectué aucun paiement.</p>
-                {% endif %}
-
-                {% if not subscription.isUnsubscribed %}
-
-                    <a href="{{ path('app_update_subscription',{'id':subscription.id} ) }}" class="btn-primary my-4">Modifier mon abonnement</a>
-
-                    <div x-data="{ showModal: false }">
-                        <form method="post" class="my-4" action="{{ path('app_unsubscribe',{'id':subscription.id}) }}" id="unsubscribe-form">
-                            <button
-                                    type="button"
-                                    @click="showModal = true"
-                                    class="btn-danger my-4"
-                            >
-                                Résilier mon abonnement
-                            </button>
-                        </form>
-
-                        {% include 'components/modal-confirmation.html.twig' with {
-                            x_show: 'showModal',
-                            title: 'Supprimer mon abonnement',
-                            message: 'Souhaitez-vous vraiment résilier votre abonnement ?',
-                            cancelLabel: 'Annuler',
-                            confirmLabel: 'Résilier',
-                            confirmAction: "document.getElementById('unsubscribe-form').submit()"
-                        } %}
+                        {% if subscription.invoices is not empty %}
+                            <table class="w-full text-left text-sm border border-gray-200 rounded overflow-hidden">
+                                <thead class="bg-gray-100">
+                                <tr>
+                                    <th class="p-2">Date</th>
+                                    <th class="p-2">Montant</th>
+                                    <th class="p-2">État</th>
+                                    <th class="p-2">Facture</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for invoice in subscription.invoices  | sort((a, b) => b.id <=> a.id) %}
+                                    <tr class="border-t">
+                                        <td class="p-2">{{ invoice.paidAt|date('d/m/Y') }}</td>
+                                        <td class="p-2">{{ invoice.amount / 100 }} {{ invoice.currency|upper }}</td>
+                                        <td class="p-2 text-green-600">✅ Payée</td>
+                                        <td class="p-2">
+                                            <a href="{{ invoice.invoiceUrl }}" target="_blank" class="text-primary underline">
+                                                Télécharger
+                                            </a>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        {% else %}
+                            <p class="text-gray-500">Vous n'avez encore effectué aucun paiement.</p>
+                        {% endif %}
                     </div>
-                {% else %}
-                    <p class="text-red-600 my-4">Vous avez résilié votre abonnement.</p>
-                {% endif %}
 
+                    {% if not subscription.isUnsubscribed %}
+                        <div class="mt-6 flex flex-col gap-4 sm:flex-row">
+                            <a href="{{ path('app_change_subscription',{'id': subscription.id}) }}" class="btn-primary">
+                                Modifier mon abonnement
+                            </a>
 
+                            <div x-data="{ showModal: false }" class="flex-1">
+                                <form method="post" action="{{ path('app_unsubscribe',{'id': subscription.id}) }}" id="unsubscribe-form">
+                                    <button type="button" @click="showModal = true" class="btn-danger w-full">
+                                        Résilier mon abonnement
+                                    </button>
+                                </form>
+
+                                {% include 'components/modal-confirmation.html.twig' with {
+                                    x_show: 'showModal',
+                                    title: 'Supprimer mon abonnement',
+                                    message: 'Souhaitez-vous vraiment résilier votre abonnement ?',
+                                    cancelLabel: 'Annuler',
+                                    confirmLabel: 'Résilier',
+                                    confirmAction: "document.getElementById('unsubscribe-form').submit()"
+                                } %}
+                            </div>
+                        </div>
+                    {% else %}
+                        <p class="text-red-600 font-semibold mt-4">⚠️ Vous avez résilié votre abonnement.</p>
+                    {% endif %}
+                </div>
             {% endfor %}
         {% endif %}
-
-
-
     </div>
 {% endblock %}

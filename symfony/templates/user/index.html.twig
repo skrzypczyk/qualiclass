@@ -45,7 +45,7 @@
             <h1 class="text-3xl font-bold title-primary mb-8">Limite atteinte</h1>
             <p class="text-sm text-red-600 mb-4">Vous avez atteint la limite de {{ limitUsers }} utilisateurs.</p>
             {% if subscription is not null %}
-                <a href="{{ path('app_update_subscription',{'id':subscription.id} ) }}" class="btn-primary">Modifier mon abonnement</a>
+                <a href="{{ path('app_change_subscription',{'id':subscription.id} ) }}" class="btn-primary">Modifier mon abonnement</a>
             {% endif %}
         {% endif %}
 

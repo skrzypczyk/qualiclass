@@ -79,19 +79,6 @@
         </div>
 
 
-        <div>
-            {{ form_label(form.keyChatGpt, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700'}}) }}
-            {{ form_widget(form.keyChatGpt, {
-                'attr': {
-                    'class': 'block w-full px-4 py-2 rounded-md shadow-sm focus:ring focus:ring-indigo-200 border border-gray-300'
-                }
-            }) }}
-
-            {% if form.keyChatGpt.vars.errors|length > 0 %}
-                <p class="mt-1 text-sm text-red-600">{{ form_errors(form.keyChatGpt) }}</p>
-            {% endif %}
-        </div>
-
         <button type="submit" class="btn-primary">
             Mettre à jour
         </button>

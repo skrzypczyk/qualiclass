@@ -35,6 +35,18 @@ class Subscription
     #[ORM\ManyToOne(inversedBy: 'subscriptions')]
     private ?School $school = null;
 
+    #[ORM\Column(nullable: true)]
+    private ?bool $chatgpt = null;
+
+    #[ORM\Column]
+    private ?\DateTimeImmutable $createdAt = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $updatedAt = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $canceledAt = null;
+
     public function __construct()
     {
         $this->invoices = new ArrayCollection();
@@ -157,6 +169,54 @@ class Subscription
     public function setSchool(?School $school): static
     {
         $this->school = $school;
+
+        return $this;
+    }
+
+    public function isChatgpt(): ?bool
+    {
+        return $this->chatgpt;
+    }
+
+    public function setChatgpt(?bool $chatgpt): static
+    {
+        $this->chatgpt = $chatgpt;
+
+        return $this;
+    }
+
+    public function getCreatedAt(): ?\DateTimeImmutable
+    {
+        return $this->createdAt;
+    }
+
+    public function setCreatedAt(\DateTimeImmutable $createdAt): static
+    {
+        $this->createdAt = $createdAt;
+
+        return $this;
+    }
+
+    public function getUpdatedAt(): ?\DateTimeImmutable
+    {
+        return $this->updatedAt;
+    }
+
+    public function setUpdatedAt(\DateTimeImmutable $updatedAt): static
+    {
+        $this->updatedAt = $updatedAt;
+
+        return $this;
+    }
+
+    public function getCanceledAt(): ?\DateTimeImmutable
+    {
+        return $this->canceledAt;
+    }
+
+    public function setCanceledAt(?\DateTimeImmutable $canceledAt): static
+    {
+        $this->canceledAt = $canceledAt;
 
         return $this;
     }

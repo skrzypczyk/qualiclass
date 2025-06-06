@@ -8,6 +8,7 @@ use EWZ\Bundle\RecaptchaBundle\Validator\Constraints\IsTrue as RecaptchaTrue;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\CountryType;
+use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
 use Symfony\Component\Form\Extension\Core\Type\RepeatedType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
@@ -38,6 +39,21 @@ class RegistrationFormType extends AbstractType
                     ]),
                 ],
             ])
+            ->add('school', TextType::class, [
+                'label' => 'Établissement',
+                'mapped' => false,
+                'constraints' => [
+                    new NotBlank([
+                        'message' => 'Veuillez saisir le nom de votre établissement',
+                    ]),
+                    new Length([
+                        'min' => 2,
+                        'minMessage' => 'Le nom de l\'établissement doit contenir au moins {{ limit }} caractères',
+                        // max length allowed by Symfony for security reasons
+                        'max' => 4096,
+                    ]),
+                ],
+            ])
             ->add('lastName', TextType::class, [
                 'label' => 'Nom',
                 'constraints' => [
@@ -52,7 +68,21 @@ class RegistrationFormType extends AbstractType
                     ]),
                 ],
             ])
-            ->add('email')
+            ->add('email', EmailType::class, [
+                'label' => 'Adresse e-mail',
+                'constraints' => [
+                    new NotBlank([
+                        'message' => 'Veuillez saisir votre adresse e-mail',
+                    ]),
+                    new Length([
+                        'max' => 180,
+                        'maxMessage' => 'L\'adresse e-mail ne peut pas dépasser {{ limit }} caractères',
+                    ]),
+                    new NotCompromisedPassword([
+                        'message' => 'Cette adresse e-mail a été compromise dans une fuite de données. Veuillez en utiliser une autre.',
+                    ]),
+                ],
+            ])
             ->add('agreeTerms', CheckboxType::class, [
                 'mapped' => false,
                 'label' => false,
