@@ -39,7 +39,7 @@ class StripeWebhookHandler
 
     private function handleSubscriptionCreated(Event $event): void
     {
-        $this->createSubscriptionFromStripeData($event->data->object);
+        //$this->createSubscriptionFromStripeData($event->data->object);
     }
 
     private function handleSubscriptionUpdated(Event $event): void
