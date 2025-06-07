@@ -99,6 +99,7 @@ final class SubscriptionController extends AbstractController
         $subscriptions = $user->getSchool()->getSubscriptions(); // ou $em->getRepository(Invoice::class)->findBy(['owner' => $user])
         foreach ($subscriptions as $subscription)
         {
+            if($subscription->isUnsubscribed()) continue; // Skip unsubscribed subscriptions
             $invoicesUpcoming[$subscription->GetId()] = $stripeService->getNextInvoice($subscription->getStripeCustomerId(), $subscription->getStripeSubscriptionId());
         }
 
