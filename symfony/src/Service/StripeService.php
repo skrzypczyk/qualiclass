@@ -40,6 +40,7 @@ class StripeService
                 'id' => $product->id,
                 'name' => $product->name,
                 'description' => $product->description,
+                'image' => $product->images[0] ?? null, // ✅ Récupération de l'image
                 'price_id' => $price?->id,
                 'price_amount' => $price ? $price->unit_amount / 100  : 0,
                 'currency' => $price?->currency ?? 'eur',
