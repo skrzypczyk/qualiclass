@@ -204,5 +204,14 @@ class StripeService
         ]);
     }
 
+    public function retrieveSubscription(string $subscriptionId): ?\Stripe\Subscription
+    {
+        try {
+            return Subscription::retrieve($subscriptionId);
+        } catch (\Exception $e) {
+            throw new \RuntimeException("Impossible de récupérer l'abonnement Stripe $subscriptionId : " . $e->getMessage());
+        }
+    }
+
 
 }

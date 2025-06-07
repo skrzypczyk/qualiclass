@@ -9,6 +9,7 @@ use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Stripe\Event;
+use App\Service\StripeService;
 
 class StripeWebhookHandler
 {
@@ -17,7 +18,8 @@ class StripeWebhookHandler
         private LoggerInterface $logger,
         private UserRepository $userRepository,
         private SubscriptionRepository $subscriptionRepository,
-        private InvoiceRepository $invoiceRepository
+        private InvoiceRepository $invoiceRepository,
+        private StripeService $stripeService
     ) {}
 
     public function handle(Event $event): void
@@ -37,22 +39,7 @@ class StripeWebhookHandler
 
     private function handleSubscriptionCreated(Event $event): void
     {
-        $subscription = $event->data->object;
-        $userId = $subscription->metadata->user_id ?? null;
-
-        if ($userId) {
-            $user = $this->userRepository->find($userId);
-        }else{
-            return;
-        }
-
-        $newSub = new Subscription();
-        $newSub->setStripeSubscriptionId($subscription->id);
-        $newSub->setSchool($user->getSchool());
-        $newSub->setStripeCustomerId($subscription->customer);
-        $newSub->setCreatedAt(new \DateTimeImmutable());
-        $this->em->persist($newSub);
-        $this->em->flush();
+        $this->createSubscriptionFromStripeData($event->data->object);
     }
 
     private function handleSubscriptionUpdated(Event $event): void
@@ -80,28 +67,13 @@ class StripeWebhookHandler
     {
         $invoice = $event->data->object;
         $stripeSubId = $invoice->subscription;
-
         $sub = $this->subscriptionRepository->findOneBy(["stripeSubscriptionId" => $stripeSubId]);
         if (!$sub) {
-            $this->logger->warning("stripe_invoice - Abonnement introuvable pour invoice.paid : $stripeSubId. Tentative de création à partir de l’objet Stripe.");
-
-            \Stripe\Stripe::setApiKey($_ENV['STRIPE_SECRET_KEY']);
-            $stripeSub = Subscription::retrieve($stripeSubId);
-
-            // Création d’un faux Event pour appeler handleSubscriptionCreated
-            $fakeEvent = new Event();
-            $fakeEvent->type = 'customer.subscription.created';
-            $fakeEvent->data = new \stdClass();
-            $fakeEvent->data->object = $stripeSub;
-
-            $this->handleSubscriptionCreated($fakeEvent);
-
-            // On tente à nouveau de récupérer la subscription après sa création
-            $sub = $this->subscriptionRepository->findOneBy(["stripeSubscriptionId" => $stripeSubId]);
-
+            $this->logger->warning("Abonnement introuvable pour invoice.paid : $stripeSubId — tentative de création depuis Stripe.");
+            $stripeSub = $this->stripeService->retrieveSubscription($stripeSubId);
+            $sub = $this->createSubscriptionFromStripeData($stripeSub);
             if (!$sub) {
-                $this->logger->critical("stripe_invoice - Échec de la création d’un abonnement Stripe manquant : $stripeSubId");
-                return;
+                throw new \Exception("Impossible de créer l’abonnement manquant pour $stripeSubId.");
             }
         }
 
@@ -163,5 +135,33 @@ class StripeWebhookHandler
             $this->em->flush();
         }
     }
+
+    private function createSubscriptionFromStripeData(object $stripeSubscription): ?Subscription
+    {
+
+        $userId = $stripeSubscription->metadata->user_id ?? null;
+        if (!$userId) {
+            $this->logger->warning("Impossible de créer une souscription : user_id manquant dans les métadonnées.");
+            return null;
+        }
+
+        $user = $this->userRepository->find($userId);
+        if (!$user) {
+            $this->logger->warning("Utilisateur introuvable pour user_id={$userId}.");
+            return null;
+        }
+
+        $subscription = new Subscription();
+        $subscription->setStripeSubscriptionId($stripeSubscription->id);
+        $subscription->setSchool($user->getSchool());
+        $subscription->setStripeCustomerId($stripeSubscription->customer);
+        $subscription->setCreatedAt(new \DateTimeImmutable());
+
+        $this->em->persist($subscription);
+        $this->em->flush();
+
+        return $subscription;
+    }
+
 
 }
