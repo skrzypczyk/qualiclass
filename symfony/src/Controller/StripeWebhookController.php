@@ -26,16 +26,22 @@ class StripeWebhookController extends AbstractController
         Request $request,
         StripeWebhookHandler $handler
     ): Response {
+        try {
+            $payload = $request->getContent();
+            $sigHeader = $request->headers->get('stripe-signature');
+            $secret = $_ENV['STRIPE_WEBHOOK_SECRET'];
 
-        $payload = $request->getContent();
-        $sigHeader = $request->headers->get('stripe-signature');
-        $secret = $_ENV['STRIPE_WEBHOOK_SECRET'];
+            $event = Webhook::constructEvent($payload, $sigHeader, $secret);
 
-        $event = Webhook::constructEvent($payload, $sigHeader, $secret);
+            $handler->handle($event);
 
-        $handler->handle($event);
+            return new JsonResponse(['status' => 'ok']);
+        } catch (\Throwable $e) {
+            // Log obligatoire si tu veux suivre les erreurs
+            $this->get('logger')->error('[Stripe Webhook] ' . $e->getMessage());
 
-        return new JsonResponse(['status' => 'ok']);
+            return new JsonResponse(['error' => $e->getMessage()], 400);
+        }
     }
 
 }

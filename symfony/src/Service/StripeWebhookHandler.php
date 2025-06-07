@@ -83,7 +83,10 @@ class StripeWebhookHandler
         $stripeSubId = $invoice->subscription;
 
         $sub = $this->subscriptionRepository->findOneBy(["stripeSubscriptionId" => $stripeSubId]);
-        if (!$sub) return;
+        if (!$sub){
+            $this->logger->warning("stripe_invoice - Abonnement introuvable pour invoice.paid : $stripeSubId");
+            throw new \Exception("Abonnement introuvable pour invoice.paid");
+        }
 
         // Vérifie si la facture a déjà été enregistrée
         $existingInvoice = $this->invoiceRepository->findOneBy(['stripeInvoiceId' => $invoice->id]);
