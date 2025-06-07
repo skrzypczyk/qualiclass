@@ -109,15 +109,15 @@ class StripeService
     public function getNextInvoice(string $customerId, string $subscriptionId): ?array
     {
         try {
-            $preview = \Stripe\Invoice::createPreview([
+            $preview = Invoice::createPreview([
                 'customer' => $customerId,
                 'subscription' => $subscriptionId,
             ]);
 
             return $preview->toArray();
         } catch (\Stripe\Exception\InvalidRequestException $e) {
-            // Cas typique : abonnement annulé, donc plus de facture à venir
-            if (str_contains($e->getMessage(), 'No upcoming invoices for subscription')) {
+            // Cas où il n'y a pas de prochaine facture
+            if (str_contains($e->getMessage(), 'No upcoming invoices')) {
                 return null;
             }
             throw new \RuntimeException("Erreur Stripe : " . $e->getMessage());
@@ -125,6 +125,7 @@ class StripeService
             throw new \RuntimeException("Erreur lors de la récupération de la prochaine facture : " . $e->getMessage());
         }
     }
+
 
     public function updateSubscriptionItems(string $subscriptionId, array $lineItems): void
     {
