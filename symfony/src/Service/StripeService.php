@@ -105,7 +105,8 @@ class StripeService
             'cancel_url' => $this->urlGenerator->generate('app_new_subscription', [], UrlGeneratorInterface::ABSOLUTE_URL),
         ])->url;
     }
-    public function getNextInvoice(string $customerId, string $subscriptionId): array
+
+    public function getNextInvoice(string $customerId, string $subscriptionId): ?array
     {
         try {
             $preview = \Stripe\Invoice::createPreview([
@@ -114,11 +115,16 @@ class StripeService
             ]);
 
             return $preview->toArray();
+        } catch (\Stripe\Exception\InvalidRequestException $e) {
+            // Cas typique : abonnement annulé, donc plus de facture à venir
+            if (str_contains($e->getMessage(), 'No upcoming invoices for subscription')) {
+                return null;
+            }
+            throw new \RuntimeException("Erreur Stripe : " . $e->getMessage());
         } catch (\Exception $e) {
-            throw new \RuntimeException("Erreur lors de la récupération de l'aperçu de la prochaine facture : " . $e->getMessage());
+            throw new \RuntimeException("Erreur lors de la récupération de la prochaine facture : " . $e->getMessage());
         }
     }
-
 
     public function updateSubscriptionItems(string $subscriptionId, array $lineItems): void
     {
