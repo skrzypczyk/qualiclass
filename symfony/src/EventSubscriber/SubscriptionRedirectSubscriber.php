@@ -37,6 +37,11 @@ class SubscriptionRedirectSubscriber implements EventSubscriberInterface
             return;
         }
 
+        if($route === 'app_subscription_success' ) {
+            // Autorisé pour la création de souscription
+            return;
+        }
+
         $now = (new \DateTimeImmutable())->setTime(0, 0);
         $lastInvoice = $school->getLastInvoiceValid();
 

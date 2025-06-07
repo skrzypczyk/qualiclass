@@ -1,0 +1,36 @@
+{# templates/subscription/success.html.twig #}
+{% extends 'base.html.twig' %}
+
+{% block title %}Merci pour votre inscription{% endblock %}
+
+{% block body %}
+    <div class="max-w-xl mx-auto text-center py-20">
+        <h1 class="text-3xl font-bold mb-4 text-primary">Merci pour votre abonnement !</h1>
+        <p class="text-lg text-gray-700">Nous finalisons la configuration de votre compte...</p>
+
+        <div class="my-10 flex justify-center">
+            <svg class="animate-spin h-10 w-10 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+            </svg>
+        </div>
+
+        <p class="mt-6 text-sm text-gray-500">Cette page se mettra à jour automatiquement une fois le traitement terminé.</p>
+    </div>
+
+    <script>
+        async function checkStatus() {
+            try {
+                const response = await fetch('/subscription/status/api');
+                const result = await response.json();
+                if (result.status == 'ok' && result.valid == true) {
+                    window.location.href = '{{ dashboardUrl }}'; // ou toute autre destination finale
+                }
+            } catch (e) {
+                console.error('Erreur de polling :', e);
+            }
+        }
+
+        setInterval(checkStatus, 2000);
+    </script>
+{% endblock %}

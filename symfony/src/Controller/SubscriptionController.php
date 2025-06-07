@@ -10,6 +10,7 @@ use Stripe\Product;
 use Stripe\Stripe;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Bundle\SecurityBundle\Security;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -87,7 +88,9 @@ final class SubscriptionController extends AbstractController
     public function success(): Response
     {
         $this->addFlash('success', 'Votre paiement a bien été reçu. Votre abonnement a mis à jour.');
-        return $this->redirectToRoute('app_dashboard');
+        return $this->render('subscription/success.html.twig', [
+            'dashboardUrl' => $this->generateUrl('app_dashboard'),
+        ]);
     }
 
     #[Route('/show', name: 'app_subscription')]
@@ -110,6 +113,7 @@ final class SubscriptionController extends AbstractController
         ]);
     }
 
+
     #[Route('/unsubscribe/{id}', name: 'app_unsubscribe', methods: ['POST'])]
     public function unsubscribe(EntityManagerInterface $em, Subscription $subscription, StripeService $stripeService): Response
     {
@@ -128,4 +132,33 @@ final class SubscriptionController extends AbstractController
         return $this->redirectToRoute('app_subscription');
     }
 
+
+    #[Route('/status/api', name: 'app_subscription_status_api', methods: ['GET'])]
+    public function statusApi(): JsonResponse
+    {
+        $user = $this->getUser();
+
+        if (!$user || !$user->getSchool()) {
+            return new JsonResponse([
+                'status' => 'error',
+                'message' => 'Utilisateur ou école non trouvée.',
+            ], 403);
+        }
+
+        $lastInvoice = $user->getSchool()->getLastInvoiceValid();
+
+        if ($lastInvoice) {
+            return new JsonResponse([
+                'status' => 'ok',
+                'valid' => true,
+                'paidAt' => $lastInvoice->getPaidAt()?->format('Y-m-d H:i:s'),
+            ]);
+        }
+
+        return new JsonResponse([
+            'status' => 'ok',
+            'valid' => false,
+            'message' => 'Aucune facture valide trouvée.',
+        ]);
+    }
 }
