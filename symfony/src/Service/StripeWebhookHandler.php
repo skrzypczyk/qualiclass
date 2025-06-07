@@ -94,9 +94,7 @@ class StripeWebhookHandler
         $this->em->persist($newInvoice);
 
         // Met à jour les options de l’abonnement à partir des items Stripe
-
-        \Stripe\Stripe::setApiKey($_ENV['STRIPE_SECRET_KEY']);
-        $stripeSub = \Stripe\Subscription::retrieve($stripeSubId);
+        $stripeSub = $this->stripeService->retrieveSubscription($stripeSubId);
 
         foreach ($stripeSub->items->data as $item) {
             $productId = $item->price->product;
