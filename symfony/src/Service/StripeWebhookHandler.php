@@ -3,7 +3,6 @@ namespace App\Service;
 
 use App\Entity\Invoice;
 use App\Entity\Subscription;
-use App\Entity\User;
 use App\Repository\InvoiceRepository;
 use App\Repository\SubscriptionRepository;
 use App\Repository\UserRepository;
@@ -83,9 +82,27 @@ class StripeWebhookHandler
         $stripeSubId = $invoice->subscription;
 
         $sub = $this->subscriptionRepository->findOneBy(["stripeSubscriptionId" => $stripeSubId]);
-        if (!$sub){
-            $this->logger->warning("stripe_invoice - Abonnement introuvable pour invoice.paid : $stripeSubId");
-            throw new \Exception("Abonnement introuvable pour invoice.paid");
+        if (!$sub) {
+            $this->logger->warning("stripe_invoice - Abonnement introuvable pour invoice.paid : $stripeSubId. Tentative de création à partir de l’objet Stripe.");
+
+            \Stripe\Stripe::setApiKey($_ENV['STRIPE_SECRET_KEY']);
+            $stripeSub = Subscription::retrieve($stripeSubId);
+
+            // Création d’un faux Event pour appeler handleSubscriptionCreated
+            $fakeEvent = new Event();
+            $fakeEvent->type = 'customer.subscription.created';
+            $fakeEvent->data = new \stdClass();
+            $fakeEvent->data->object = $stripeSub;
+
+            $this->handleSubscriptionCreated($fakeEvent);
+
+            // On tente à nouveau de récupérer la subscription après sa création
+            $sub = $this->subscriptionRepository->findOneBy(["stripeSubscriptionId" => $stripeSubId]);
+
+            if (!$sub) {
+                $this->logger->critical("stripe_invoice - Échec de la création d’un abonnement Stripe manquant : $stripeSubId");
+                return;
+            }
         }
 
         // Vérifie si la facture a déjà été enregistrée
