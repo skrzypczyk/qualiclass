@@ -31,6 +31,7 @@ security:
         - { path: ^/backoffice/assessment, roles: ['ROLE_ADMIN','ROLE_SUPER_ADMIN']  }
         - { path: ^/backoffice/user, roles: ['ROLE_ADMIN','ROLE_SUPER_ADMIN']  }
         - { path: ^/backoffice/category, roles: ['ROLE_ADMIN','ROLE_SUPER_ADMIN']  }
+        - { path: ^/backoffice/diploma/assign, roles: IS_AUTHENTICATED_FULLY  }
         - { path: ^/backoffice/diploma, roles: ['ROLE_ADMIN','ROLE_SUPER_ADMIN']  }
         - { path: ^/backoffice, roles: IS_AUTHENTICATED_FULLY  }
         - { path: ^/subscription, roles: ['ROLE_ADMIN','ROLE_SUPER_ADMIN'] }
