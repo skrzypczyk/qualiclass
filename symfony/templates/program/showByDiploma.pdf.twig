@@ -72,7 +72,7 @@
 <body>
 {% set logo = user.school.img ? 'uploads/schools/'~user.school.img: 'images/logo-qualiclass.png' %}
 
-<div style="page-break-after: always; padding: 50px; height: 820px; text-align: center;background-color: {{ user.getSchoolPrimaryColor ?? '#fff' }}">
+<div style="page-break-after: always; padding: 50px; height: 820px; text-align: center;background-color: {{ user.school.primaryColor ?? '#fff' }}">
     <img src="{{ logo }}" alt="Page de garde" style="width: 40%; height: auto; margin: auto">
 
     <h1 style="font-size: 40px">
@@ -83,14 +83,14 @@
         {{ program.title }}
     </h1>
     <h2 style="font-size: 20px">
-        {{ program.year }} année
+        Bac +{{ program.year }}
     </h2>
 
-    <img src="images/logo-qualiclass.png" alt="Qualiclass" style="width: 14%;  position: absolute; bottom: 10px; left: 43%">
+    <img src="images/logo-qualiclass.png" alt="Qualiclass" style="width: 14%;  position: absolute; bottom: 40px; left: 43%">
 
 </div>
 
-<header style="background-color: {{ user.getSchoolPrimaryColor ?? '#fff' }};padding: 5px;">
+<header style="background-color: {{ user.school.primaryColor ?? '#fff' }};padding: 5px;">
     Programme – {{ program.title }} - {{ program.year }} année<br>
     {{ diploma.title }} - {{ diploma.RNCP }}
 </header>
@@ -126,6 +126,61 @@
     <h3>Commentaires</h3>
     <p>{{ program.notes|raw }}</p>
 
+
+    <h3>Programme</h3>
+
+    <table>
+        <thead>
+            <tr style="background-color: #eee;">
+                <th style="text-align: center;">Partie</th>
+                <th>Compétence / module</th>
+                <th style="text-align: center;">Durée</th>
+                <th style="text-align: center;">Crédits</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% set totalDuration = 0 %}
+        {% set totalCredit = 0 %}
+        {% for part,assignments in moduleByPart %}
+            {% set duration = 0 %}
+            {% set credit = 0 %}
+            {% for assignment in assignments %}
+
+                {% set duration = duration + assignment.module.duration %}
+                {% set credit = credit + (assignment.module.credit ?? 0) %}
+                {% set totalDuration = totalDuration + assignment.module.duration %}
+                {% set totalCredit = totalCredit + (assignment.module.credit ?? 0) %}
+
+                <tr>
+                    {% if loop.first %}
+                        <td style="text-align: center;" rowspan="{{ assignments|length }}">
+                            {{ part }}
+                        </td>
+                    {% endif %}
+                    <td>
+                        <a href="#module-{{ assignment.module.id }}">{{ assignment.module.title }}</a>
+                    </td>
+                    <td style="text-align: center">{{ assignment.module.duration }} h </td>
+                    <td style="text-align: center">{{ assignment.module.credit??0 }}</td>
+                </tr>
+            {% endfor %}
+            <tr style="background-color: #eee;">
+                <th colspan="2" style="text-align: right;">Total</th>
+                <th style="text-align: center"> {{ duration }} h</th>
+                <th style="text-align: center"> {{ credit }} </th>
+            </tr>
+        {% endfor %}
+        <tfoot>
+        <tr style="background-color: #eee;">
+            <th colspan="2" style="text-align: right;">Total</th>
+            <th style="text-align: center"> {{ totalDuration }} h</th>
+            <th style="text-align: center"> {{ totalCredit }} </th>
+        </tr>
+        </tfoot>
+
+        </tbody>
+    </table>
+
     <div class="page-break"></div>
 
     <h1>{{ diploma.title }} <small style="font-weight: normal; font-size: 14px;">– {{ diploma.RNCP }}</small></h1>
@@ -133,16 +188,18 @@
 
     <div class="page-break"></div>
 
-    <h1 style="text-align: center; margin-bottom: 20px">Résumé du programme</h1>
+    <h1 style="text-align: center; margin-bottom: 20px">Résumé du programme par compétence</h1>
     <table>
         <thead>
-        <tr>
-            <th>Compétence / module</th>
-            <th style="text-align: center;">Durée</th>
-            <th style="text-align: center;">Crédits</th>
-        </tr>
+            <tr>
+                <th>Compétence / module</th>
+                <th style="text-align: center;">Durée</th>
+                <th style="text-align: center;">Crédits</th>
+            </tr>
         </thead>
         <tbody>
+        {% set totalDuration = 0 %}
+        {% set totalCredit = 0 %}
         {% for competence in diploma.competences %}
             {% set compId = competence.id %}
             {% if moduleByCompetence[compId] is defined %}
@@ -151,11 +208,13 @@
                     <td style="text-align: center;">{{ moduleByCompetence[compId].duration }} h </td>
                     <td style="text-align: center;">{{ moduleByCompetence[compId].credit }}</td>
                 </tr>
+                {% set totalDuration = totalDuration + moduleByCompetence[compId].duration %}
+                {% set totalCredit = totalCredit + moduleByCompetence[compId].credit %}
                 {% for module in moduleByCompetence[compId].modules %}
                     <tr>
                         <td style="padding-left: 20px;"><a href="#module-{{ module.id }}">• {{ module.title }}</a></td>
                         <td style="text-align: center;">{{ module.duration }} h</td>
-                        <td style="text-align: center;">{{ module.credit }}</td>
+                        <td style="text-align: center;">{{ module.credit ?? 0 }}</td>
                     </tr>
                 {% endfor %}
             {% else %}
@@ -170,8 +229,8 @@
         <tfoot>
         <tr>
             <th style="text-align: right;">Total</th>
-            <th style="text-align: center;">{{ duration }} h</th>
-            <th style="text-align: center;">{{ credit }}</th>
+            <th style="text-align: center;">{{ totalDuration }} h</th>
+            <th style="text-align: center;">{{ totalCredit??0 }}</th>
         </tr>
         </tfoot>
     </table>
@@ -179,7 +238,7 @@
     {% for competence in diploma.competences %}
         <div class="page-break"></div>
         {% set compId = competence.id %}
-        <h2 id="comp-{{ compId }}">{{ competence.title }}</h2>
+        <h1 id="comp-{{ compId }}">{{ competence.title }}</h1>
         <div>{{ competence.content | raw }}</div>
 
         {% if moduleByCompetence[compId] is defined %}
@@ -196,7 +255,7 @@
                     <tr>
                         <td><a href="#module-{{ module.id }}">{{ module.title }}</a></td>
                         <td style="text-align: center;">{{ module.duration }} h</td>
-                        <td style="text-align: center;">{{ module.credit }}</td>
+                        <td style="text-align: center;">{{ module.credit??0 }}</td>
                     </tr>
                 {% endfor %}
                 </tbody>

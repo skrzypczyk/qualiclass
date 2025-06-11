@@ -2,14 +2,22 @@
 
 namespace App\Controller;
 
+use App\Entity\Assignment;
 use App\Entity\Competence;
+use App\Entity\Credit;
 use App\Entity\Diploma;
 use App\Entity\Module;
-use App\Entity\ModuleCompetenceAffectation;
+use App\Entity\ModuleCompetenceAssignment;
 use App\Entity\Program;
 use App\Form\CreateProgramType;
+use App\Repository\AssignmentRepository;
+use App\Repository\CompetenceRepository;
+use App\Repository\CreditRepository;
+use App\Repository\ModuleCompetenceAssignmentRepository;
 use App\Repository\ModuleRepository;
 use App\Repository\ProgramRepository;
+use App\Repository\SettingRepository;
+use App\Service\ChatGptClient;
 use Doctrine\ORM\EntityManagerInterface;
 use Dompdf\Dompdf;
 use Dompdf\Options;
@@ -80,7 +88,7 @@ final class ProgramController extends AbstractController
     }
 
     #[Route('/program/show/{id}', name: 'app_program_show')]
-    public function show(Program $program, EntityManagerInterface $em): Response
+    public function show(Program $program, EntityManagerInterface $em, Request $request,Environment $twig): Response
     {
         if($program->getOwner() !== $this->getUser()
             && (!in_array("ROLE_ADMIN", $this->getUser()->getRoles())
@@ -89,16 +97,52 @@ final class ProgramController extends AbstractController
             $this->addFlash('error', 'Vous ne pouvez pas visualiser ce programme.');
             return $this->redirectToRoute('app_program');
         }
+        $assignments = $program->getGroupedAssignments(); // ou $assignmentRepository->findBy(['program' => $program])
 
-
-        return $this->render('program/show.html.twig', [
+        $params = [
             'program' => $program,
-        ]);
+            'programGroupedAssignments' => $assignments,
+            'user' => $this->getUser()
+        ];
+
+
+        if ($request->query->get('format') === 'pdf') {
+            $options = new Options();
+            $options->set('isHtml5ParserEnabled', true);
+            $options->set('isRemoteEnabled', true); // autorise l'accès aux URL HTTP/HTTPS
+            $options->setChroot([$this->getParameter('kernel.project_dir') .'/public']);
+
+
+            $dompdf = new Dompdf($options);
+            $dompdf->setBasePath($this->getParameter('kernel.project_dir') . '/public');
+            $html = $twig->render('program/showProgram.pdf.twig', $params);
+
+            $dompdf->loadHtml($html);
+            $dompdf->setPaper('A4', 'portrait');
+            $dompdf->render();
+
+            return new Response(
+                $dompdf->output(),
+                200,
+                [
+                    'Content-Type' => 'application/pdf',
+                    'Content-Disposition' => 'inline; filename="' . $program->getTitle() . '.pdf"',
+                    //'Content-Disposition' => 'attachment; filename="' . $program->getTitle() . '-' . $diploma->getRNCP() . '.pdf"',
+                ]
+            );
+        }
+
+        return $this->render('program/showProgram.html.twig', $params);
     }
 
 
     #[Route('/program/{program}/diploma/{diploma}', name: 'app_program_diploma_show')]
-    public function showByDiploma(Program $program, Diploma $diploma, EntityManagerInterface $em, Request $request, Environment $twig): Response
+    public function showByDiploma(Program $program,
+                                  Diploma $diploma,
+                                  ModuleCompetenceAssignmentRepository $moduleCompetenceAssignmentRepository,
+                                  Request $request,
+                                  Environment $twig,
+                                  AssignmentRepository $assignmentRepository  ): Response
     {
         if($program->getOwner() !== $this->getUser()
             && (!in_array("ROLE_ADMIN", $this->getUser()->getRoles())
@@ -112,8 +156,15 @@ final class ProgramController extends AbstractController
         $duration = 0;
         $credit = 0;
 
-        foreach ($program->getAffectations() as $affectation) {
-            $competence = $affectation->getCompetence();
+        $moduleByPart = $assignmentRepository->getByPart($program);
+
+        $assignments = $moduleCompetenceAssignmentRepository->findBy([
+            'program' => $program,
+            'diploma' => $diploma,
+        ]);
+
+        foreach ($assignments as $assignment) {
+            $competence = $assignment->getCompetence();
 
             // On ne garde que les compétences liées au diplôme demandé
             if ($competence->getDiploma() === $diploma) {
@@ -128,7 +179,7 @@ final class ProgramController extends AbstractController
                     ];
                 }
 
-                $module = $affectation->getModule();
+                $module = $assignment->getModule();
 
                 // éviter les doublons
                 if (!in_array($module, $moduleByCompetence[$competenceId]['modules'], true)) {
@@ -147,6 +198,7 @@ final class ProgramController extends AbstractController
             'duration' => $duration,
             'credit' => $credit,
             'moduleByCompetence' => $moduleByCompetence,
+            'moduleByPart' => $moduleByPart,
             'user' => $this->getUser(),
         ];
 
@@ -220,12 +272,21 @@ final class ProgramController extends AbstractController
         $em->persist($duplicateProgram);
 
         // Dupliquer chaque affectation
-        foreach ($program->getAffectations() as $affectation) {
-            $newAffectation = new ModuleCompetenceAffectation();
-            $newAffectation->setProgram($duplicateProgram);
-            $newAffectation->setModule($affectation->getModule());
-            $newAffectation->setCompetence($affectation->getCompetence());
-            $em->persist($newAffectation);
+        foreach ($program->getAssignments() as $assignment) {
+            $newAssignment = new Assignment();
+            $newAssignment->setProgram($duplicateProgram);
+            $newAssignment->setModule($assignment->getModule());
+            $newAssignment->setPart($assignment->getPart());
+            $em->persist($newAssignment);
+        }
+
+        // Dupliquer les affectations aux compétences
+        foreach ($program->getModuleCompetenceAssignments() as $mca) {
+            $newMca = new ModuleCompetenceAssignment();
+            $newMca->setProgram($duplicateProgram);
+            $newMca->setModule($mca->getModule());
+            $newMca->setCompetence($mca->getCompetence());
+            $em->persist($newMca);
         }
 
         $em->flush();
@@ -235,8 +296,8 @@ final class ProgramController extends AbstractController
     }
 
 
-    #[Route('/program/assignment/{id}', name: 'app_program_assignment')]
-    public function assignment(Request $request, Program $program, EntityManagerInterface $em, ModuleRepository $moduleRepository): Response
+    #[Route('/program/assign/{id}', name: 'app_program_assign', methods: ['GET'])]
+    public function assign(Program $program, ModuleRepository $moduleRepository, AssignmentRepository $assignmentRepository): Response
     {
         $user = $this->getUser();
 
@@ -248,76 +309,284 @@ final class ProgramController extends AbstractController
             return $this->redirectToRoute('app_program');
         }
 
-        // 1. Reconstituer les affectations existantes
-        $existingMapping = [];
+        $modules = $moduleRepository->getModulesWithSharedAccess($user);// Tri alphabétique côté PHP
+        usort($modules, fn($a, $b) => strcasecmp($a->getTitle(), $b->getTitle()));
 
-        foreach ($program->getAffectations() as $affectation) {
-            $moduleId = $affectation->getModule()->getId();
-            $competenceId = $affectation->getCompetence()->getId();
+        $assignments = $assignmentRepository->findBy(['program' => $program]);
 
-            if (!isset($existingMapping[$moduleId])) {
-                $existingMapping[$moduleId] = [];
-            }
-
-            $existingMapping[$moduleId][] = $competenceId;
+        $mapped = [];
+        foreach ($assignments as $a) {
+            $mapped[] = [
+                'module' => $a->getModule()->getId(),
+                'part' => $a->getPart(), // ou autre champ utilisé
+            ];
         }
 
-        // 2. Traitement POST
-        if ($request->isMethod('POST')) {
-            $mapping = $request->request->all('mapping'); // [moduleId => [competenceId, ...]]
+        return $this->render('program/assign.html.twig', [
+            'program' => $program,
+            'modules' => $modules,
+            'assignments' => $mapped
+        ]);
+    }
 
-            // Supprimer les anciennes affectations
-            foreach ($program->getAffectations() as $affectation) {
-                $em->remove($affectation);
-            }
+    #[Route('/program/assign/{id}', name: 'app_program_assign_save', methods: ['POST'])]
+    public function assignSave(
+        Request $request,
+        Program $program,
+        EntityManagerInterface $em,
+        AssignmentRepository $assignmentRepository,
+        ModuleCompetenceAssignmentRepository $moduleCompetenceAssignmentRepository,
+        ModuleRepository $moduleRepository
+    ) {
+        $user = $this->getUser();
 
-            // Créer les nouvelles affectations
-            foreach ($mapping as $moduleId => $competenceIds) {
-                $module = $em->getRepository(Module::class)->find($moduleId);
-                foreach ($competenceIds as $competenceId) {
-                    $competence = $em->getRepository(Competence::class)->find($competenceId);
-                    $affectation = new ModuleCompetenceAffectation();
-                    $affectation->setProgram($program);
-                    $affectation->setModule($module);
-                    $affectation->setCompetence($competence);
-                    $em->persist($affectation);
-                }
-            }
-
-            $em->flush();
-            $this->addFlash('success', 'Affectations enregistrées avec succès.');
+        // Sécurité
+        if ($program->getOwner() !== $user
+            && (!in_array("ROLE_ADMIN", $user->getRoles())
+                || $program->getOwner()->getSchool() !== $user->getSchool())
+        ) {
+            $this->addFlash('error', 'Vous ne pouvez pas éditer ce programme.');
             return $this->redirectToRoute('app_program');
         }
 
-        // 3. Tri personnalisé des modules
-        //$modules = $user->getModules()->toArray();
-        $modules = $moduleRepository->getModulesWithSharedAccess($user);
+        // Récupérer tous les modules initialement affectés
+        $existing = $assignmentRepository->findBy(['program' => $program]);
+        $modulesToCleanup = [];
 
-        $affectedModuleIds = array_keys($existingMapping);
+        foreach ($existing as $item) {
+            $modulesToCleanup[] = $item->getModule(); // On garde la trace
+            $em->remove($item);
+        }
 
-        usort($modules, function (Module $a, Module $b) use ($affectedModuleIds) {
+        // Récupération des affectations envoyées depuis le formulaire
+        $assignmentsData = $request->request->get('assignments');
+        $modulesKept = [];
 
-            // Affectés en premier
-            $aAffected = in_array($a->getId(), $affectedModuleIds);
-            $bAffected = in_array($b->getId(), $affectedModuleIds);
+        if ($assignmentsData) {
+            $assignments = json_decode($assignmentsData, true);
 
-            if ($aAffected && !$bAffected) return -1;
-            if (!$aAffected && $bAffected) return 1;
+            if (is_array($assignments)) {
+                foreach ($assignments as $entry) {
+                    if (!isset($entry['module']) || !isset($entry['part'])) continue;
 
-            // Archivés en dernier
-            if ($a->isArchived() && !$b->isArchived()) return 1;
-            if (!$a->isArchived() && $b->isArchived()) return -1;
+                    $module = $moduleRepository->find($entry['module']);
+                    if (!$module) continue;
 
-            // Sinon tri alphabétique
-            return strcmp($a->getTitle(), $b->getTitle());
+                    $assignment = new Assignment();
+                    $assignment->setProgram($program);
+                    $assignment->setModule($module);
+                    $assignment->setPart((int) $entry['part']);
+                    $em->persist($assignment);
+
+                    $modulesKept[] = $module;
+                }
+            }
+        }
+
+        // Supprimer les affectations aux compétences pour les modules non conservés
+        foreach ($modulesToCleanup as $oldModule) {
+            if (!in_array($oldModule, $modulesKept, true)) {
+                $affectations = $moduleCompetenceAssignmentRepository->findBy([
+                    'program' => $program,
+                    'module' => $oldModule
+                ]);
+
+                foreach ($affectations as $a) {
+                    $em->remove($a);
+                }
+            }
+        }
+
+        $em->flush();
+
+        $this->addFlash('success', 'Affectations enregistrées avec succès.');
+        return $this->redirectToRoute('app_program');
+    }
+
+
+    #[Route('/diploma/assign/{diploma}/{program}', name: 'app_diploma_assign', methods: ['GET'])]
+    public function assignDiploma(
+        Program $program,
+        Diploma $diploma,
+        ModuleRepository $moduleRepository,
+        AssignmentRepository $assignmentRepository,
+        ModuleCompetenceAssignmentRepository $moduleCompetenceAssignmentRepository,
+        CreditRepository $creditRepository
+    ): Response {
+        $user = $this->getUser();
+        $school = $user->getSchool();
+        $solde = $creditRepository->getCreditsUsedThisMonth($school);
+        $subscription = $school->getLastInvoiceValid()?$school->getLastInvoiceValid()->getSubscription(): null;
+
+        if (
+            $program->getOwner() !== $user
+            && (!in_array("ROLE_ADMIN", $this->getUser()->getRoles())
+                || $program->getOwner()->getSchool() !== $this->getUser()->getSchool())
+        ) {
+            $this->addFlash('error', 'Vous ne pouvez pas éditer ce programme.');
+            return $this->redirectToRoute('app_program');
+        }
+
+        $competences = $diploma->getCompetences();
+        $assignments = $assignmentRepository->findBy(['program' => $program]);
+
+        // Regrouper les modules affectés par compétence
+        $modulePerCompetence = [];
+        $assignedModuleIds = [];
+
+        foreach ($moduleCompetenceAssignmentRepository->findBy([
+            'program' => $program,
+            'diploma' => $diploma,
+        ]) as $affectation) {
+            $cid = $affectation->getCompetence()->getId();
+            if (!isset($modulePerCompetence[$cid])) {
+                $modulePerCompetence[$cid] = [];
+            }
+
+            $modulePerCompetence[$cid][] = $affectation->getModule();
+            $assignedModuleIds[] = $affectation->getModule()->getId();
+        }
+
+        // Modules non encore affectés
+        $unassignedModules = array_filter($assignments, function ($assignment) use ($assignedModuleIds) {
+            return !in_array($assignment->getModule()->getId(), $assignedModuleIds);
         });
 
-        return $this->render('program/assignement.html.twig', [
+        return $this->render('program/assignDiploma.html.twig', [
             'program' => $program,
-            'modules' => $modules,
-            'existingMapping' => $existingMapping,
+            'diploma' => $diploma,
+            'credit' => $solde ?? null,
+            'competences' => $competences,
+            'assignments' => $assignments,
+            'modulesByCompetence' => $modulePerCompetence,
+            'unassignedModules' => $unassignedModules,
+            'user' => $user,
+            'subscription' => $subscription,
         ]);
     }
 
 
+    #[Route('/diploma/assign/{diploma}/{program}', name: 'app_diploma_assign_save', methods: ['POST'])]
+    public function saveAssignDiploma(
+        Diploma $diploma,
+        Program $program,
+        Request $request,
+        EntityManagerInterface $em,
+        CompetenceRepository $competenceRepo,
+        ModuleRepository $moduleRepo,
+        ModuleCompetenceAssignmentRepository $affectationRepo
+    ): Response {
+
+        $user = $this->getUser();
+        if($program->getOwner() !== $user
+            && (!in_array("ROLE_ADMIN", $this->getUser()->getRoles())
+                || $program->getOwner()->getSchool() !== $this->getUser()->getSchool())
+        ) {
+            $this->addFlash('error', 'Vous ne pouvez pas éditer ce programme.');
+            return $this->redirectToRoute('app_program');
+        }
+
+        $data = json_decode($request->request->get('assignments'), true);
+
+        // Supprimer les affectations existantes pour ce programme/diplôme
+        $existing = $affectationRepo->findBy(['program' => $program, 'diploma' => $diploma]);
+        foreach ($existing as $aff) {
+            $em->remove($aff);
+        }
+
+        // Recréer les affectations
+        foreach ($data as $item) {
+            $module = $moduleRepo->find($item['module']);
+            $competence = $competenceRepo->find($item['competence']);
+
+            if ($module && $competence) {
+                $affectation = new ModuleCompetenceAssignment();
+                $affectation->setProgram($program);
+                $affectation->setCompetence($competence);
+                $affectation->setDiploma($diploma);
+                $affectation->setModule($module);
+                $em->persist($affectation);
+            }
+        }
+
+        $em->flush();
+
+        $this->addFlash('success', 'Affectations enregistrées avec succès.');
+        return $this->redirectToRoute('app_program');
+    }
+
+    #[Route('/program/assign/auto/{diploma}/{program}', name: 'app_program_assign_competence_auto', methods: ['POST'])]
+    function assignAuto(Diploma $diploma, Program $program, Request $request,
+                        ModuleCompetenceAssignmentRepository $affectationRepo,
+                        EntityManagerInterface $em,ChatGptClient $chatGptClient,
+                        SettingRepository $settingRepository,
+                        CreditRepository $creditRepository): Response
+    {
+        $submittedToken = $request->request->get('_csrf_token');
+        if (!$this->isCsrfTokenValid('generate_diploma', $submittedToken)) {
+            throw $this->createAccessDeniedException('CSRF token invalid');
+        }
+        $school = $this->getUser()->getSchool();
+        $solde = $creditRepository->getCreditsUsedThisMonth($school);
+
+        if ($solde>=200){
+            $this->addFlash('error', 'Vous n\'avez pas assez de crédits pour générer des affectations automatiques.');
+            return $this->redirectToRoute('app_diploma_assign',
+                [
+                    'diploma' => $diploma->getId(),
+                    'program' => $program->getId()
+                ]);
+        }
+
+
+        $chatGptClient->setApiKey($settingRepository->findOneBy(['name' => 'chatGPT'])->getValue());
+        $result = $chatGptClient->generateAssignations($diploma,$program);
+
+        $credit = new Credit();
+        $credit->setSchool($school);
+        $credit->setQuery('module_assign');
+        $credit->setCreatedAt(new \DateTimeImmutable());
+        $em->persist($credit);
+        $em->flush();
+
+        $assignments = json_decode($result, true) ?: [];
+
+        if (empty($assignments)) {
+            $this->addFlash('error', 'Aucune affectation n\'a pu être réalisée .');
+        }else{
+
+            $existing = $affectationRepo->findBy(['program' => $program, 'diploma' => $diploma]);
+            foreach ($existing as $aff) {
+                $em->remove($aff);
+            }
+            foreach ($assignments as $competenceId => $modules) {
+                $competence = $em->getRepository(Competence::class)->find($competenceId);
+                if (!$competence) {
+                    continue; // Ignore si la compétence n'existe pas
+                }
+
+                foreach ($modules as $moduleId) {
+                    $module = $em->getRepository(Module::class)->find($moduleId);
+                    if (!$module) {
+                        continue; // Ignore si le module n'existe pas
+                    }
+                    $assignment = new ModuleCompetenceAssignment();
+                    $assignment->setProgram($program);
+                    $assignment->setCompetence($competence);
+                    $assignment->setModule($module);
+                    $assignment->setDiploma($diploma);
+                    $em->persist($assignment);
+                }
+            }
+            $em->flush();
+        }
+
+
+
+        return $this->redirectToRoute('app_diploma_assign',
+            [
+                'diploma' => $diploma->getId(),
+                'program' => $program->getId()
+            ]);
+    }
 }

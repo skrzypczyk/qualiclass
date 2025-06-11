@@ -47,10 +47,6 @@ class Module
     #[ORM\Column(nullable: true)]
     private ?bool $isArchived = null;
 
-
-    #[ORM\OneToMany(mappedBy: 'module', targetEntity: ModuleCompetenceAffectation::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
-    private Collection $affectations;
-
     #[ORM\Column(nullable: true)]
     private ?bool $isShared = null;
 
@@ -60,13 +56,26 @@ class Module
     #[ORM\ManyToMany(targetEntity: Assessment::class, inversedBy: 'modules')]
     private Collection $assessments;
 
+    /**
+     * @var Collection<int, Assignment>
+     */
+    #[ORM\OneToMany(targetEntity: Assignment::class, mappedBy: 'module')]
+    private Collection $assignments;
+
+    /**
+     * @var Collection<int, ModuleCompetenceAssignment>
+     */
+    #[ORM\OneToMany(targetEntity: ModuleCompetenceAssignment::class, mappedBy: 'module')]
+    private Collection $moduleCompetenceAssignments;
+
 
 
     public function __construct()
     {
         $this->categories = new ArrayCollection();
-        $this->affectations = new ArrayCollection();
         $this->assessments = new ArrayCollection();
+        $this->assignments = new ArrayCollection();
+        $this->moduleCompetenceAssignments = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -194,37 +203,6 @@ class Module
         return $this;
     }
 
-
-    /**
-     * @return Collection<int, ModuleCompetenceAffectation>
-     */
-    public function getAffectations(): Collection
-    {
-        return $this->affectations;
-    }
-
-    public function addAffectation(ModuleCompetenceAffectation $affectation): static
-    {
-        if (!$this->affectations->contains($affectation)) {
-            $this->affectations->add($affectation);
-            $affectation->setProgram($this);
-        }
-
-        return $this;
-    }
-
-    public function removeAffectation(ModuleCompetenceAffectation $affectation): static
-    {
-        if ($this->affectations->removeElement($affectation)) {
-            // set the owning side to null (unless already changed)
-            if ($affectation->getProgram() === $this) {
-                $affectation->setProgram(null);
-            }
-        }
-
-        return $this;
-    }
-
     public function isShared(): ?bool
     {
         return $this->isShared;
@@ -257,6 +235,66 @@ class Module
     public function removeAssessment(Assessment $assessment): static
     {
         $this->assessments->removeElement($assessment);
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Assignment>
+     */
+    public function getAssignments(): Collection
+    {
+        return $this->assignments;
+    }
+
+    public function addAssignment(Assignment $assignment): static
+    {
+        if (!$this->assignments->contains($assignment)) {
+            $this->assignments->add($assignment);
+            $assignment->setModule($this);
+        }
+
+        return $this;
+    }
+
+    public function removeAssignment(Assignment $assignment): static
+    {
+        if ($this->assignments->removeElement($assignment)) {
+            // set the owning side to null (unless already changed)
+            if ($assignment->getModule() === $this) {
+                $assignment->setModule(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, ModuleCompetenceAssignment>
+     */
+    public function getModuleCompetenceAssignments(): Collection
+    {
+        return $this->moduleCompetenceAssignments;
+    }
+
+    public function addModuleCompetenceAssignment(ModuleCompetenceAssignment $moduleCompetenceAssignment): static
+    {
+        if (!$this->moduleCompetenceAssignments->contains($moduleCompetenceAssignment)) {
+            $this->moduleCompetenceAssignments->add($moduleCompetenceAssignment);
+            $moduleCompetenceAssignment->setModule($this);
+        }
+
+        return $this;
+    }
+
+    public function removeModuleCompetenceAssignment(ModuleCompetenceAssignment $moduleCompetenceAssignment): static
+    {
+        if ($this->moduleCompetenceAssignments->removeElement($moduleCompetenceAssignment)) {
+            // set the owning side to null (unless already changed)
+            if ($moduleCompetenceAssignment->getModule() === $this) {
+                $moduleCompetenceAssignment->setModule(null);
+            }
+        }
 
         return $this;
     }

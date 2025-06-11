@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        @page {
+            margin: 100px 50px 80px 50px;
+        }
+
+        @font-face {
+            font-family: '{{ user.school.typo }}';
+            src: url('fonts/{{ user.school.typo }}.ttf') format('truetype');
+        }
+
+        body {
+            font-family: '{{ user.school.typo }}';
+            font-size: 14px;
+            color: {{ user.school.secondaryColor ?? '#000' }};
+        }
+        a{
+            text-decoration: none;
+        }
+
+        header {
+            position: fixed;
+            top: -80px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        footer {
+            position: fixed;
+            bottom: -60px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        .pagenum:before {
+            content: counter(page);
+        }
+
+        h1, h2, h3 {
+            font-weight: bold;
+        }
+
+        h1 { font-size: 24px; }
+        h2 { font-size: 20px; }
+        h3 { font-size: 18px; margin-top: 50px;margin-bottom: 0px;}
+        p, li { font-size: 14px; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: left;
+        }
+
+        .page-break {
+            page-break-before: always;
+        }
+    </style>
+</head>
+<body>
+{% set logo = user.school.img ? 'uploads/schools/'~user.school.img: 'images/logo-qualiclass.png' %}
+
+<div style="page-break-after: always; padding: 50px; height: 820px; text-align: center;background-color: {{ user.school.primaryColor ?? '#fff' }}">
+    <img src="{{ logo }}" alt="Page de garde" style="width: 40%; height: auto; margin: auto">
+
+    <h1 style="font-size: 40px">
+        {{ program.title }}
+    </h1>
+    <h2 style="font-size: 30px">
+        Bac +{{ program.year }}
+    </h2>
+    <hr>
+    <div  style="text-align: left">
+    <h3 class="text-xl font-semibold mt-8 mb-4">Titres RNCP associés</h3>
+
+    <ul class="list-disc pl-6 mb-4">
+        {% for diploma in program.diplomas %}
+            <li>
+                {{ diploma.RNCP }} : {{ diploma.title }}
+            </li>
+        {% else %}
+            <li>Aucun titre RNCP associé.</li>
+        {% endfor %}
+    </ul>
+    </div>
+
+    <img src="images/logo-qualiclass.png" alt="Qualiclass" style="width: 14%;  position: absolute; bottom: 40px; left: 43%">
+
+</div>
+
+<header style="background-color: {{ user.school.primaryColor ?? '#fff' }};padding: 5px;">
+    Programme – {{ program.title }} - {{ program.year }} année
+</header>
+
+<footer>
+    <table >
+        <tr>
+            <td style="text-align: center; border: 0px"><img src="{{ logo }}" alt="Page de garde" style="height: 60px;"></td>
+            <td style="text-align: center; border: 0px">Page <span class="pagenum"></span></td>
+            <td style="text-align: center; border: 0px"><img src="images/logo-qualiclass.png" alt="Qualiclass" style="height: 60px;"></td>
+        </tr>
+    </table>
+
+</footer>
+
+<div class="max-w-4xl mx-auto px-6 py-10 bg-white shadow rounded">
+    <h1 class="text-3xl font-bold title-primary mb-8">
+        {{ program.title }}
+        <span class="text-sm font-normal text-gray-600 ml-4">— Bac +{{ program.year }}</span>
+    </h1>
+
+    <h3 class="text-xl font-semibold mt-6 mb-2">Objectifs</h3>
+    <p class="text-gray-700 mb-4">{{ program.goals|raw }}</p>
+
+    <h3 class="text-xl font-semibold mt-6 mb-2">Prérequis</h3>
+    <p class="text-gray-700 mb-4">{{ program.prerequisites|raw }}</p>
+
+    <h3 class="text-xl font-semibold mt-6 mb-2">Commentaires</h3>
+    <p class="text-gray-700 mb-4">{{ program.notes|raw }}</p>
+
+    <div class="page-break"></div>
+    {# Liste des modules par partie #}
+    <h3 class="text-xl font-semibold mt-8 mb-4">Programme</h3>
+
+    <table>
+        <thead>
+        <tr style="background-color: #eee;">
+            <th style="text-align: center;">Partie</th>
+            <th>Compétence / module</th>
+            <th style="text-align: center;">Durée</th>
+            <th style="text-align: center;">Crédits</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% set totalDuration = 0 %}
+        {% set totalCredit = 0 %}
+        {% for part,assignments in programGroupedAssignments %}
+            {% set duration = 0 %}
+            {% set credit = 0 %}
+            {% for assignment in assignments %}
+
+                {% set duration = duration + assignment.module.duration %}
+                {% set credit = credit + (assignment.module.credit ?? 0) %}
+                {% set totalDuration = totalDuration + assignment.module.duration %}
+                {% set totalCredit = totalCredit + (assignment.module.credit ?? 0) %}
+
+                <tr>
+                    {% if loop.first %}
+                        <td style="text-align: center;" rowspan="{{ assignments|length }}">
+                            {{ part }}
+                        </td>
+                    {% endif %}
+                    <td>
+                        <a href="#module-{{ assignment.module.id }}">{{ assignment.module.title }}</a>
+                    </td>
+                    <td style="text-align: center">{{ assignment.module.duration }} h </td>
+                    <td style="text-align: center">{{ assignment.module.credit??0 }}</td>
+                </tr>
+            {% endfor %}
+            <tr style="background-color: #eee;">
+                <th colspan="2" style="text-align: right;">Total</th>
+                <th style="text-align: center"> {{ duration }} h</th>
+                <th style="text-align: center"> {{ credit }} </th>
+            </tr>
+        {% endfor %}
+        <tfoot>
+        <tr style="background-color: #eee;">
+            <th colspan="2" style="text-align: right;">Total</th>
+            <th style="text-align: center"> {{ totalDuration }} h</th>
+            <th style="text-align: center"> {{ totalCredit }} </th>
+        </tr>
+        </tfoot>
+
+        </tbody>
+    </table>
+</div>
+
+<div class="page-break"></div>
+<div style=" padding: 50px; margin-top: 280px; text-align: center;}">
+    <img src="{{ logo }}" alt="Page de garde" style="width: 40%; height: auto; margin: auto">
+</div>
+
+</body>
+</html>

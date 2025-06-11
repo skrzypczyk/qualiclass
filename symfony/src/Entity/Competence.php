@@ -28,12 +28,15 @@ class Competence
     #[ORM\ManyToOne(inversedBy: 'competences')]
     private ?Diploma $diploma = null;
 
-    #[ORM\OneToMany(mappedBy: 'competence', targetEntity: ModuleCompetenceAffectation::class, cascade: ['remove'], orphanRemoval: true)]
-    private Collection $moduleCompetenceAffectations;
+    /**
+     * @var Collection<int, ModuleCompetenceAssignment>
+     */
+    #[ORM\OneToMany(targetEntity: ModuleCompetenceAssignment::class, mappedBy: 'competence')]
+    private Collection $moduleCompetenceAssignments;
 
     public function __construct()
     {
-        $this->moduleCompetenceAffectations = new ArrayCollection();
+        $this->moduleCompetenceAssignments = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -90,34 +93,33 @@ class Competence
     }
 
     /**
-     * @return Collection<int, ModuleCompetenceAffectation>
+     * @return Collection<int, ModuleCompetenceAssignment>
      */
-    public function getModuleCompetenceAffectations(): Collection
+    public function getModuleCompetenceAssignments(): Collection
     {
-        return $this->moduleCompetenceAffectations;
+        return $this->moduleCompetenceAssignments;
     }
 
-    public function addModuleCompetenceAffectation(ModuleCompetenceAffectation $affectation): static
+    public function addModuleCompetenceAssignment(ModuleCompetenceAssignment $moduleCompetenceAssignment): static
     {
-        if (!$this->moduleCompetenceAffectations->contains($affectation)) {
-            $this->moduleCompetenceAffectations[] = $affectation;
-            $affectation->setCompetence($this);
+        if (!$this->moduleCompetenceAssignments->contains($moduleCompetenceAssignment)) {
+            $this->moduleCompetenceAssignments->add($moduleCompetenceAssignment);
+            $moduleCompetenceAssignment->setCompetence($this);
         }
 
         return $this;
     }
 
-    public function removeModuleCompetenceAffectation(ModuleCompetenceAffectation $affectation): static
+    public function removeModuleCompetenceAssignment(ModuleCompetenceAssignment $moduleCompetenceAssignment): static
     {
-        if ($this->moduleCompetenceAffectations->removeElement($affectation)) {
+        if ($this->moduleCompetenceAssignments->removeElement($moduleCompetenceAssignment)) {
             // set the owning side to null (unless already changed)
-            if ($affectation->getCompetence() === $this) {
-                $affectation->setCompetence(null);
+            if ($moduleCompetenceAssignment->getCompetence() === $this) {
+                $moduleCompetenceAssignment->setCompetence(null);
             }
         }
 
         return $this;
     }
-
 
 }

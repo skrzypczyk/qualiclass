@@ -2,22 +2,24 @@
 
 namespace App\Repository;
 
-use App\Entity\ModuleCompetenceAffectation;
+use App\Entity\Diploma;
+use App\Entity\ModuleCompetenceAssignment;
+use App\Entity\Program;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * @extends ServiceEntityRepository<ModuleCompetenceAffectation>
+ * @extends ServiceEntityRepository<ModuleCompetenceAssignment>
  */
-class ModuleCompetenceAffectationRepository extends ServiceEntityRepository
+class ModuleCompetenceAssignmentRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, ModuleCompetenceAffectation::class);
+        parent::__construct($registry, ModuleCompetenceAssignment::class);
     }
 
     //    /**
-    //     * @return ModuleCompetenceAffectation[] Returns an array of ModuleCompetenceAffectation objects
+    //     * @return ModuleCompetenceAssignment[] Returns an array of ModuleCompetenceAssignment objects
     //     */
     //    public function findByExampleField($value): array
     //    {
@@ -31,7 +33,7 @@ class ModuleCompetenceAffectationRepository extends ServiceEntityRepository
     //        ;
     //    }
 
-    //    public function findOneBySomeField($value): ?ModuleCompetenceAffectation
+    //    public function findOneBySomeField($value): ?ModuleCompetenceAssignment
     //    {
     //        return $this->createQueryBuilder('m')
     //            ->andWhere('m.exampleField = :val')

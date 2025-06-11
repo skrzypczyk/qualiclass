@@ -35,6 +35,14 @@ final class BackofficeController extends AbstractController
                 $data[$program_id]["title"] = $program->getTitle();
                 $data[$program_id]["id"] = $program->getId();
                 $data[$program_id]["author"] = $program->getOwner()->getEmail();
+                $data[$program_id]["counter"] = 0;
+                $data[$program_id]["duration"] = 0;
+                $data[$program_id]["credit"] = 0;
+                foreach ($program->getAssignments() as $assignment) {
+                    $data[$program_id]["counter"]++;
+                    $data[$program_id]["duration"]+=$assignment->getModule()->getDuration();
+                    $data[$program_id]["credit"]+=$assignment->getModule()->getCredit();
+                }
                 $data[$program_id]["diplomas"][$diploma->getId()]["id"] = $diploma->getId();
                 $data[$program_id]["diplomas"][$diploma->getId()]["title"] = $diploma->getTitle();
                 $data[$program_id]["diplomas"][$diploma->getId()]["RNCP"] = $diploma->getRNCP();
@@ -42,10 +50,12 @@ final class BackofficeController extends AbstractController
                 $data[$program_id]["diplomas"][$diploma->getId()]["duration"] = 0;
                 $data[$program_id]["diplomas"][$diploma->getId()]["credit"] = 0;
             }
-            foreach ($program->getAffectations() as $affectation) {
-                $data[$program_id]["diplomas"][$affectation->getCompetence()->getDiploma()->getId()]["counter"]++;
-                $data[$program_id]["diplomas"][$affectation->getCompetence()->getDiploma()->getId()]["duration"]+=$affectation->getModule()->getDuration();
-                $data[$program_id]["diplomas"][$affectation->getCompetence()->getDiploma()->getId()]["credit"]+=$affectation->getModule()->getCredit();
+            foreach ($program->getModuleCompetenceAssignments() as $assignmentDiploma) {
+                if(isset($data[$program_id]["diplomas"][$assignmentDiploma->getDiploma()->getId()])){
+                    $data[$program_id]["diplomas"][$assignmentDiploma->getDiploma()->getId()]["counter"]++;
+                    $data[$program_id]["diplomas"][$assignmentDiploma->getDiploma()->getId()]["duration"]+=$assignmentDiploma->getModule()->getDuration();
+                    $data[$program_id]["diplomas"][$assignmentDiploma->getDiploma()->getId()]["credit"]+=$assignmentDiploma->getModule()->getCredit();
+                }
             }
         }
 

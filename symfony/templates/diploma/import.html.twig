@@ -34,11 +34,15 @@
         {% if diploma is not null %}
 
 
-            <button type="submit" class="btn btn-danger btn-lg">
-                Valider le diplôme
-            </button>
 
             <form method="POST" action="{{ path('app_diploma_store') }}">
+
+
+                <button type="submit" class="btn btn-danger btn-lg">
+                    Valider le diplôme
+                </button>
+
+
                 <input type="hidden" name="_csrf_token" value="{{ csrf_token('validate_diploma') }}">
 
 

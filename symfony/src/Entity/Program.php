@@ -40,14 +40,23 @@ class Program
     #[ORM\ManyToOne(inversedBy: 'programs')]
     private ?User $owner = null;
 
-    #[ORM\OneToMany(mappedBy: 'program', targetEntity: ModuleCompetenceAffectation::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
-    private Collection $affectations;
+    /**
+     * @var Collection<int, Assignment>
+     */
+    #[ORM\OneToMany(targetEntity: Assignment::class, mappedBy: 'program',cascade: ['persist', 'remove'], orphanRemoval: true)]
+    private Collection $assignments;
 
+    /**
+     * @var Collection<int, ModuleCompetenceAssignment>
+     */
+    #[ORM\OneToMany(targetEntity: ModuleCompetenceAssignment::class, mappedBy: 'program')]
+    private Collection $moduleCompetenceAssignments;
 
     public function __construct()
     {
         $this->diplomas = new ArrayCollection();
-        $this->affectations = new ArrayCollection();
+        $this->assignments = new ArrayCollection();
+        $this->moduleCompetenceAssignments = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -151,30 +160,82 @@ class Program
         return $this;
     }
 
-    /**
-     * @return Collection<int, ModuleCompetenceAffectation>
-     */
-    public function getAffectations(): Collection
+    public function getPeriod(): ?int
     {
-        return $this->affectations;
+        return $this->period;
     }
 
-    public function addAffectation(ModuleCompetenceAffectation $affectation): static
+    public function setPeriod(int $period): static
     {
-        if (!$this->affectations->contains($affectation)) {
-            $this->affectations->add($affectation);
-            $affectation->setProgram($this);
+        $this->period = $period;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Assignment>
+     */
+    public function getAssignments(): Collection
+    {
+        return $this->assignments;
+    }
+
+    public function addAssignment(Assignment $assignment): static
+    {
+        if (!$this->assignments->contains($assignment)) {
+            $this->assignments->add($assignment);
+            $assignment->setProgram($this);
         }
 
         return $this;
     }
 
-    public function removeAffectation(ModuleCompetenceAffectation $affectation): static
+    public function removeAssignment(Assignment $assignment): static
     {
-        if ($this->affectations->removeElement($affectation)) {
+        if ($this->assignments->removeElement($assignment)) {
             // set the owning side to null (unless already changed)
-            if ($affectation->getProgram() === $this) {
-                $affectation->setProgram(null);
+            if ($assignment->getProgram() === $this) {
+                $assignment->setProgram(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getGroupedAssignments(): array
+    {
+        $grouped = [];
+        foreach ($this->getAssignments() as $a) {
+            $grouped[$a->getPart()][] = $a;
+        }
+        ksort($grouped); // facultatif
+        return $grouped;
+    }
+
+    /**
+     * @return Collection<int, ModuleCompetenceAssignment>
+     */
+    public function getModuleCompetenceAssignments(): Collection
+    {
+        return $this->moduleCompetenceAssignments;
+    }
+
+    public function addModuleCompetenceAssignment(ModuleCompetenceAssignment $moduleCompetenceAssignment): static
+    {
+        if (!$this->moduleCompetenceAssignments->contains($moduleCompetenceAssignment)) {
+            $this->moduleCompetenceAssignments->add($moduleCompetenceAssignment);
+            $moduleCompetenceAssignment->setProgram($this);
+        }
+
+        return $this;
+    }
+
+    public function removeModuleCompetenceAssignment(ModuleCompetenceAssignment $moduleCompetenceAssignment): static
+    {
+        if ($this->moduleCompetenceAssignments->removeElement($moduleCompetenceAssignment)) {
+            // set the owning side to null (unless already changed)
+            if ($moduleCompetenceAssignment->getProgram() === $this) {
+                $moduleCompetenceAssignment->setProgram(null);
             }
         }
 

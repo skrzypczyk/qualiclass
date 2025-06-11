@@ -3,86 +3,95 @@
 {% block title %}Tableau de bord{% endblock %}
 
 {% block body %}
-    <div class="max-w-7xl mx-auto px-6 py-10">
-        <h1 class="text-3xl font-bold title-primary mb-8">Tableau de bord</h1>
+    <div class="max-w-7xl mx-auto px-4 py-10">
+        <h1 class="text-4xl font-bold text-gray-800 mb-10">Tableau de bord</h1>
 
-
-        {# ✅ 4 compteurs globaux #}
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-
-
-
-            <div class="bg-white shadow rounded-lg text-center">
-                {% if user.getSchool().getImg() is not null and user.getSchool().getImg() is not empty  %}
-                    <img src="{{ asset('uploads/schools/'~user.getSchool().getImg()) }}" class="w-32 h-32 mx-auto" alt="School Image">
+        {# ✅ Cartes Statistiques #}
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+            <div class="flex flex-col items-center justify-center text-center">
+                {% if user.school.img %}
+                    <img src="{{ asset('uploads/schools/' ~ user.school.img) }}" class="w-20 h-20 object-contain" alt="Logo École">
                 {% else %}
-                    <img src="{{ asset('images/logo-qualiclass.png') }}" class="w-32 h-32 mx-auto" alt="Default School Image">
+                    <img src="{{ asset('images/logo-qualiclass.png') }}" class="w-20 h-20 object-contain" alt="Logo défaut">
                 {% endif %}
             </div>
 
-
-            <div class="bg-white shadow rounded-lg p-6 text-center">
-                <div class="text-4xl font-bold text-[#1a355c]">{{ user.programs|length }}</div>
-                <div class="mt-2 text-gray-600">Programmes</div>
+            <div class="bg-primary text-white shadow-md rounded-xl p-6 text-center">
+                <div class="text-3xl font-bold">{{ user.programs|length }}</div>
+                <div class="mt-2 text-sm">Programmes</div>
             </div>
-            <div class="bg-white shadow rounded-lg p-6 text-center">
-                <div class="text-4xl font-bold text-[#1a355c]">{{ user.school.getDiplomas()|length }}</div>
-                <div class="mt-2 text-gray-600">Diplômes</div>
+            <div class="bg-primary text-white shadow-md rounded-xl p-6 text-center">
+                <div class="text-3xl font-bold">{{ user.school.diplomas|length }}</div>
+                <div class="mt-2 text-sm">Titre RNCP</div>
             </div>
-            <div class="bg-white shadow rounded-lg p-6 text-center">
-                <div class="text-4xl font-bold text-[#1a355c]">{{ user.modules|length }}</div>
-                <div class="mt-2 text-gray-600">Modules</div>
+            <div class="bg-primary text-white shadow-md rounded-xl p-6 text-center">
+                <div class="text-3xl font-bold">{{ user.modules|length }}</div>
+                <div class="mt-2 text-sm">Modules</div>
             </div>
         </div>
 
-
-        <div class="bg-white shadow rounded-lg overflow-hidden">
-            <table class="w-full table-auto text-left">
-                <thead>
-                <tr>
-                    <th class="px-6 py-4">Programme <br> Diplôme - RNCP</th>
-                    <th class="px-6 py-4 text-center">Nombre de modules</th>
-                    <th class="px-6 py-4 text-center">Durée totale</th>
-                    <th class="px-6 py-4 text-center">Total crédits</th>
-                    <th class="px-6 py-4 text-center">Actions</th>
-                </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-200">
-                {% for program in data %}
-                    <tr class="bg-neutral ">
-                        <td class="px-6 py-3 font-medium" colspan="5">
-                            <a href="{{ path('app_program_show', {'id': program.id}) }}" class="text-primary hover:underline">{{ program.title }}</a>
-                            {%  if user.isAdmin() %}
-                            - {{ program.author }}
-                            {% endif %}
-                        </td>
-                    </tr>
-
-                {% for diploma in program.diplomas %}
+        {# ✅ Tableau Responsive #}
+        <div class="bg-white shadow-md rounded-xl overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="min-w-full text-sm text-left">
+                    <thead class="bg-[#f3f4f6] text-gray-700 uppercase text-xs">
                     <tr>
-                        <td class="px-6 py-3">
-                            {{ diploma.title }}
-                            <br>
-                            <small>{{ diploma.RNCP }}</small></td>
-                        <td class="px-6 py-3 text-center">{{ diploma.counter }}</td>
-                        <td class="px-6 py-3 text-center">
-                            {{ diploma.duration }} h
-                        </td>
-                        <td class="px-6 py-3 text-center">{{ diploma.credit }}</td>
-                        <td class="px-6 py-3 text-center space-x-2">
-                            <a href="{{ path('app_program_diploma_show', {'program': program.id,'diploma': diploma.id}) }}" class="link-primary">Voir</a>
-                            <a href="{{ path('app_program_diploma_show', {'program': program.id,'diploma': diploma.id,'format':'pdf'}) }}" class="link-primary ">PDF</a>
-                        </td>
+                        <th class="px-6 py-4">Programme<br>Diplôme - RNCP</th>
+                        <th class="px-6 py-4 text-center">Modules</th>
+                        <th class="px-6 py-4 text-center">Durée</th>
+                        <th class="px-6 py-4 text-center">Crédits</th>
+                        <th class="px-6 py-4 text-center">Actions</th>
                     </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200">
+                    {% for program in data %}
+                        <tr class="bg-neutral">
+                            <td class="px-6 py-4 font-medium ">
+                                {{ program.title }}
+                                {% if user.isAdmin() %}
+                                    <span class="text-sm"> - {{ program.author }}</span>
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4 text-center">{{ program.counter }}</td>
+                            <td class="px-6 py-4 text-center">{{ program.duration }} h</td>
+                            <td class="px-6 py-4 text-center">{{ program.credit }}</td>
+                            <td class="px-6 py-4 text-center flex flex-col sm:flex-row justify-center items-center gap-2">
+                                <a href="{{ path('app_program_show', { id: program.id }) }}"
+                                   class="inline-block bg-blue-100 text-blue-800 text-xs font-semibold px-3 py-1 rounded-full hover:bg-blue-200 transition">
+                                    HTML
+                                </a>
+                                <a href="{{ path('app_program_show', { id: program.id, format: 'pdf' }) }}"
+                                   class="inline-block bg-red-100 text-red-800 text-xs font-semibold px-3 py-1 rounded-full hover:bg-red-200 transition">
+                                    PDF
+                                </a>
+                            </td>
+
+                        </tr>
+
+                        {% for diploma in program.diplomas %}
+                            <tr class="{{ (diploma.counter != program.counter or diploma.duration != program.duration) ? 'bg-red-50 text-red-700' : 'text-gray-600' }} text-xs">
+                                <td class="px-6 py-3">{{ diploma.title }} – {{ diploma.RNCP }}</td>
+                                <td class="px-6 py-3 text-center">{{ diploma.counter }}</td>
+                                <td class="px-6 py-3 text-center">{{ diploma.duration }} h</td>
+                                <td class="px-6 py-3 text-center">{{ diploma.credit }}</td>
+                                <td class="px-6 py-3 text-center flex flex-col sm:flex-row justify-center items-center gap-2">
+                                    <a href="{{ path('app_program_diploma_show', { program: program.id, diploma: diploma.id }) }}"
+                                       class="inline-block bg-blue-100 text-blue-800 text-xs font-semibold px-3 py-1 rounded-full hover:bg-blue-200 transition">
+                                        HTML
+                                    </a>
+                                    <a href="{{ path('app_program_diploma_show', { program: program.id, diploma: diploma.id, format: 'pdf' }) }}"
+                                       class="inline-block bg-red-100 text-red-800 text-xs font-semibold px-3 py-1 rounded-full hover:bg-red-200 transition">
+                                        PDF
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr><td colspan="5" class="text-center py-6 text-gray-500">Aucun programme disponible</td></tr>
                     {% endfor %}
-                {% else %}
-                    <tr>
-                        <td colspan="6" class="text-center px-6 py-4 text-gray-500">Aucune donnée disponible</td>
-                    </tr>
-                {% endfor %}
-                </tbody>
-            </table>
-
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 {% endblock %}

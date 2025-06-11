@@ -1,0 +1,233 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Répartition des modules dans les compétences{% endblock %}
+
+{% block body %}
+    <div class="max-w-6xl mx-auto px-6 py-10">
+        <div class="mb-8">
+            <h1 class="text-4xl font-bold text-gray-800 mb-4">
+                {{ program.title }}
+            </h1>
+
+            {# ✅ Bouton Génération Automatique #}
+            {% if user.isSuperAdmin or user.school.isFreeAccount or subscription.chatgpt %}
+
+            <div x-data="{ showModal: false}">
+                {%  if credit < 200 %}
+                <button
+                        type="button"
+                        @click="showModal = true;"
+                        class="btn-primary my-6"
+                >
+                    Générer automatiquement ( {{ 200 - credit  }} Crédits restants )
+                </button>
+                {% else %}
+                    <button type="submit" class="btn-primary" disabled>
+                        Vous n'avez plus de crédit pour une génération automatique.
+                    </button>
+                {% endif %}
+
+                <form method="post"
+                      action="{{ path('app_program_assign_competence_auto',{'diploma':diploma.id, 'program':program.id}) }}"
+                      id="form-generate-auto"
+                      class="hidden ">
+                    <input type="hidden" name="_csrf_token" value="{{ csrf_token('generate_diploma') }}">
+                </form>
+
+
+                {% include 'components/modal-confirmation.html.twig' with {
+                    x_show: 'showModal',
+                    title: 'Répartition automatique',
+                    message: '<span class="text-red-600">Attention</span>, lancer la répartition automatique des modules va écraser toutes les affectations manuelles que vous avez faites.
+                    Voulez-vous vraiment continuer ?',
+                    cancelLabel: 'Annuler',
+                    confirmLabel: 'Continuer',
+                    confirmAction: "document.getElementById('form-generate-auto').submit()"
+                } %}
+
+            </div>
+
+            {% endif %}
+
+            {# ✅ Informations Diplôme #}
+            <div class="bg-gray-50 p-4 rounded-lg shadow-sm text-sm text-gray-700">
+                <div class="mb-1">
+                    <span class="font-semibold text-gray-800">Diplôme :</span>
+                    {{ diploma.title }} <small class="text-gray-500"> – {{ diploma.RNCP }}</small>
+                </div>
+
+                {% set totalHours = 0 %}
+                {% set totalCredits = 0 %}
+                {% for modules in modulesByCompetence %}
+                    {% for module in modules %}
+                        {% set totalHours = totalHours + (module.duration ?? 0) %}
+                        {% set totalCredits = totalCredits + (module.credit ?? 0) %}
+                    {% endfor %}
+                {% endfor %}
+
+                <div id="global-total">
+                    <span class="font-semibold text-gray-800">Total affecté :</span>
+                    {{ totalHours }}h – {{ totalCredits }} crédits
+                </div>
+            </div>
+        </div>
+
+        <h3 class="text-xl font-semibold mb-4">Modules non affectés</h3>
+        <div class="bg-gray-100 p-4 rounded mb-6">
+            <div class="flex flex-wrap gap-2" id="unassigned-modules" data-total-id="unassigned-total">
+                {% for assignment in unassignedModules %}
+                    <div class="module-item bg-white border rounded px-4 py-2 text-sm cursor-move relative"
+                         data-module-id="{{ assignment.module.id }}"
+                         data-duration="{{ assignment.module.duration ?? 0 }}"
+                         data-credit="{{ assignment.module.credit ?? 0 }}"
+                         draggable="true">
+                        {{ assignment.module.title }}<br>
+                        <small class="text-gray-600">{{ assignment.module.duration ?? 0 }}h – {{ assignment.module.credit ?? 0 }} crédits</small>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+
+
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+            {% for competence in competences %}
+                <div class="bg-gray-50 border p-4 rounded competence-dropzone" data-competence-id="{{ competence.id }}">
+                    <h2 class="text-lg font-semibold text-primary mb-2">{{ competence.title }}</h2>
+                    <small class="font-semibold text-primary mb-2">{{ competence.RNCP }}</small>
+                    <ul class="competence-module-list space-y-2 min-h-[100px] bg-white p-2 rounded" data-list-id="{{ competence.id }}">
+                        {% for module in modulesByCompetence[competence.id] ?? [] %}
+                            <div class="module-item bg-white border rounded px-4 py-2 text-sm cursor-move relative"
+                                 data-module-id="{{ module.id }}"
+                                 data-duration="{{ module.duration ?? 0 }}"
+                                 data-credit="{{ module.credit ?? 0 }}"
+                                 draggable="true">
+                                {{ module.title }}<br>
+                                <small class="text-gray-600">{{ module.duration ?? 0 }}h – {{ module.credit ?? 0 }} crédits</small>
+                            </div>
+                        {% endfor %}
+                    </ul>
+                    <div id="total-{{ competence.id }}" class="mt-2 text-sm text-gray-700">
+                        Total : 0h – 0 crédits
+                    </div>
+                </div>
+
+            {% endfor %}
+        </div>
+
+        <div class="mt-8">
+            <form id="save-assignments-form" method="post" action="{{ path('app_diploma_assign_save', {'diploma': diploma.id, 'program': program.id}) }}">
+                <input type="hidden" name="assignments" id="assignments-data" value="">
+                <button type="submit" class="btn-primary mt-6">Enregistrer les affectations</button>
+                <a href="{{ path('app_program') }}" class="ml-4 text-gray-600 hover:underline">Retour</a>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function updateTotals() {
+            let globalH = 0;
+            let globalC = 0;
+
+            document.querySelectorAll('.competence-module-list, #unassigned-modules').forEach(zone => {
+                let totalH = 0;
+                let totalC = 0;
+                zone.querySelectorAll('.module-item').forEach(mod => {
+                    const h = parseInt(mod.dataset.duration || 0);
+                    const c = parseInt(mod.dataset.credit || 0);
+                    totalH += h;
+                    totalC += c;
+                });
+
+                const totalZone = document.getElementById('total-' + (zone.dataset.listId || 'unassigned'));
+                if (totalZone) totalZone.innerText = `Total : ${totalH}h – ${totalC} crédits`;
+
+                // Si c'est une compétence, on cumule dans le total global
+                if (zone.classList.contains('competence-module-list')) {
+                    globalH += totalH;
+                    globalC += totalC;
+                }
+            });
+
+            // Mise à jour du total global
+            const globalTotal = document.getElementById('global-total');
+            if (globalTotal) {
+                globalTotal.innerHTML = `<strong>Total affecté :</strong> ${globalH}h – ${globalC} crédits`;
+            }
+        }
+
+
+        function makeRemovable(module) {
+            // Ne pas ajouter la croix si le module est dans la zone des non affectés
+            if (module.closest('#unassigned-modules')) return;
+
+            if (!module.querySelector('.remove-module')) {
+                const btn = document.createElement('button');
+                btn.innerHTML = '&times;';
+                btn.className = 'absolute text-xl top-0 right-2 text-primary remove-module';
+                btn.type = 'button';
+                btn.addEventListener('click', () => {
+                    document.getElementById('unassigned-modules').appendChild(module);
+                    btn.remove();
+                    updateTotals();
+                });
+                module.appendChild(btn);
+            }
+        }
+
+        function makeDraggable(module) {
+            module.addEventListener('dragstart', e => {
+                e.dataTransfer.setData('module-id', module.dataset.moduleId);
+                module.classList.add('opacity-50');
+            });
+            module.addEventListener('dragend', () => module.classList.remove('opacity-50'));
+        }
+
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.module-item').forEach(module => {
+                makeDraggable(module);
+                makeRemovable(module);
+            });
+
+            document.querySelectorAll('.competence-module-list').forEach(zone => {
+                zone.addEventListener('dragover', e => {
+                    e.preventDefault();
+                    zone.classList.add('ring', 'ring-blue-300');
+                });
+                zone.addEventListener('dragleave', () => {
+                    zone.classList.remove('ring', 'ring-blue-300');
+                });
+                zone.addEventListener('drop', e => {
+                    e.preventDefault();
+                    zone.classList.remove('ring', 'ring-blue-300');
+                    const moduleId = e.dataTransfer.getData('module-id');
+                    const module = document.querySelector(`.module-item[data-module-id="${moduleId}"]`);
+                    if (module && !zone.querySelector(`[data-module-id="${moduleId}"]`)) {
+                        zone.appendChild(module);
+                        makeRemovable(module);
+                        updateTotals();
+                    }
+                });
+            });
+
+            document.getElementById('save-assignments-form').addEventListener('submit', function (e) {
+                const assignments = [];
+
+                document.querySelectorAll('.competence-module-list').forEach(zone => {
+                    const competenceId = zone.dataset.listId;
+                    zone.querySelectorAll('.module-item').forEach(module => {
+                        assignments.push({
+                            module: parseInt(module.dataset.moduleId),
+                            competence: parseInt(competenceId)
+                        });
+                    });
+                });
+
+                document.getElementById('assignments-data').value = JSON.stringify(assignments);
+            });
+
+            updateTotals();
+        });
+    </script>
+{% endblock %}

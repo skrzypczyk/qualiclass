@@ -180,3 +180,6 @@ label.required::after {
     content: " *";
     color: red;
 }
+.drag-over {
+    @apply border-green-500 bg-green-50;
+}

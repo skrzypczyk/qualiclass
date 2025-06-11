@@ -53,6 +53,7 @@ class CreateProgramType extends AbstractType
             ->add('goals', TextareaType::class, [
                 'label' => 'Objectifs',
                 'attr' => ['placeholder' => 'Objectifs du programme'],
+                'required' => false,
             ])
             ->add('notes', TextareaType::class, [
                 'label' => 'Notes',
@@ -72,6 +73,7 @@ class CreateProgramType extends AbstractType
                     return $diploma->getTitle() . ' (' . $diploma->getRNCP() . ')';
                 },
                 'multiple' => true,
+                'required' => false,
             ])
             ->add('owner', EntityType::class, [
                 'class' => 'App\Entity\User',

@@ -2,6 +2,8 @@
 
 namespace App\Service;
 
+use App\Entity\Diploma;
+use App\Entity\Program;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class ChatGptClient
@@ -26,6 +28,39 @@ class ChatGptClient
             'sessions' => $this->generateSessionsPlan($title, $duration, $nbSessions),
             'activities_and_resources' => $this->generateActivitiesAndResources($title),
         ];
+    }
+
+    public function generateAssignations(Diploma $diploma, Program $program): string
+    {
+        $competences = [];
+        foreach ($diploma->getCompetences() as $competence){
+            $competences [$competence->getId()] = $competence->getTitle();
+        }
+        $modules = [];
+        foreach ($program->getAssignments() as $assignments){
+            $modules[$assignments->getModule()->getId()]['titre'] = $assignments->getModule()->getTitle();
+            $modules[$assignments->getModule()->getId()]['duration'] = $assignments->getModule()->getDuration()??0;
+            $modules[$assignments->getModule()->getId()]['credit'] = $assignments->getModule()->getCredit()??0;
+        }
+        $prompt = sprintf(
+            "Tu es un assistant pédagogique et tu dois répartir les modules du programme « %s » dans les différents
+             bloc de compétence du diplôme intitulé « %s ».\n\n" .
+            "il faut répartir de manière équitable en terme de duration et dans l'idéal mais en secondaire en terme de credit.\n\n".
+            " voici la liste des compétences :\n" .
+            "%s\n" .
+            " et voici la liste des modules :\n" .
+            " %s\n\n" .
+            "fait moi un retour au format JSON, sans aucun commentaire.\n".
+            "Voici le format attendu :\n" .
+            "{\"competence_id_1\":[\"module_id_1\",\"module_id_2\",\"..\"],\"competence_id_2\":[\"module_id_3\",\"module_id_4\",\"..\"]}".
+            "hormis le JSON il ne doit rien avoir de plus dans ta réponse pour que je suis puisse le convertir par la suite sans traitement",
+            $program->getTitle(),
+            $diploma->getTitle(),
+            json_encode($competences, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES),
+            json_encode($modules, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES),
+        );
+        return $this->callChatGpt($prompt);
+
     }
 
     private function generateDescriptionAndObjectives(string $title, int $duration, string $level): string

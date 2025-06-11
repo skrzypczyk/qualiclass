@@ -1,0 +1,274 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Affectation des modules{% endblock %}
+
+{% block body %}
+    <div class="p-6">
+        <div class="flex flex-col md:flex-row gap-6">
+            <!-- Liste des modules -->
+            <div class="w-full md:w-1/3">
+                <div class="sticky top-6">
+                    <h2 class="text-xl font-semibold mb-2">Modules disponibles</h2>
+                    <input type="text" id="search-modules" placeholder="Rechercher un module..." class="w-full mb-2 px-3 py-2 border rounded text-sm" />
+
+                    <button id="toggle-archived" class="text-sm text-blue-500 underline mb-2">Afficher les archivés</button>
+                    <button id="toggle-shared" class="text-sm text-blue-500 underline mb-2 ml-2">Masquer les partagés</button>
+                    <ul id="module-scroll-wrapper" class="overflow-y-auto max-h-[70vh] border rounded p-2">
+                        {% for module in modules %}
+                            <li class="module-item bg-white border rounded p-2 mb-2 text-sm text-primary cursor-move {{ module.isArchived ? 'module-archived hidden' : '' }} {{ module.isShared ? 'module-shared' : '' }}" draggable="true" data-id="{{ module.id }}">
+                                <div class="module-title font-semibold">{{ module.title }}</div>
+                                <div class="flex gap-2 text-xs mt-1">
+                                    {% if module.duration %}<span class="module-duration bg-blue-100 text-blue-700 px-2 py-0.5 rounded">{{ module.duration }}h</span>{% endif %}
+                                    {% if module.credit %}<span class="module-credit bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded">{{ module.credit }} crédits</span>{% endif %}
+                                    {% if module.isShared %}<span class="module-isShared text-purple-600 font-semibold">[Partagé]</span>{% endif %}
+                                    {% if module.isArchived %}<span class="module-isArchived text-gray-600 font-semibold">[Archivé]</span>{% endif %}
+                                </div>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Zones de drop par part -->
+            <div class="w-full md:w-2/3">
+
+                <div id="program-summary" class="mb-4">
+                    <h2 class="text-xl font-semibold text-primary">{{ program.title }}</h2>
+                    <div id="program-total" class="text-sm text-gray-600 mt-1">Total : 0h – 0 crédits</div>
+                </div>
+
+                <form method="post" action="{{ path('app_program_assign_save', { id: program.id }) }}" id="assign-form">
+                    <input type="hidden" name="assignments" id="assignments-data">
+
+                    <button type="button" id="add-part-btn" class="my-4 bg-primary text-white px-4 py-2 rounded">Ajouter une partie</button>
+
+                    <div id="parts-container" class="space-y-6">
+                        <div class="dropzone bg-gray-50 p-4 border rounded space-y-2" data-part="1">
+                            <h3 class="font-semibold text-lg text-primary mb-2">Partie 1</h3>
+                            <ul class="assigned-modules space-y-2" data-part-id="1"></ul>
+                            <div id="total-1" class="text-sm text-gray-600 mt-2">Total : 0h – 0 crédits</div>
+                        </div>
+                    </div>
+                    <button type="submit" class="mt-4 w-full bg-primary text-white px-4 py-2 rounded">Enregistrer</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let nextPartNumber = document.querySelectorAll('.dropzone').length + 1;
+        const preAssignments = {{ assignments|json_encode|raw }};
+
+        function createModuleElement(moduleId, partId, title, credit, duration, isShared, isArchived) {
+            const li = document.createElement('li');
+            li.className = "bg-white border rounded p-2 text-sm flex justify-between items-center gap-2 text-primary";
+            li.setAttribute('data-in-list', `${partId}-${moduleId}`);
+            li.setAttribute('draggable', 'true');
+
+            let tags = '';
+            if (isShared) tags += `<span class="ml-2 text-purple-600 text-xs font-semibold">[Partagé]</span>`;
+            if (isArchived) tags += `<span class="ml-2 text-gray-600 text-xs font-semibold">[Archivé]</span>`;
+
+            li.innerHTML = `
+    <span>${title} - ${credit} crédits - ${duration}h ${tags}</span>
+    <button type="button" class="text-red-500 text-xs hover:underline remove-module">✖</button>
+  `;
+
+            li.querySelector('.remove-module')?.addEventListener('click', () => {
+                li.remove();
+                updateTotals();
+            });
+
+            li.addEventListener('dragstart', e => {
+                e.dataTransfer.setData('text/plain', moduleId);
+            });
+
+            return li;
+        }
+
+        function restoreAssignments() {
+            if (!preAssignments || !Array.isArray(preAssignments)) return;
+
+            const partsInUse = [...new Set(preAssignments.map(a => a.part))];
+            const existingParts = document.querySelectorAll('.dropzone').length;
+
+            partsInUse.forEach(part => {
+                while (nextPartNumber <= part) {
+                    document.getElementById('add-part-btn').click();
+                }
+
+                const dropzone = document.querySelector(`.dropzone[data-part="${part}"]`);
+                const list = dropzone?.querySelector('.assigned-modules');
+
+                preAssignments.filter(a => a.part === part).forEach(a => {
+                    const module = document.querySelector(`.module-item[data-id="${a.module}"]`);
+                    if (!module || !list) return;
+
+                    const title = module.querySelector('.module-title')?.textContent.trim() || '';
+                    const duration = parseInt(module.querySelector('.module-duration')?.textContent || '0') || 0;
+                    const credit = parseInt(module.querySelector('.module-credit')?.textContent || '0') || 0;
+
+                    const isShared = module.classList.contains('module-shared');
+                    const isArchived = module.classList.contains('module-archived');
+
+                    const li = createModuleElement(a.module, part, title, credit, duration, isShared, isArchived);
+                    list.appendChild(li);
+                });
+            });
+            updateTotals();
+        }
+
+        document.getElementById('add-part-btn').addEventListener('click', () => {
+            const container = document.getElementById('parts-container');
+            const html = `
+    <div class="dropzone bg-gray-50 p-4 border rounded space-y-2 relative" data-part="${nextPartNumber}" id="dropzone-part-${nextPartNumber}">
+      <button type="button" class="absolute top-2 right-2 text-red-500 text-xs remove-part hover:underline">✖</button>
+      <h3 class="font-semibold text-lg text-primary mb-2">Partie ${nextPartNumber}</h3>
+      <ul class="assigned-modules space-y-2" data-part-id="part-${nextPartNumber}"></ul>
+      <div id="total-${nextPartNumber}" class="text-sm text-gray-600 mt-2">Total : 0h – 0 crédits</div>
+    </div>
+  `;
+            container.insertAdjacentHTML('beforeend', html);
+            initDropzones();
+            nextPartNumber++;
+        });
+
+        function initDropzones() {
+            document.querySelectorAll('.dropzone').forEach(zone => {
+                const list = zone.querySelector('.assigned-modules');
+                const partId = zone.dataset.part;
+
+                zone.addEventListener('dragover', e => {
+                    e.preventDefault();
+                    zone.classList.add('ring', 'ring-green-400');
+                });
+
+                zone.addEventListener('dragleave', () => {
+                    zone.classList.remove('ring', 'ring-green-400');
+                });
+
+                zone.addEventListener('drop', e => {
+                    e.preventDefault();
+                    zone.classList.remove('ring', 'ring-green-400');
+                    const moduleId = e.dataTransfer.getData('text/plain');
+
+                    // Vérifie s'il est déjà dans une autre part
+                    if (document.querySelector(`[data-in-list$="-${moduleId}"]`)) {
+                        const oldLi = document.querySelector(`[data-in-list$="-${moduleId}"]`);
+                        oldLi?.remove();
+                    }
+
+                    const module = document.querySelector(`.module-item[data-id="${moduleId}"]`);
+                    if (!module) return;
+
+                    const title = module.querySelector('.module-title')?.textContent.trim() || '';
+                    const duration = parseInt(module.querySelector('.module-duration')?.textContent || '0') || 0;
+                    const credit = parseInt(module.querySelector('.module-credit')?.textContent || '0') || 0;
+
+                    const isShared = module.classList.contains('module-shared');
+                    const isArchived = module.classList.contains('module-archived');
+
+                    const li = createModuleElement(moduleId, partId, title, credit, duration, isShared, isArchived);
+                    list.appendChild(li);
+                    updateTotals();
+                });
+            });
+
+            document.querySelectorAll('.remove-part').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const dropzone = btn.closest('.dropzone');
+                    dropzone?.remove();
+                    updateTotals();
+                });
+            });
+        }
+
+        function updateTotals() {
+            let globalDuration = 0;
+            let globalCredit = 0;
+
+            document.querySelectorAll('.dropzone').forEach(zone => {
+                const partId = zone.dataset.part;
+                const list = zone.querySelector('.assigned-modules');
+                let totalDuration = 0;
+                let totalCredit = 0;
+
+                list.querySelectorAll('li').forEach(li => {
+                    const moduleId = li.getAttribute('data-in-list')?.split('-')[1];
+                    const original = document.querySelector(`[data-id="${moduleId}"]`);
+                    if (!original) return;
+
+                    const duration = parseInt(original.querySelector('.bg-blue-100')?.textContent || '0') || 0;
+                    const credit = parseInt(original.querySelector('.bg-yellow-100')?.textContent || '0') || 0;
+
+                    totalDuration += duration;
+                    totalCredit += credit;
+                });
+
+                zone.querySelector(`#total-${partId}`).textContent = `Total : ${totalDuration}h – ${totalCredit} crédits`;
+                globalDuration += totalDuration;
+                globalCredit += totalCredit;
+            });
+
+            document.getElementById('program-total').textContent = `Total : ${globalDuration}h – ${globalCredit} crédits`;
+        }
+
+        function initDragModules() {
+            document.querySelectorAll('.module-item').forEach(module => {
+                module.setAttribute('draggable', 'true');
+                module.addEventListener('dragstart', e => {
+                    e.dataTransfer.setData('text/plain', module.dataset.id);
+                });
+            });
+        }
+
+        function toggleModules(className, btnId, toggleState, text = '') {
+            const btn = document.getElementById(btnId);
+            let state = toggleState;
+            btn?.addEventListener('click', () => {
+                state = !state;
+                document.querySelectorAll(`.${className}`).forEach(el => el.classList.toggle('hidden', !state));
+                btn.textContent = state ? `Masquer ${text}` : `Afficher ${text}`;
+            });
+        }
+
+        function initSearchFilter() {
+            const searchInput = document.getElementById('search-modules');
+            const modules = document.querySelectorAll('.module-item');
+            searchInput?.addEventListener('input', () => {
+                const query = searchInput.value.toLowerCase().trim();
+                modules.forEach(module => {
+                    const title = module.querySelector('.module-title')?.textContent.toLowerCase() || '';
+                    module.style.display = title.includes(query) ? '' : 'none';
+                });
+            });
+        }
+
+        document.getElementById('assign-form').addEventListener('submit', function (e) {
+            const assignments = [];
+            document.querySelectorAll('.dropzone').forEach(zone => {
+                const part = parseInt(zone.dataset.part);
+                zone.querySelectorAll('.assigned-modules li').forEach(li => {
+                    const moduleId = parseInt(li.getAttribute('data-in-list')?.split('-')[1]);
+                    if (moduleId && part) assignments.push({ module: moduleId, part });
+                });
+            });
+            document.getElementById('assignments-data').value = JSON.stringify(assignments);
+        });
+
+        window.addEventListener('DOMContentLoaded', () => {
+            initDragModules();
+            initDropzones();
+            toggleModules('module-archived', 'toggle-archived', false, 'les archivés');
+            toggleModules('module-shared', 'toggle-shared', true, 'les partagés');
+            initSearchFilter();
+            restoreAssignments();
+            updateTotals();
+        });
+
+    </script>
+
+
+
+
+{% endblock %}

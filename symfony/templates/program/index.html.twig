@@ -3,67 +3,36 @@
 {% block title %}Programmes{% endblock %}
 
 {% block body %}
-    <div class="max-w-7xl mx-auto px-6 py-10">
+    <div class="max-w-5xl mx-auto px-6 py-10">
         <h1 class="text-3xl font-bold title-primary mb-8">Vos programmes</h1>
-        <a href="{{ path('app_program_create') }}" class="px-4 py-2 btn-primary">Ajouter un programme</a>
 
+        <a href="{{ path('app_program_create') }}" class="btn-primary px-4 py-2 mb-6 inline-block">Ajouter un programme</a>
 
+        <div x-data="{ showModal: false, showModal2: false, modalProgramId: null }" class="space-y-6">
+            {% for program in programs %}
+                <div class="bg-white border border-gray-200 rounded-lg shadow p-6">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h2 class="text-xl font-semibold text-primary">
+                                <a href="{{ path('app_program_show', {'id': program.id}) }}" class="hover:underline">
+                                    {{ program.title }}
+                                </a>
+                            </h2>
+                            {% if app.user.isAdmin() %}
+                                <p class="text-sm text-gray-600">
+                                    Auteur : {{ program.owner.lastname ?? program.owner.firstname ?? program.owner.email }}
+                                </p>
+                            {% endif %}
+                        </div>
 
-        <div x-data="{ showModal: false, showModal2: false, modalProgramId: null }">
-            <table class="min-w-full my-6 bg-white border border-gray-200 shadow-md rounded-lg overflow-hidden">
-                <thead>
-                <tr>
-                    <th class="px-6 py-3 text-left">
-                        Programme
-                    </th>
-                    {% if app.user.isAdmin() %}
-                        <th class="px-6 py-3 text-left">Auteur</th>
-                    {% endif %}
-
-                    <th class="px-6 py-3 text-left">
-                        Diplômes
-                    </th>
-                    <th class="px-6 py-3 text-left">Actions</th>
-                </tr>
-                </thead>
-                <tbody class="text-gray-800 text-sm divide-y divide-gray-100">
-                {% for program in programs %}
-                    <tr class="transition">
-                        <td class="px-6 py-4 font-medium">
-                            <a href="{{ path('app_program_show', {'id': program.id}) }}"
-                               class="text-blue-600 hover:underline">
-                            {{ program.title }}
-                            </a>
-                        </td>
-
-                        {% if app.user.isAdmin() %}
-                            <td class="px-6 py-4 font-medium">
-                                {{ program.owner.lastname ?? program.owner.firstname ?? program.owner.email }}
-                            </td>
-                        {% endif %}
-
-                        <td class="px-6 py-4 font-medium">
-                            {% for diploma in program.diplomas %}
-                                <li>{{ diploma.title }} <small>({{ diploma.RNCP }})</small></li>
-                            {% endfor %}
-                        </td>
-
-                        <td class="px-6 py-4 space-x-2">
-
-                            <a href="{{ path('app_program_assignment', {'id': program.id}) }}"
-                               class="link-secondary">
-                                Modules
-                            </a>
-
-                            <a href="{{ path('app_program_edit', {'id': program.id}) }}"
-                               class="link-primary">
-                                Modifier
-                            </a>
+                        <div class="flex gap-2">
+                            <a href="{{ path('app_program_edit', {'id': program.id}) }}" class="btn-primary text-sm">Modifier</a>
+                            <a href="{{ path('app_program_assign', {'id': program.id}) }}" class="btn-primary text-sm">Modules</a>
 
                             <button
                                     type="button"
                                     @click="modalProgramId = '{{ program.id }}'; showModal2 = true;"
-                                    class="link-primary"
+                                    class="btn-neutral text-sm"
                             >
                                 Dupliquer
                             </button>
@@ -79,7 +48,7 @@
                             <button
                                     type="button"
                                     @click="modalProgramId = '{{ program.id }}'; showModal = true;"
-                                    class="link-danger"
+                                    class="btn-danger text-sm"
                             >
                                 Supprimer
                             </button>
@@ -90,15 +59,61 @@
                                   class="hidden">
                                 <input type="hidden" name="_token" value="{{ csrf_token('delete_program_' ~ program.id) }}">
                             </form>
+                        </div>
+                    </div>
 
-                        </td>
-                    </tr>
-                {% endfor %}
-                </tbody>
-            </table>
+                    {# ➕ Affichage du total ici #}
+                    {% set totalHours = 0 %}
+                    {% set totalCredits = 0 %}
+                    {% for assignment in program.assignments %}
+                        {% set totalHours = totalHours + assignment.module.duration %}
+                        {% set totalCredits = totalCredits + assignment.module.credit %}
+                    {% endfor %}
+                    <div class="mt-4 text-sm text-gray-700">
+                        <strong>Total :</strong> {{ totalHours }}h – {{ totalCredits }} crédits
+                    </div>
+
+                    {% if program.diplomas|length %}
+                        <div class="mt-4 text-sm">
+                            <strong class="text-gray-700">Diplômes associés :</strong>
+                            <ul class="list-disc list-inside mt-2 space-y-1">
+                                {% for diploma in program.diplomas %}
+                                    <li class="flex justify-between items-center">
+                                        <div>
+                                            <span>{{ diploma.title }} <small class="text-gray-500">({{ diploma.RNCP }})</small></span>
+
+                                            {% set diplomaHours = 0 %}
+                                            {% set diplomaCredits = 0 %}
+                                            {% for mca in program.moduleCompetenceAssignments %}
+                                                {% if mca.competence and mca.competence.diploma.id == diploma.id %}
+                                                    {% set diplomaHours = diplomaHours + (mca.module.duration ?? 0) %}
+                                                    {% set diplomaCredits = diplomaCredits + (mca.module.credit ?? 0) %}
+                                                {% endif %}
+                                            {% endfor %}
+                                            <div class="{{ (totalHours!=diplomaHours or totalCredits!=diplomaCredits)?"text-red-500":"text-gray-500" }} text-xs mt-1">Total : {{ diplomaHours }}h – {{ diplomaCredits }} crédits</div>
+                                        </div>
+                                        <a href="{{ path('app_diploma_assign', { diploma: diploma.id, program: program.id }) }}" class="text-sm text-blue-600 hover:underline">
+                                            Répartir les modules
+                                        </a>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endif %}
 
 
 
+                    <form method="post" action="{{ path('app_program_delete', {'id': program.id}) }}" id="delete-form-{{ program.id }}" class="hidden">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete_program_' ~ program.id) }}">
+                    </form>
+
+                    <form method="post" action="{{ path('app_program_duplicate', {'id': program.id}) }}" id="duplicate-form-{{ program.id }}" class="hidden">
+                        <input type="hidden" name="_token" value="{{ csrf_token('duplicate_program_' ~ program.id) }}">
+                    </form>
+                </div>
+            {% else %}
+                <p class="text-gray-500">Aucun programme pour le moment.</p>
+            {% endfor %}
 
             {% include 'components/modal-confirmation.html.twig' with {
                 x_show: 'showModal',

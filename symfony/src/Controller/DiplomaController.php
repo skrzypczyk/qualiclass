@@ -224,6 +224,11 @@ final class DiplomaController extends AbstractController
             return $this->redirectToRoute('app_diploma');
         }
 
+        if($diploma->getPrograms()->count() > 0) {
+            $this->addFlash('error', 'Impossible de supprimer ce diplôme car il est associé à des affectations.');
+            return $this->redirectToRoute('app_diploma');
+        }
+
         $em->remove($diploma);
         $em->flush();
 

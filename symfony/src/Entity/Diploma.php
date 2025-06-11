@@ -40,10 +40,17 @@ class Diploma
     #[ORM\ManyToOne(inversedBy: 'diplomas')]
     private ?School $school = null;
 
+    /**
+     * @var Collection<int, ModuleCompetenceAssignment>
+     */
+    #[ORM\OneToMany(targetEntity: ModuleCompetenceAssignment::class, mappedBy: 'diploma')]
+    private Collection $moduleCompetenceAssignments;
+
     public function __construct()
     {
         $this->competences = new ArrayCollection();
         $this->programs = new ArrayCollection();
+        $this->moduleCompetenceAssignments = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -153,6 +160,36 @@ class Diploma
     public function setSchool(?School $school): static
     {
         $this->school = $school;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, ModuleCompetenceAssignment>
+     */
+    public function getModuleCompetenceAssignments(): Collection
+    {
+        return $this->moduleCompetenceAssignments;
+    }
+
+    public function addModuleCompetenceAssignment(ModuleCompetenceAssignment $moduleCompetenceAssignment): static
+    {
+        if (!$this->moduleCompetenceAssignments->contains($moduleCompetenceAssignment)) {
+            $this->moduleCompetenceAssignments->add($moduleCompetenceAssignment);
+            $moduleCompetenceAssignment->setDiploma($this);
+        }
+
+        return $this;
+    }
+
+    public function removeModuleCompetenceAssignment(ModuleCompetenceAssignment $moduleCompetenceAssignment): static
+    {
+        if ($this->moduleCompetenceAssignments->removeElement($moduleCompetenceAssignment)) {
+            // set the owning side to null (unless already changed)
+            if ($moduleCompetenceAssignment->getDiploma() === $this) {
+                $moduleCompetenceAssignment->setDiploma(null);
+            }
+        }
 
         return $this;
     }
