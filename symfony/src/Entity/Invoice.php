@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Repository\InvoiceRepository;
 use Doctrine\ORM\Mapping as ORM;
 use App\Entity\User;
+use Symfony\Component\Uid\Uuid;
 
 #[ORM\Entity(repositoryClass: InvoiceRepository::class)]
 class Invoice
@@ -13,6 +14,10 @@ class Invoice
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
+
+
+    #[ORM\Column(type: 'uuid', unique: true)]
+    private ?Uuid $uuid  = null;
 
     #[ORM\Column(length: 255, unique: true)]
     private string $stripeInvoiceId;

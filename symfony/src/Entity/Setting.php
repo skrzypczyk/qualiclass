@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Repository\SettingRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Uid\Uuid;
 
 #[ORM\Entity(repositoryClass: SettingRepository::class)]
 class Setting
@@ -13,6 +14,9 @@ class Setting
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
+
+    #[ORM\Column(type: 'uuid', unique: true)]
+    private ?Uuid $uuid  = null;
 
     #[ORM\Column(length: 255, unique: true)]
     private ?string $name = null;

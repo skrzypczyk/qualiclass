@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use App\Repository\ModuleCompetenceAssignmentRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Uid\Uuid;
 
 #[ORM\Entity(repositoryClass: ModuleCompetenceAssignmentRepository::class)]
 class ModuleCompetenceAssignment
@@ -12,6 +13,9 @@ class ModuleCompetenceAssignment
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
+
+    #[ORM\Column(type: 'uuid', unique: true)]
+    private ?Uuid $uuid  = null;
 
     #[ORM\ManyToOne(inversedBy: 'moduleCompetenceAssignments')]
     private ?Program $program = null;

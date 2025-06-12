@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use App\Repository\CreditRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Uid\Uuid;
 
 #[ORM\Entity(repositoryClass: CreditRepository::class)]
 class Credit
@@ -12,6 +13,9 @@ class Credit
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
+
+    #[ORM\Column(type: 'uuid', unique: true)]
+    private ?Uuid $uuid  = null;
 
     #[ORM\Column(length: 255)]
     private ?string $query = null;
