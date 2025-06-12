@@ -96,7 +96,8 @@
                     <h2 class="text-lg font-semibold text-primary mb-2">{{ competence.title }}</h2>
                     <small class="font-semibold text-primary mb-2">{{ competence.RNCP }}</small>
                     <ul class="competence-module-list space-y-2 min-h-[100px] bg-white p-2 rounded" data-list-id="{{ competence.id }}">
-                        {% for module in modulesByCompetence[competence.id] ?? [] %}
+                        {% set cid = competence.id|e %}
+                        {% for module in modulesByCompetence[cid] ?? [] %}
                             <div class="module-item bg-white border rounded px-4 py-2 text-sm cursor-move relative"
                                  data-module-id="{{ module.id }}"
                                  data-duration="{{ module.duration ?? 0 }}"
@@ -218,8 +219,8 @@
                     const competenceId = zone.dataset.listId;
                     zone.querySelectorAll('.module-item').forEach(module => {
                         assignments.push({
-                            module: parseInt(module.dataset.moduleId),
-                            competence: parseInt(competenceId)
+                            module: module.dataset.moduleId,
+                            competence: competenceId
                         });
                     });
                 });

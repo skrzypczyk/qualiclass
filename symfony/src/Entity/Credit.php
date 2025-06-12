@@ -9,13 +9,18 @@ use Symfony\Component\Uid\Uuid;
 #[ORM\Entity(repositoryClass: CreditRepository::class)]
 class Credit
 {
+    /*
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
+    */
 
+    #[ORM\Id]
     #[ORM\Column(type: 'uuid', unique: true)]
-    private ?Uuid $uuid  = null;
+    #[ORM\GeneratedValue(strategy: 'CUSTOM')]
+    #[ORM\CustomIdGenerator(class: 'doctrine.uuid_generator')]
+    private ?Uuid $id = null;
 
     #[ORM\Column(length: 255)]
     private ?string $query = null;
@@ -26,9 +31,9 @@ class Credit
     #[ORM\ManyToOne(inversedBy: 'credits')]
     private ?School $school = null;
 
-    public function getId(): ?int
+    public function getId(): ?string
     {
-        return $this->id;
+        return $this->id?->toRfc4122(); // Uuid|null → string|null
     }
 
     public function getQuery(): ?string

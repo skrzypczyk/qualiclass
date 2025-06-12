@@ -365,6 +365,7 @@ final class ProgramController extends AbstractController
         if ($assignmentsData) {
             $assignments = json_decode($assignmentsData, true);
 
+
             if (is_array($assignments)) {
                 foreach ($assignments as $entry) {
                     if (!isset($entry['module']) || !isset($entry['part'])) continue;

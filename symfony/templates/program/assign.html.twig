@@ -62,7 +62,7 @@
         function createModuleElement(moduleId, partId, title, credit, duration, isShared, isArchived) {
             const li = document.createElement('li');
             li.className = "bg-white border rounded p-2 text-sm flex justify-between items-center gap-2 text-primary";
-            li.setAttribute('data-in-list', `${partId}-${moduleId}`);
+            li.setAttribute('data-in-list', `${partId}&${moduleId}`);
             li.setAttribute('draggable', 'true');
 
             let tags = '';
@@ -153,8 +153,8 @@
                     const moduleId = e.dataTransfer.getData('text/plain');
 
                     // Vérifie s'il est déjà dans une autre part
-                    if (document.querySelector(`[data-in-list$="-${moduleId}"]`)) {
-                        const oldLi = document.querySelector(`[data-in-list$="-${moduleId}"]`);
+                    if (document.querySelector(`[data-in-list$="&${moduleId}"]`)) {
+                        const oldLi = document.querySelector(`[data-in-list$="&${moduleId}"]`);
                         oldLi?.remove();
                     }
 
@@ -194,7 +194,7 @@
                 let totalCredit = 0;
 
                 list.querySelectorAll('li').forEach(li => {
-                    const moduleId = li.getAttribute('data-in-list')?.split('-')[1];
+                    const moduleId = li.getAttribute('data-in-list')?.split('&')[1];
                     const original = document.querySelector(`[data-id="${moduleId}"]`);
                     if (!original) return;
 
@@ -249,7 +249,7 @@
             document.querySelectorAll('.dropzone').forEach(zone => {
                 const part = parseInt(zone.dataset.part);
                 zone.querySelectorAll('.assigned-modules li').forEach(li => {
-                    const moduleId = parseInt(li.getAttribute('data-in-list')?.split('-')[1]);
+                    const moduleId = li.getAttribute('data-in-list')?.split('&')[1];
                     if (moduleId && part) assignments.push({ module: moduleId, part });
                 });
             });

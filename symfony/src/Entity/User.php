@@ -17,13 +17,18 @@ use Symfony\Component\Uid\Uuid;
 #[UniqueEntity(fields: ['email'], message: 'Il y a déjà un compte avec cette adresse email.')]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
+    /*
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
+    */
 
+    #[ORM\Id]
     #[ORM\Column(type: 'uuid', unique: true)]
-    private ?Uuid $uuid  = null;
+    #[ORM\GeneratedValue(strategy: 'CUSTOM')]
+    #[ORM\CustomIdGenerator(class: 'doctrine.uuid_generator')]
+    private ?Uuid $id = null;
 
     #[ORM\Column(length: 180)]
     private ?string $email = null;
@@ -78,13 +83,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->programs = new ArrayCollection();
     }
 
-
-
-    public function getId(): ?int
+    public function getId(): ?string
     {
-        return $this->id;
+        return $this->id?->toRfc4122(); // Uuid|null → string|null
     }
-
     public function getEmail(): ?string
     {
         return $this->email;

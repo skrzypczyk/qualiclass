@@ -15,6 +15,7 @@ use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Address;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Uid\Uuid;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use SymfonyCasts\Bundle\VerifyEmail\Exception\VerifyEmailExceptionInterface;
 
@@ -82,7 +83,7 @@ class RegistrationController extends AbstractController
     }
 
     #[Route('/verify/email/{id}', name: 'app_verify_email')]
-    public function verifyUserEmail(Request $request, int $id, TranslatorInterface $translator, EntityManagerInterface $em): Response
+    public function verifyUserEmail(Request $request, Uuid $id, TranslatorInterface $translator, EntityManagerInterface $em): Response
     {
         try {
             $user = $em->getRepository(User::class)->find($id);
