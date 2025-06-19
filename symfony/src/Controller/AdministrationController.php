@@ -22,9 +22,28 @@ use App\Entity\User;
 final class AdministrationController extends AbstractController
 {
     #[Route('/', name: 'app_admin')]
-    public function index(SchoolRepository $schoolRepository, Request $request,EntityManagerInterface $em, SettingRepository $settingRepository): Response
+    public function index(SchoolRepository $schoolRepository): Response
     {
         $schools = $schoolRepository->findAll();
+
+        return $this->render('administration/index.html.twig', [
+            'controller_name' => 'AdministrationController',
+            'schools' => $schools,
+        ]);
+    }
+
+    #[Route('/school/{id}', name: 'app_admin_school')]
+    public function school(School $school): Response
+    {
+        return $this->render('administration/school.html.twig', [
+            'controller_name' => 'AdministrationController',
+            'school' => $school,
+        ]);
+    }
+
+    #[Route('/keyGPT', name: 'app_admin_gpt')]
+    public function keyGPT( Request $request,EntityManagerInterface $em, SettingRepository $settingRepository): Response
+    {
         $chatGPTSetting = $settingRepository->findOneBy(['name' => 'chatGPT']);
         if (!$chatGPTSetting) {
             $chatGPTSetting = new Setting();
@@ -47,9 +66,8 @@ final class AdministrationController extends AbstractController
             return $this->redirectToRoute('app_admin');
         }
 
-        return $this->render('administration/index.html.twig', [
+        return $this->render('administration/gpt.html.twig', [
             'controller_name' => 'AdministrationController',
-            'schools' => $schools,
             'form' => $form->createView(),
         ]);
     }
@@ -80,6 +98,7 @@ final class AdministrationController extends AbstractController
         return $this->render('administration/editUser.html.twig', [
             'form' => $form->createView(),
             'user' => $user,
+            'school' => $user->getSchool(),
         ]);
     }
 
@@ -102,6 +121,7 @@ final class AdministrationController extends AbstractController
 
         return $this->render('administration/editSchool.html.twig', [
             'form' => $form->createView(),
+            'school' => $school,
         ]);
     }
 }

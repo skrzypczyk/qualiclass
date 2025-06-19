@@ -69,14 +69,36 @@
 
                             <ul x-show="open" x-cloak x-transition
                                 class="absolute left-0 mt-2 w-56 bg-white border border-gray-200 rounded shadow z-50">
-                                {% if app.user.isSuperAdmin() %}
-                                    <li><a href="{{ path('app_admin') }}" class="block px-4 py-2 text-primary hover:bg-gray-100">Gestion globale</a></li>
-                                {% endif %}
                                 {% if app.user.isAdmin() %}
                                     <li><a href="{{ path('app_school') }}" class="block px-4 py-2 text-primary hover:bg-gray-100">Mon école</a></li>
                                     <li><a href="{{ path('app_user') }}" class="block px-4 py-2 text-primary hover:bg-gray-100">Mes utilisateurs</a></li>
                                     <li><a href="{{ path('app_subscription') }}" class="block px-4 py-2 text-primary hover:bg-gray-100">Mon abonnement</a></li>
                                 {% endif %}
+                            </ul>
+                        </li>
+                    {% endif %}
+
+                    {% if app.user.isSuperAdmin() %}
+                        <li x-data="{ open: false }" @mouseenter="open = true" @mouseleave="open = false" class="relative">
+                            <button type="button" class="flex items-center gap-2 py-2 text-primary hover:underline">
+                                <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" stroke-width="2"
+                                     viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-label="Super Admin">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                          d="M12 3l7.5 3v5c0 5.25-3.25 10-7.5 11-4.25-1-7.5-5.75-7.5-11V6l7.5-3z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                          d="M9 12l2 2l4-4" />
+                                </svg>
+
+                                Super Admin
+                                <svg class="w-4 h-4 ml-1 text-primary" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </button>
+
+                            <ul x-show="open" x-cloak x-transition
+                                class="absolute left-0 mt-2 w-56 bg-white border border-gray-200 rounded shadow z-50">
+                                <li><a href="{{ path('app_admin') }}" class="block px-4 py-2 text-primary hover:bg-gray-100">Gestion des écoles</a></li>
+                                <li><a href="{{ path('app_admin_gpt') }}" class="block px-4 py-2 text-primary hover:bg-gray-100">Clé GPT</a></li>
                             </ul>
                         </li>
                     {% endif %}

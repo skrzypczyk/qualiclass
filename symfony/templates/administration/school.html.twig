@@ -1,0 +1,47 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Administration - {{ school.name }}{% endblock %}
+
+{% block body %}
+    <div class="max-w-6xl mx-auto py-8">
+
+        <h1 class="text-3xl font-bold title-primary mb-8">{{ school.name }} <a href="{{ path('app_admin') }}" class="mx-4 text-xl btn-primary">Liste des écoles</a></h1>
+        <h2 class="text-xl font-bold title-primary mb-8">{{ school.getDiplomas()|length}} Diplômes enregistrés</h2>
+        <table class="bg-white border border-gray-200 shadow-sm rounded-lg overflow-hidden min-w-full ">
+            <thead>
+            <tr>
+                <th class="px-6 py-3 text-left">Utilisateur(s)</th>
+                <th class="px-6 py-3 text-left">Status</th>
+                <th class="px-6 py-3 text-left">Programme(s)</th>
+                <th class="px-6 py-3 text-left">Module(s)</th>
+                <th class="px-6 py-3 text-center">Actions</th>
+            </tr>
+            </thead>
+            <tbody class="text-gray-800 text-sm divide-y divide-gray-200">
+            {% for user in school.getUsers() %}
+                <tr class="">
+                    <td class="px-6 py-3 text-left">
+                        {{ user.email }}
+                    </td>
+                    <td>
+                        {% if user.isDisable %}
+                            Désactivé
+                        {% else %}
+                            Actif
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-3 text-center">
+                        {{ user.getPrograms()|length }}
+                    </td>
+                    <td class="px-6 py-3 text-center">
+                        {{ user.getModules()|length }}
+                    </td>
+                    <td class="px-6 py-4 text-center space-x-2">
+                        <a href="{{ path('app_admin_user_edit', { id: user.id }) }}" class="btn-primary">Modifier</a>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

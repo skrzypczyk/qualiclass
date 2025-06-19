@@ -5,43 +5,27 @@
 {% block body %}
     <div class="max-w-6xl mx-auto py-8">
 
-        <h1 class="text-3xl font-bold title-primary mb-8">Configuration Globale</h1>
-
-        {{ form_start(form, {'attr': {'class': 'space-y-6'}}) }}
-
-        <div>
-            {{ form_label(form.chatGPT, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-1'}}) }}
-            {{ form_widget(form.chatGPT, {'attr': {'class': 'w-full px-4 py-2 border rounded shadow-sm'}}) }}
-            {{ form_errors(form.chatGPT) }}
-
-        </div>
-
-        <div class="flex items-center gap-4 mt-6">
-            <button
-                    type="submit"
-                    class="btn-primary">
-                Enregistrer
-            </button>
-        </div>
-
-        {{ form_end(form) }}
-
         <h1 class="text-3xl font-bold title-primary mb-8">Gestion des écoles</h1>
         <table class="bg-white border border-gray-200 shadow-sm rounded-lg overflow-hidden min-w-full ">
             <thead>
             <tr>
                 <th class="px-6 py-3 text-left">Ecole</th>
-                <th class="px-6 py-3 text-left">Compte gratuit</th>
-                <th class="px-6 py-3 text-left">Abonnement</th>
-                <th class="px-6 py-3 text-left">Surcharge</th>
+                <th class="px-6 py-3 text-center">Utilisateur(s)</th>
+                <th class="px-6 py-3 text-center">Compte gratuit</th>
+                <th class="px-6 py-3 text-center">Abonnement</th>
+                <th class="px-6 py-3 text-center">Surcharge</th>
+                <th class="px-6 py-3 text-center">Données</th>
                 <th class="px-6 py-3 text-center">Actions</th>
             </tr>
             </thead>
             <tbody class="text-gray-800 text-sm divide-y divide-gray-200">
                 {% for school in schools %}
-                    <tr class="bg-neutral">
+                    <tr class="">
                         <td class="px-6 py-3 text-left">
                             {{ school.name }}
+                        </td>
+                        <td class="px-6 py-3 text-center">
+                            {{ school.getUsers(1) |length }} activé(s) sur {{ school.getUsers() |length }}
                         </td>
                         <td class="px-6 py-4 text-center">{{ school.isFreeAccount ? '✅' : '' }}</td>
                         <td class="px-6 py-4">
@@ -55,26 +39,23 @@
                         <td class="px-6 py-4">
                             {% if school.limitUsers %}{{ school.limitUsers }} utilisateur(s)<br>{% endif %}
                         </td>
+                        <td class="px-2 py-4">
+                            {%  set countPrograms = 0 %}
+                            {%  set countModules = 0 %}
+                            {%  set countDiploma = school.getDiplomas()|length %}
+                            {% for user in school.getUsers() %}
+                                {% set countPrograms = countPrograms + (user.getPrograms()|length) %}
+                                {% set countModules = countModules + (user.getModules()|length) %}
+                            {% endfor %}
+                            {{ countPrograms }} programme(s)<br>
+                            {{ countModules }} module(s)<br>
+                            {{ countDiploma }} diplôme(s)
+                        </td>
                         <td class="px-6 py-4 text-center space-x-2">
                             <a href="{{ path('app_admin_School_edit', { id: school.id }) }}" class="btn-primary">Modifier</a>
+                            <a href="{{ path('app_admin_school', { id: school.id }) }}" class="btn-primary">Utilisateurs</a>
                         </td>
                     </tr>
-                    {% for user in school.getUsers() %}
-                        <tr>
-                            <td class="px-6 py-4">{{ user.email }}</td>
-                            <td class="px-6 py-4">{{ user.lastName }} {{ user.firstName }}</td>
-
-                            <td class="px-6 py-4">{{ user.roles|join(', ') }}</td>
-                            <td class="px-6 py-4">{{ user.isDisable?"Désactivé":""}}</td>
-                            <td class="px-6 py-4 text-center space-x-2">
-                                <a href="{{ path('app_admin_user_edit', { id: user.id }) }}" class="btn-neutral">Modifier</a>
-                            </td>
-                        </tr>
-                    {% else %}
-                        <tr>
-                            <td colspan="9" class="text-center py-6 text-gray-500">Aucun utilisateur trouvé.</td>
-                        </tr>
-                    {% endfor %}
                 {% endfor %}
             </tbody>
         </table>
