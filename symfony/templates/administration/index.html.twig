@@ -3,61 +3,69 @@
 {% block title %}Administration - Utilisateurs{% endblock %}
 
 {% block body %}
-    <div class="max-w-6xl mx-auto py-8">
-
+    <div class="max-w-7xl mx-auto px-4 py-10">
         <h1 class="text-3xl font-bold title-primary mb-8">Gestion des écoles</h1>
-        <table class="bg-white border border-gray-200 shadow-sm rounded-lg overflow-hidden min-w-full ">
-            <thead>
-            <tr>
-                <th class="px-6 py-3 text-left">Ecole</th>
-                <th class="px-6 py-3 text-center">Utilisateur(s)</th>
-                <th class="px-6 py-3 text-center">Compte gratuit</th>
-                <th class="px-6 py-3 text-center">Abonnement</th>
-                <th class="px-6 py-3 text-center">Surcharge</th>
-                <th class="px-6 py-3 text-center">Données</th>
-                <th class="px-6 py-3 text-center">Actions</th>
-            </tr>
-            </thead>
-            <tbody class="text-gray-800 text-sm divide-y divide-gray-200">
-                {% for school in schools %}
-                    <tr class="">
-                        <td class="px-6 py-3 text-left">
-                            {{ school.name }}
-                        </td>
-                        <td class="px-6 py-3 text-center">
-                            {{ school.getUsers(1) |length }} activé(s) sur {{ school.getUsers() |length }}
-                        </td>
-                        <td class="px-6 py-4 text-center">{{ school.isFreeAccount ? '✅' : '' }}</td>
-                        <td class="px-6 py-4">
-                            {% set sub = school.getLastSubscription() %}
-                            {% set invoice = school.getLastInvoiceValid() %}
-                            {% if invoice %}
-                                {{ sub.limitUsers }} utilisateur(s)<br>
-                                <small class="text-gray-500">Dernière facture : {{ invoice.paidAt|date('d/m/Y') }}</small>
-                            {% endif %}
-                        </td>
-                        <td class="px-6 py-4">
-                            {% if school.limitUsers %}{{ school.limitUsers }} utilisateur(s)<br>{% endif %}
-                        </td>
-                        <td class="px-2 py-4">
-                            {%  set countPrograms = 0 %}
-                            {%  set countModules = 0 %}
-                            {%  set countDiploma = school.getDiplomas()|length %}
-                            {% for user in school.getUsers() %}
-                                {% set countPrograms = countPrograms + (user.getPrograms()|length) %}
-                                {% set countModules = countModules + (user.getModules()|length) %}
-                            {% endfor %}
-                            {{ countPrograms }} programme(s)<br>
-                            {{ countModules }} module(s)<br>
-                            {{ countDiploma }} diplôme(s)
-                        </td>
-                        <td class="px-6 py-4 text-center space-x-2">
-                            <a href="{{ path('app_admin_School_edit', { id: school.id }) }}" class="btn-primary">Modifier</a>
-                            <a href="{{ path('app_admin_school', { id: school.id }) }}" class="btn-primary">Utilisateurs</a>
-                        </td>
+        <div class="bg-white shadow-md rounded-xl overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="min-w-full text-sm text-left">
+                    <thead class="bg-gray-50 text-gray-700 text-sm">
+                    <tr>
+                        <th class="px-6 py-3 text-left">Ecole</th>
+                        <th class="px-6 py-3 text-center">Utilisateur(s)</th>
+                        <th class="px-6 py-3 text-center">Compte gratuit</th>
+                        <th class="px-6 py-3 text-center">Abonnement</th>
+                        <th class="px-6 py-3 text-center">Surcharge</th>
+                        <th class="px-6 py-3 text-center">Données</th>
+                        <th class="px-6 py-3 text-center">Actions</th>
                     </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+                    </thead>
+                    <tbody class="text-gray-800 text-sm divide-y divide-gray-200">
+                    {% for school in schools %}
+                        <tr>
+                            <td class="px-6 py-3 text-left whitespace-nowrap">
+                                {{ school.name }}
+                            </td>
+                            <td class="px-6 py-3 text-center whitespace-nowrap">
+                                {{ school.getUsers(1) |length }} activé(s) sur {{ school.getUsers() |length }}
+                            </td>
+                            <td class="px-6 py-4 text-center">
+                                {{ school.isFreeAccount ? '✅' : '' }}
+                            </td>
+                            <td class="px-6 py-4 text-sm whitespace-nowrap text-center">
+                                {% set sub = school.getLastSubscription() %}
+                                {% set invoice = school.getLastInvoiceValid() %}
+                                {% if invoice %}
+                                    {{ sub.limitUsers }} utilisateur(s)<br>
+                                    <small class="text-gray-500">Facturé le {{ invoice.paidAt|date('d/m/Y') }}</small>
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4 text-center">
+                                {% if school.limitUsers %}
+                                    {{ school.limitUsers }} utilisateur(s)
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4 text-sm">
+                                {% set countPrograms = 0 %}
+                                {% set countModules = 0 %}
+                                {% set countDiploma = school.getDiplomas()|length %}
+                                {% for user in school.getUsers() %}
+                                    {% set countPrograms = countPrograms + (user.getPrograms()|length) %}
+                                    {% set countModules = countModules + (user.getModules()|length) %}
+                                {% endfor %}
+                                {{ countPrograms }} programme(s)<br>
+                                {{ countModules }} module(s)<br>
+                                {{ countDiploma }} diplôme(s)
+                            </td>
+                            <td class="px-6 py-4 text-center space-x-2 whitespace-nowrap">
+                                <a href="{{ path('app_admin_School_edit', { id: school.id }) }}" class="inline-block btn-primary">Modifier</a>
+                                <a href="{{ path('app_admin_detail_school', { id: school.id }) }}" class="inline-block btn-primary">Détail</a>
+                                <a href="{{ path('app_admin_school', { id: school.id }) }}" class="inline-block btn-primary">Utilisateurs</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 {% endblock %}

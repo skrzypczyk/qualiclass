@@ -90,7 +90,8 @@ final class ProgramController extends AbstractController
     #[Route('/program/show/{id}', name: 'app_program_show')]
     public function show(Program $program, EntityManagerInterface $em, Request $request,Environment $twig): Response
     {
-        if($program->getOwner() !== $this->getUser()
+        if( !in_array("ROLE_SUPER_ADMIN", $this->getUser()->getRoles())
+            && $program->getOwner() !== $this->getUser()
             && (!in_array("ROLE_ADMIN", $this->getUser()->getRoles())
                 || $program->getOwner()->getSchool() !== $this->getUser()->getSchool())
         ) {

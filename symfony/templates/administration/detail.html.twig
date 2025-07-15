@@ -1,0 +1,47 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Détail - {{ school.name }}{% endblock %}
+
+{% block body %}
+    <div class="max-w-6xl mx-auto py-8">
+
+        <h1 class="text-3xl font-bold title-primary mb-8">{{ school.name }} <a href="{{ path('app_admin') }}" class="mx-4 text-xl btn-primary">Liste des écoles</a></h1>
+        <div class="grid grid-cols-1 gap-4">
+            {% for user in school.getUsers() %}
+                <div class="bg-white p-4 rounded-lg shadow-md">
+                    <h2 class="text-2xl font-semibold my-6">{{ user.email }}</h2>
+                    <h3 class="text-2xl font-semibold">Programmes : </h3>
+                    {% for program in user.getPrograms() %}
+                        <div class="mt-4">
+                            <p>  {{ program.title }} - Année {{ program.year }}
+                                <a href="{{ path('app_program_show', { id: program.id }) }}"
+                                   class="link-primary m-4">
+                                    HTML
+                                </a>
+                                <a href="{{ path('app_program_show', { id: program.id, format: 'pdf' }) }}"
+                                   class="link-danger">
+                                    PDF
+                                </a>
+                            </p>
+
+                        </div>
+                    {% else %}
+                        <p>Aucun titre RNCP associé.</p>
+                    {% endfor %}
+
+                <h3 class="text-2xl font-semibold mt-4">Modules : </h3>
+                {% for module in user.getModules() %}
+                    <div class="mt-4">
+                        <p>{{ module.title }} - {{ module.duration }}h
+                            <a href="{{ path('app_module_show', { id: module.id }) }}" class="link-primary m-4">Voir</a></p>
+                    </div>
+                {% else %}
+                    <p>Aucun module associé.</p>
+                {% endfor %}
+                </div>
+            {% else %}
+                <p>Aucun utilisateur enregistré pour cette école.</p>
+            {% endfor %}
+        </div>
+    </div>
+{% endblock %}

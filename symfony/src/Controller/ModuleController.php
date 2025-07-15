@@ -199,6 +199,23 @@ final class ModuleController extends AbstractController
         ]);
     }
 
+    #[Route('/module/show/{id}', name: 'app_module_show')]
+    public function show(Module $module ): Response
+    {
+        if (!in_array("ROLE_SUPER_ADMIN", $this->getUser()->getRoles())
+            && $module && $module->getOwner() !== $this->getUser()
+            && (!in_array("ROLE_ADMIN", $this->getUser()->getRoles())
+                || $module->getOwner()->getSchool() !== $this->getUser()->getSchool())
+        ){
+            $this->addFlash('error', 'Vous ne pouvez pas visualiser ce module.');
+            return $this->redirectToRoute('app_module');
+        }
+
+        return $this->render('module/show.html.twig', [
+            'module' => $module,
+        ]);
+    }
+
 
     #[Route('/module/delete/{id}', name: 'app_module_delete')]
     public function delete(Module $module, EntityManagerInterface $em): Response

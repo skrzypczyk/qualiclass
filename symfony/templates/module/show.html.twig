@@ -1,0 +1,89 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Détail du module{% endblock %}
+
+{% block body %}
+    <div class="max-w-4xl mx-auto px-6 py-10 bg-white shadow rounded my-4">
+        <h1 class="text-3xl font-bold title-primary mb-8">
+            Détail du module
+        </h1>
+
+        <div class="space-y-6">
+
+            <div>
+                <h2 class="text-sm font-medium text-gray-700 mb-1">Titre</h2>
+                <p class="text-gray-900">{{ module.title }}</p>
+            </div>
+
+            {% if app.user.isAdmin() %}
+                <div>
+                    <h2 class="text-sm font-medium text-gray-700 mb-1">Partagé à tous</h2>
+                    <p class="text-gray-900">{{ module.isShared ? 'Oui' : 'Non' }}</p>
+                </div>
+            {% endif %}
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div>
+                    <h2 class="text-sm font-medium text-gray-700 mb-1">Durée</h2>
+                    <p class="text-gray-900">{{ module.duration }} h</p>
+                </div>
+                <div>
+                    <h2 class="text-sm font-medium text-gray-700 mb-1">Crédit</h2>
+                    <p class="text-gray-900">{{ module.credit }}</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div>
+                    <h2 class="text-sm font-medium text-gray-700 mb-1">Catégories</h2>
+                    <ul class="text-gray-900 list-disc list-inside">
+                        {% for cat in module.categories %}
+                            <li>{{ cat.name }}</li>
+                        {% else %}
+                            <li class="italic text-gray-500">Aucune</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <div>
+                    <h2 class="text-sm font-medium text-gray-700 mb-1">Évaluations</h2>
+                    <ul class="text-gray-900 list-disc list-inside">
+                        {% for assess in module.assessments %}
+                            <li>{{ assess.name }}</li>
+                        {% else %}
+                            <li class="italic text-gray-500">Aucune</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+
+            {% if app.user.isAdmin() %}
+                <div>
+                    <h2 class="text-sm font-medium text-gray-700 mb-1">Propriétaire</h2>
+                    <p class="text-gray-900">{{ module.owner.email }}</p>
+                </div>
+            {% endif %}
+
+            <div>
+                <h2 class="text-sm font-medium text-gray-700 mb-1">Objectif</h2>
+                <div class="prose max-w-none text-gray-900">
+                    {{ module.goal|raw }}
+                </div>
+            </div>
+
+            <div>
+                <h2 class="text-sm font-medium text-gray-700 mb-1">Syllabus</h2>
+                <div class="prose max-w-none text-gray-900">
+                    {{ module.syllabus|raw }}
+                </div>
+            </div>
+
+            <div>
+                <h2 class="text-sm font-medium text-gray-700 mb-1">Commentaire</h2>
+                <div class="prose max-w-none text-gray-900">
+                    {{ module.comment|raw }}
+                </div>
+            </div>
+
+        </div>
+    </div>
+{% endblock %}

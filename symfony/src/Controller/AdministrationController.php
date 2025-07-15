@@ -41,6 +41,16 @@ final class AdministrationController extends AbstractController
         ]);
     }
 
+
+    #[Route('/school/detail/{id}', name: 'app_admin_detail_school')]
+    public function detailSchool(School $school): Response
+    {
+        return $this->render('administration/detail.html.twig', [
+            'controller_name' => 'AdministrationController',
+            'school' => $school,
+        ]);
+    }
+
     #[Route('/keyGPT', name: 'app_admin_gpt')]
     public function keyGPT( Request $request,EntityManagerInterface $em, SettingRepository $settingRepository): Response
     {
