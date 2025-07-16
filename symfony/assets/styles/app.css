@@ -30,6 +30,9 @@
     cursor: pointer;
     transition: background-color 0.2s ease-in-out;
     text-align: center;
+    @apply whitespace-nowrap;
+    display: inline-block;
+    margin-top: 20px;
 }
 
 .btn-primary:hover {
@@ -46,6 +49,9 @@
     font-weight: 600;
     cursor: pointer;
     transition: background-color 0.2s ease-in-out;
+    @apply whitespace-nowrap;
+    display: inline-block;
+    margin-top: 20px;
 }
 
 
@@ -64,6 +70,9 @@
     font-weight: 600;
     cursor: pointer;
     transition: background-color 0.2s ease-in-out;
+    @apply whitespace-nowrap;
+    display: inline-block;
+    margin-top: 20px;
 }
 
 
@@ -85,6 +94,7 @@
     color: var(--color-primary);
     text-decoration: none;
     cursor: pointer;
+    @apply whitespace-nowrap;
 }
 
 .link-primary:hover {
@@ -96,6 +106,7 @@
     color: var(--color-secondary);
     text-decoration: none;
     cursor: pointer;
+    @apply whitespace-nowrap;
 }
 
 .link-secondary:hover {
@@ -107,6 +118,7 @@
     color: var(--color-danger);
     text-decoration: none;
     cursor: pointer;
+    @apply whitespace-nowrap;
 }
 
 .link-danger:hover {
