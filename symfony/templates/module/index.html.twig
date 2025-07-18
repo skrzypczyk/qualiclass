@@ -5,11 +5,15 @@
 {% block body %}
     <div class="max-w-7xl mx-auto px-6 py-10">
         <h1 class="text-3xl font-bold title-primary mb-8">Vos modules</h1>
-        <a href="{{ path('app_module_create') }}" class="px-4 py-2 btn-primary">Ajouter un module</a>
+
+        <div class="flex flex-wrap xs:justify-center w-full md:gap-2 py-4">
+
+            <a href="{{ path('app_module_create') }}" class="mt-4 md:w-50  w-full btn-primary text-white px-4 py-2 rounded">Ajouter un module</a>
 
         {% if user.isSuperAdmin or user.school.isFreeAccount or subscription.chatgpt %}
-            <a href="{{ path('app_module_create_chatgpt') }}" class="px-4 py-2 btn-neutral">Générer automatiquement</a>
+            <a href="{{ path('app_module_create_chatgpt') }}" class="mt-2 md:w-80 w-full btn-neutral text-white px-4 py-2 rounded">Générer automatiquement</a>
         {% endif %}
+        </div>
 
         <form method="get" data-turbo='false' class="mb-6 bg-gray-50 border border-gray-200 rounded-lg p-6 shadow-sm mt-4">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -66,7 +70,7 @@
                 </div>
             </div>
 
-            <div class="mt-6 flex justify-end gap-4">
+            <div class="flex flex-wrap items-center gap-2 pt-6">
                 <button type="submit" class="btn-primary px-4 py-2 text-sm">Appliquer les filtres</button>
                 <a href="{{ path(app.request.attributes.get('_route')) }}" class="btn-secondary px-4 py-2 text-sm">Réinitialiser</a>
             </div>
@@ -75,121 +79,126 @@
 
 
         <div x-data="{ showModal: false, showModal2: false, modalModuleId: null }">
-            <table class="min-w-full my-6 bg-white border border-gray-200 shadow-md rounded-lg overflow-hidden">
-                <thead>
-                {% set dir = direction == 'asc' ? 'desc' : 'asc' %}
-                <tr>
-                    <th class="px-6 py-3 text-left">
-                        <a href="{{ path(app.request.attributes.get('_route'), app.request.query.all | merge({'sort': 'm.title', 'direction': sort == 'm.title' ? dir : 'asc'})) }}">
-                            Titre {% if sort == 'm.title' %}{{ direction == 'asc' ? '↑' : '↓' }}{% endif %}
-                        </a>
-                    </th>
 
-                    {% if app.user.isAdmin() %}
-                        <th class="px-6 py-3 text-left">
-                            <a href="{{ path(app.request.attributes.get('_route'), app.request.query.all | merge({'sort': 'm.isShared', 'direction': sort == 'm.isShared' ? dir : 'asc'})) }}">
-                                Partagé {% if sort == 'm.isShared' %}{{ direction == 'asc' ? '↑' : '↓' }}{% endif %}
-                            </a>
-                        </th>
-                    {% endif %}
+            <div class="bg-white shadow-md rounded-xl overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="min-w-full text-sm text-left">
+                        <thead>
+                        {% set dir = direction == 'asc' ? 'desc' : 'asc' %}
+                        <tr>
+                            <th class="px-6 py-3 text-left">
+                                <a href="{{ path(app.request.attributes.get('_route'), app.request.query.all | merge({'sort': 'm.title', 'direction': sort == 'm.title' ? dir : 'asc'})) }}">
+                                    Titre {% if sort == 'm.title' %}{{ direction == 'asc' ? '↑' : '↓' }}{% endif %}
+                                </a>
+                            </th>
 
-                    <th class="px-6 py-3 text-left">
-                        <a href="{{ path(app.request.attributes.get('_route'), app.request.query.all | merge({'sort': 'm.duration', 'direction': sort == 'm.duration' ? dir : 'asc'})) }}">
-                            Durée {% if sort == 'm.duration' %}{{ direction == 'asc' ? '↑' : '↓' }}{% endif %}
-                        </a>
-                    </th>
+                            {% if app.user.isAdmin() %}
+                                <th class="px-6 py-3 text-left">
+                                    <a href="{{ path(app.request.attributes.get('_route'), app.request.query.all | merge({'sort': 'm.isShared', 'direction': sort == 'm.isShared' ? dir : 'asc'})) }}">
+                                        Partagé {% if sort == 'm.isShared' %}{{ direction == 'asc' ? '↑' : '↓' }}{% endif %}
+                                    </a>
+                                </th>
+                            {% endif %}
 
-                    <th class="px-6 py-3 text-left">
-                        <a href="{{ path(app.request.attributes.get('_route'), app.request.query.all | merge({'sort': 'm.credit', 'direction': sort == 'm.credit' ? dir : 'asc'})) }}">
-                            Crédit(s) {% if sort == 'm.credit' %}{{ direction == 'asc' ? '↑' : '↓' }}{% endif %}
-                        </a>
-                    </th>
+                            <th class="px-6 py-3 text-left">
+                                <a href="{{ path(app.request.attributes.get('_route'), app.request.query.all | merge({'sort': 'm.duration', 'direction': sort == 'm.duration' ? dir : 'asc'})) }}">
+                                    Durée {% if sort == 'm.duration' %}{{ direction == 'asc' ? '↑' : '↓' }}{% endif %}
+                                </a>
+                            </th>
 
-                    <th class="px-6 py-3 text-left">Catégorie(s)</th>
+                            <th class="px-6 py-3 text-left">
+                                <a href="{{ path(app.request.attributes.get('_route'), app.request.query.all | merge({'sort': 'm.credit', 'direction': sort == 'm.credit' ? dir : 'asc'})) }}">
+                                    Crédit(s) {% if sort == 'm.credit' %}{{ direction == 'asc' ? '↑' : '↓' }}{% endif %}
+                                </a>
+                            </th>
 
-
-                    <th class="px-6 py-3 text-left">Actions</th>
-                </tr>
-                </thead>
-                <tbody class="text-gray-800 text-sm divide-y divide-gray-100">
-                {% for module in modules %}
-                    <tr class="transition {% if module.isArchived() %} bg-neutral {% endif %}">
-                        <td class="px-6 py-4 font-medium">{{ module.title }} {% if app.user.isAdmin() %}
-                                <small>
-                                   <br> {{ module.owner.email }}
-                                </small>
-                            {% endif %} </td>
-
-                        {% if app.user.isAdmin() %}
-                            <td class="px-6 py-4 font-medium">
-                                    {{ module.isShared() ? '✅' : '' }}
-                            </td>
-                        {% endif %}
+                            <th class="px-6 py-3 text-left">Catégorie(s)</th>
 
 
-                        <td class="px-6 py-4 font-medium text-center">{{ module.duration }} h</td>
-                        <td class="px-6 py-4 font-medium text-center">{{ module.credit }}</td>
+                            <th class="px-6 py-3 text-left">Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody class="text-gray-800 text-sm divide-y divide-gray-100">
+                        {% for module in modules %}
+                            <tr class="transition {% if module.isArchived() %} bg-neutral {% endif %}">
+                                <td class="px-6 py-4 font-medium">{{ module.title }} {% if app.user.isAdmin() %}
+                                        <small>
+                                           <br> {{ module.owner.email }}
+                                        </small>
+                                    {% endif %} </td>
 
-                        <td class="px-6 py-4 font-medium">
-                            {% for category in module.categories|sort((a, b) => a.name <=> b.name) %}
-                                <span class="inline-block bg-gray-200 text-gray-700 text-xs font-semibold mr-2 px-2.5 py-0.5 rounded">
-                                    {{ category.name }}
-                                </span>
-                            {% endfor %}
-                        </td>
-                        <td class="px-6 py-4 space-x-2">
-
-                            <a href="{{ path('app_module_edit', {'id': module.id}) }}"
-                               class="link-primary">
-                                Modifier
-                            </a>
-
-                            <form method="post"
-                                  action="{{ path('app_module_archive', {'id': module.id}) }}"
-                                  class="inline-block" data-turbo="false">
-                                <input type="hidden" name="_token" value="{{ csrf_token('toggle_archived_' ~ module.id) }}">
-                                <button type="submit" class="link-primary">
-                                    {% if module.isArchived() %}Restaurer{% else %}Archiver{% endif %}
-                                </button>
-                            </form>
-
-                            <button
-                                    type="button"
-                                    @click="modalModuleId = '{{ module.id }}'; showModal2 = true;"
-                                    class="link-primary"
-                                    data-turbo="false"
-                            >
-                                Dupliquer
-                            </button>
-
-                            <form method="post"
-                                  action="{{ path('app_module_duplicate', {'id': module.id}) }}"
-                                  id="duplicate-form-{{ module.id }}"
-                                  class="hidden">
-                                <input type="hidden" name="_token" value="{{ csrf_token('duplicate_module_' ~ module.id) }}">
-                            </form>
+                                {% if app.user.isAdmin() %}
+                                    <td class="px-6 py-4 font-medium">
+                                            {{ module.isShared() ? '✅' : '' }}
+                                    </td>
+                                {% endif %}
 
 
-                            <button
-                                    type="button"
-                                    @click="modalModuleId = '{{ module.id }}'; showModal = true;"
-                                    class="link-danger"
-                            >
-                                Supprimer
-                            </button>
+                                <td class="px-6 py-4 font-medium text-center">{{ module.duration }} h</td>
+                                <td class="px-6 py-4 font-medium text-center">{{ module.credit }}</td>
 
-                            <form method="post"
-                                  action="{{ path('app_module_delete', {'id': module.id}) }}"
-                                  id="delete-form-{{ module.id }}"
-                                  class="hidden">
-                                <input type="hidden" name="_token" value="{{ csrf_token('delete_module_' ~ module.id) }}">
-                            </form>
+                                <td class="px-6 py-4 font-medium">
+                                    {% for category in module.categories|sort((a, b) => a.name <=> b.name) %}
+                                        <span class="inline-block bg-gray-200 text-gray-700 text-xs font-semibold mr-2 px-2.5 py-0.5 rounded">
+                                            {{ category.name }}
+                                        </span>
+                                    {% endfor %}
+                                </td>
+                                <td class="px-6 py-4 space-x-2">
 
-                        </td>
-                    </tr>
-                {% endfor %}
-                </tbody>
-            </table>
+                                    <a href="{{ path('app_module_edit', {'id': module.id}) }}"
+                                       class="link-primary">
+                                        Modifier
+                                    </a>
+
+                                    <form method="post"
+                                          action="{{ path('app_module_archive', {'id': module.id}) }}"
+                                          class="inline-block" data-turbo="false">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('toggle_archived_' ~ module.id) }}">
+                                        <button type="submit" class="link-primary">
+                                            {% if module.isArchived() %}Restaurer{% else %}Archiver{% endif %}
+                                        </button>
+                                    </form>
+
+                                    <button
+                                            type="button"
+                                            @click="modalModuleId = '{{ module.id }}'; showModal2 = true;"
+                                            class="link-primary"
+                                            data-turbo="false"
+                                    >
+                                        Dupliquer
+                                    </button>
+
+                                    <form method="post"
+                                          action="{{ path('app_module_duplicate', {'id': module.id}) }}"
+                                          id="duplicate-form-{{ module.id }}"
+                                          class="hidden">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('duplicate_module_' ~ module.id) }}">
+                                    </form>
+
+
+                                    <button
+                                            type="button"
+                                            @click="modalModuleId = '{{ module.id }}'; showModal = true;"
+                                            class="link-danger"
+                                    >
+                                        Supprimer
+                                    </button>
+
+                                    <form method="post"
+                                          action="{{ path('app_module_delete', {'id': module.id}) }}"
+                                          id="delete-form-{{ module.id }}"
+                                          class="hidden">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('delete_module_' ~ module.id) }}">
+                                    </form>
+
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                    </div>
+            </div>
             <div class="mt-6">
                 {{ knp_pagination_render(modules) }}
             </div>

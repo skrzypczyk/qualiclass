@@ -119,11 +119,13 @@
             {% endif %}
         </div>
 
-        <div class="flex items-center gap-4 pt-6">
-            <button type="submit" class="btn-primary">
+
+
+        <div class="flex flex-wrap justify-center w-full gap-2 pt-6">
+            <button type="submit" class="mt-4 md:w-50  w-full btn-primary text-white px-4 py-2 rounded">
                 {{ create ? 'Créer le module' : 'Mettre à jour' }}
             </button>
-            <a href="{{ path('app_module') }}" class="btn-neutral">
+            <a href="{{ path('app_module') }}" class="mt-4 md:w-50  w-full btn-neutral text-white px-4 py-2 rounded">
                 Annuler
             </a>
         </div>

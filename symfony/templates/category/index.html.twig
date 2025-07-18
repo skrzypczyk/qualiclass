@@ -5,6 +5,63 @@
 {% block body %}
     <div class="max-w-2xl mx-auto px-4 py-8">
 
+        <h1 class="text-2xl font-bold text-primary my-6">Liste des catégories</h1>
+        <div x-data="{ showModal: false, modalUserId: null }">
+            <div class="bg-white shadow-md rounded-xl overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="min-w-full text-sm text-left">
+                        <thead class="bg-gray-100 text-gray-700 text-sm uppercase tracking-wide">
+                        <tr>
+                            <th class="px-6 py-3 text-left">Noms</th>
+                            <th class="px-6 py-3 text-left">Module(s)</th>
+                            <th class="px-6 py-3 text-left">Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody class="text-gray-800 text-sm divide-y divide-gray-100">
+                        {% for category in categories|sort((a, b) => a.name <=> b.name) %}
+                            <tr class="transition ">
+                                <td class="px-6 py-4 font-medium">{{ category.name }}</td>
+                                <td class="px-6 py-4 font-medium">{{ category.modules|length }}</td>
+                                <td class="px-6 py-4 space-x-4">
+
+                                    <a href="{{ path('app_category_edit', {'id': category.id}) }}"
+                                       class="inline-block text-sm text-blue-600 font-semibold hover:underline">
+                                        Modifier
+                                    </a>
+
+                                    <button
+                                            type="button"
+                                            @click="modalCategoryId = '{{ category.id }}'; showModal = true;"
+                                            class="inline-block text-sm text-red-600 font-semibold hover:underline"
+                                    >
+                                        Supprimer
+                                    </button>
+
+                                    <form method="post"
+                                          action="{{ path('category_delete', {'id': category.id}) }}"
+                                          id="delete-form-{{ category.id }}"
+                                          class="hidden">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('delete_category_' ~ category.id) }}">
+                                    </form>
+
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+
+            {% include 'components/modal-confirmation.html.twig' with {
+                x_show: 'showModal',
+                title: 'Supprimer une catégorie',
+                message: 'Souhaitez-vous vraiment supprimer cette catégorie ?',
+                cancelLabel: 'Annuler',
+                confirmLabel: 'Supprimer',
+                confirmAction: "document.getElementById('delete-form-' + modalCategoryId).submit()"
+            } %}
+        </div>
 
 
         {% if category.id %}
@@ -28,13 +85,15 @@
             {% endif %}
         </div>
 
-        <button type="submit" class="btn-primary">
-            Enregistrer
-        </button>
 
-        {% if category.id %}
-            <a href="{{ path('app_category') }}" class="btn-neutral">Annuler</a>
-        {% endif %}
+        <div class="flex flex-wrap justify-center w-full md:gap-2 mb-8">
+            <button type="submit" class="btn btn-primary md:w-50 w-full btn-lg">
+                Enregistrer
+            </button>
+            <a href="{{ path('app_category') }}" class="btn btn-neutral md:w-50 w-full btn-lg">
+                Annuler
+            </a>
+        </div>
 
         {{ form_end(form) }}
 
@@ -43,59 +102,6 @@
 
 
 
-        <h1 class="text-2xl font-bold text-primary my-6">Liste des catégories</h1>
-        <div x-data="{ showModal: false, modalUserId: null }">
-            <table class="min-w-full bg-white border border-gray-200 shadow-md rounded-lg overflow-hidden">
-                <thead class="bg-gray-100 text-gray-700 text-sm uppercase tracking-wide">
-                <tr>
-                    <th class="px-6 py-3 text-left">Noms</th>
-                    <th class="px-6 py-3 text-left">Module(s)</th>
-                    <th class="px-6 py-3 text-left">Actions</th>
-                </tr>
-                </thead>
-                <tbody class="text-gray-800 text-sm divide-y divide-gray-100">
-                {% for category in categories|sort((a, b) => a.name <=> b.name) %}
-                    <tr class="transition ">
-                        <td class="px-6 py-4 font-medium">{{ category.name }}</td>
-                        <td class="px-6 py-4 font-medium">{{ category.modules|length }}</td>
-                        <td class="px-6 py-4 space-x-4">
-
-                            <a href="{{ path('app_category_edit', {'id': category.id}) }}"
-                               class="inline-block text-sm text-blue-600 font-semibold hover:underline">
-                                Modifier
-                            </a>
-
-                            <button
-                                    type="button"
-                                    @click="modalCategoryId = '{{ category.id }}'; showModal = true;"
-                                    class="inline-block text-sm text-red-600 font-semibold hover:underline"
-                            >
-                                Supprimer
-                            </button>
-
-                            <form method="post"
-                                  action="{{ path('category_delete', {'id': category.id}) }}"
-                                  id="delete-form-{{ category.id }}"
-                                  class="hidden">
-                                <input type="hidden" name="_token" value="{{ csrf_token('delete_category_' ~ category.id) }}">
-                            </form>
-
-                        </td>
-                    </tr>
-                {% endfor %}
-                </tbody>
-            </table>
-
-
-            {% include 'components/modal-confirmation.html.twig' with {
-                x_show: 'showModal',
-                title: 'Supprimer une catégorie',
-                message: 'Souhaitez-vous vraiment supprimer cette catégorie ?',
-                cancelLabel: 'Annuler',
-                confirmLabel: 'Supprimer',
-                confirmAction: "document.getElementById('delete-form-' + modalCategoryId).submit()"
-            } %}
-        </div>
 
 
     </div>

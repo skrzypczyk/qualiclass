@@ -50,7 +50,7 @@ final class CategoryController extends AbstractController
     public function delete(EntityManagerInterface $em, Request $request, Category $category = null): Response
     {
         $user = $this->getUser();
-        if ($category->getOwner() !== $user)
+        if ($category->getSchool() !== $user->getSchool() || is_null($category))
         {
             $this->addFlash('error', 'Vous ne pouvez pas modifier cette catégorie !');
             return $this->redirectToRoute('app_category');

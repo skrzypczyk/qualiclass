@@ -40,7 +40,6 @@
                 <form method="post" action="{{ path('app_program_assign_save', { id: program.id }) }}" id="assign-form">
                     <input type="hidden" name="assignments" id="assignments-data">
 
-                    <button type="button" id="add-part-btn" class="my-4 bg-primary text-white px-4 py-2 rounded">Ajouter une partie</button>
 
                     <div id="parts-container" class="space-y-6">
                         <div class="dropzone bg-gray-50 p-4 border rounded space-y-2" data-part="1">
@@ -49,7 +48,18 @@
                             <div id="total-1" class="text-sm text-gray-600 mt-2">Total : 0h – 0 crédits</div>
                         </div>
                     </div>
-                    <button type="submit" class="mt-4 w-full bg-primary text-white px-4 py-2 rounded">Enregistrer</button>
+
+                    <button type="button" id="add-part-btn" class="my-4 bg-primary w-full text-white px-4 py-2 rounded">Ajouter une partie</button>
+
+
+                    <div class="flex flex-wrap justify-center w-full md:gap-2 pt-4">
+                        <button type="submit" class="mt-4 md:w-50  w-full btn-primary text-white px-4 py-2 rounded">Enregistrer</button>
+                        <a href="{{ path('app_program') }}" class="btn-neutral md:w-50 w-full text-white px-4 py-2 rounded">
+                            Annuler
+                        </a>
+                    </div>
+
+
                 </form>
             </div>
         </div>

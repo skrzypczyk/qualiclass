@@ -5,62 +5,12 @@
 {% block body %}
     <div class="max-w-2xl mx-auto px-4 py-8">
 
-        {%  if create %}
-            <h1 class="text-3xl font-bold title-primary mb-8">Ajouter une évaluation</h1>
-        {% else %}
-            <h1 class="text-3xl font-bold title-primary mb-8">Modifier cette évaluation</h1>
-        {% endif %}
-
-        {{ form_start(form, {'attr': { 'class': 'space-y-6'}}) }}
-
-        <div>
-            {{ form_label(form.name, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700'}}) }}
-            {{ form_widget(form.name, {
-                'attr': {
-                    'class': 'block w-full px-4 py-2 rounded-md shadow-sm focus:ring focus:ring-indigo-200 border border-gray-300'
-                }
-            }) }}
-
-            {% if form.name.vars.errors|length > 0 %}
-                <p class="mt-1 text-sm text-red-600">{{ form_errors(form.name) }}</p>
-            {% endif %}
-        </div>
-
-        <div>
-            {{ form_label(form.description, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700'}}) }}
-            <div data-controller="quill">
-                <div class="quill-editor" style="height: 300px;"></div>
-                {{ form_widget(form.description, { attr: { style: 'display:none;' } }) }}
-            </div>
-            {% if form.description.vars.errors|length > 0 %}
-                <p class="mt-1 text-sm text-red-600">{{ form_errors(form.description) }}</p>
-            {% endif %}
-        </div>
-
-
-        {%  if create %}
-            <button type="submit" class="btn-primary">
-                Ajouter
-            </button>
-        {% else %}
-            <button type="submit" class="btn-primary">
-                Modifier
-            </button>
-            <a href="{{ path('app_assessment') }}" class="btn-neutral">
-                Annuler
-            </a>
-        {% endif %}
-
-        {{ form_end(form) }}
-
-
         <h1 class="text-2xl font-bold title-primary mb-8">Liste des évaluations</h1>
         <div x-data="{ showModal: false, modalAssessmentId: null }">
             <table class="min-w-full bg-white border border-gray-200 shadow-md rounded-lg overflow-hidden">
                 <thead class="">
                 <tr>
                     <th class="px-6 py-3 text-left">Nom</th>
-                    <th class="px-6 py-3 text-left">Description</th>
                     <th class="px-6 py-3 text-left">Actions</th>
                 </tr>
                 </thead>
@@ -68,7 +18,6 @@
                 {% for assessment in assessments|sort((a, b) => a.name <=> b.name) %}
                     <tr class="transition">
                         <td class="px-6 py-4 font-medium">{{ assessment.name }}</td>
-                        <td class="px-6 py-4 font-medium">{{ assessment.description|raw }}</td>
                         <td class="px-6 py-4 space-x-4">
 
                             <a href="{{ path('app_edit_assessment', {'id': assessment.id}) }}"
@@ -106,6 +55,60 @@
                 confirmAction: "document.getElementById('delete-form-' + modalAssessmentId).submit()"
             } %}
         </div>
+
+        {%  if create %}
+            <h1 class="text-2xl font-bold title-primary my-8">Ajouter une évaluation</h1>
+        {% else %}
+            <h1 class="text-2xl font-bold title-primary my-8">Modifier cette évaluation</h1>
+        {% endif %}
+
+        {{ form_start(form, {'attr': { 'class': 'space-y-6'}}) }}
+
+        <div>
+            {{ form_label(form.name, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700'}}) }}
+            {{ form_widget(form.name, {
+                'attr': {
+                    'class': 'block w-full px-4 py-2 rounded-md shadow-sm focus:ring focus:ring-indigo-200 border border-gray-300'
+                }
+            }) }}
+
+            {% if form.name.vars.errors|length > 0 %}
+                <p class="mt-1 text-sm text-red-600">{{ form_errors(form.name) }}</p>
+            {% endif %}
+        </div>
+
+        <div>
+            {{ form_label(form.description, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700'}}) }}
+            <div data-controller="quill">
+                <div class="quill-editor" style="height: 300px;"></div>
+                {{ form_widget(form.description, { attr: { style: 'display:none;' } }) }}
+            </div>
+            {% if form.description.vars.errors|length > 0 %}
+                <p class="mt-1 text-sm text-red-600">{{ form_errors(form.description) }}</p>
+            {% endif %}
+        </div>
+
+
+
+        <div class="flex flex-wrap justify-center w-full md:gap-2 mb-8">
+            {%  if create %}
+                <button type="submit" class="btn btn-primary md:w-50 w-full btn-lg">
+                    Ajouter
+                </button>
+            {% else %}
+                <button type="submit" class="btn btn-primary md:w-50 w-full btn-lg">
+                    Modifier
+                </button>
+                <a href="{{ path('app_assessment') }}" class="btn btn-neutral md:w-50 w-full btn-lg">
+                    Annuler
+                </a>
+            {% endif %}
+        </div>
+
+        {{ form_end(form) }}
+
+
+
 
 
     </div>

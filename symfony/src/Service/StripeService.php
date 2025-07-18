@@ -93,7 +93,7 @@ class StripeService
         }
     }
 
-    public function getCreateUrl(array $lineItems, int $userId): string
+    public function getCreateUrl(array $lineItems, string $userId): string
     {
         return  Session::create([
             'payment_method_types' => ['card'],

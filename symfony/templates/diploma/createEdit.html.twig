@@ -55,23 +55,9 @@
              data-prototype="{{ include('competence/_form_item.html.twig', { form: form.competences.vars.prototype, index: '__name__' })|e('html_attr') }}"
              class="pt-4">
 
-            <div class="flex items-center justify-between mb-4">
-                <h2 class="text-xl font-semibold">Compétences</h2>
-                <button type="button"
-                        @click="
-                            let html = $refs.wrapper.dataset.prototype.replace(/__name__/g, index);
-                            tabs.push({ id: index, label: '' });
-                            active = index;
-                            let container = document.createElement('div');
-                            container.innerHTML = html;
-                            container.setAttribute('data-tab', index);
-                            $refs.formContainer.appendChild(container);
-                            index++;
-                        "
-                        class="btn-primary">
-                    Ajouter une compétence
-                </button>
-            </div>
+
+            <h2 class="text-xl font-semibold my-4">Liste des compétences</h2>
+
 
             <div class="flex overflow-x-auto no-scrollbar border-b mb-4 space-x-4 max-w-full">
                 <template x-for="tab in tabs" :key="tab.id">
@@ -92,13 +78,31 @@
                     }) }}
                 {% endfor %}
             </div>
+
+            <button type="button"
+                    @click="
+                        let html = $refs.wrapper.dataset.prototype.replace(/__name__/g, index);
+                        tabs.push({ id: index, label: '' });
+                        active = index;
+                        let container = document.createElement('div');
+                        container.innerHTML = html;
+                        container.setAttribute('data-tab', index);
+                        $refs.formContainer.appendChild(container);
+                        index++;
+                    "
+                    class="btn-primary w-full">
+                Ajouter une compétence
+            </button>
+
         </div>
 
-        <div class="flex items-center gap-4 pt-6">
-            <button type="submit" class="btn-primary">
+
+
+        <div class="flex flex-wrap justify-center w-full gap-2 pt-6">
+            <button type="submit" class="mt-4 md:w-50  w-full btn-primary text-white px-4 py-2 rounded">
                 {{ create ? 'Créer le diplôme' : 'Mettre à jour' }}
             </button>
-            <a href="{{ path('app_diploma') }}" class="btn-neutral">
+            <a href="{{ path('app_diploma') }}" class="mt-4 md:w-50  w-full btn-neutral text-white px-4 py-2 rounded">
                 Annuler
             </a>
         </div>

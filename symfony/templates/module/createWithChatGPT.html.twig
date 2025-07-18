@@ -52,18 +52,17 @@
         </div>
 
 
-
-        <div class="flex items-center gap-4 pt-6">
+        <div class="flex flex-wrap justify-center w-full gap-2 pt-6">
             {%  if credit < 200 %}
-            <button type="submit" class="btn-primary">
+            <button type="submit" class="mt-4 md:w-70  w-full btn-primary text-white px-4 py-2 rounded">
                 Générer ( {{ 200 - credit  }} Crédits restants )
             </button>
             {% else %}
-            <button type="submit" class="btn-primary" disabled>
+            <button type="submit" class="mt-4 md:w-70  w-full btn-primary text-white px-4 py-2 rounded" disabled>
                 Vous n'avez plus de crédit
             </button>
             {% endif %}
-            <a href="{{ path('app_module') }}" class="btn-neutral">
+            <a href="{{ path('app_module') }}" class="mt-4 md:w-50  w-full btn-neutral text-white px-4 py-2 rounded">
                 Annuler
             </a>
 

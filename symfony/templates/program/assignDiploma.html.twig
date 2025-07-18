@@ -5,56 +5,14 @@
 {% block body %}
     <div class="max-w-6xl mx-auto px-6 py-10">
         <div class="mb-8">
-            <h1 class="text-4xl font-bold text-gray-800 mb-4">
+            <h1 class="text-3xl font-bold text-gray-800 mb-4">
                 {{ program.title }}
             </h1>
 
-            {# ✅ Bouton Génération Automatique #}
-            {% if user.isSuperAdmin or user.school.isFreeAccount or subscription.chatgpt %}
-
-            <div x-data="{ showModal: false}">
-                {%  if credit < 200 %}
-                <button
-                        type="button"
-                        @click="showModal = true;"
-                        class="btn-primary my-6"
-                >
-                    Générer automatiquement ( {{ 200 - credit  }} Crédits restants )
-                </button>
-                {% else %}
-                    <button type="submit" class="btn-primary" disabled>
-                        Vous n'avez plus de crédit pour une génération automatique.
-                    </button>
-                {% endif %}
-
-                <form method="post"
-                      action="{{ path('app_program_assign_competence_auto',{'diploma':diploma.id, 'program':program.id}) }}"
-                      id="form-generate-auto"
-                      class="hidden ">
-                    <input type="hidden" name="_csrf_token" value="{{ csrf_token('generate_diploma') }}">
-                </form>
-
-
-                {% include 'components/modal-confirmation.html.twig' with {
-                    x_show: 'showModal',
-                    title: 'Répartition automatique',
-                    message: '<span class="text-red-600">Attention</span>, lancer la répartition automatique des modules va écraser toutes les affectations manuelles que vous avez faites.
-                    Voulez-vous vraiment continuer ?',
-                    cancelLabel: 'Annuler',
-                    confirmLabel: 'Continuer',
-                    confirmAction: "document.getElementById('form-generate-auto').submit()"
-                } %}
-
-            </div>
-
-            {% endif %}
-
             {# ✅ Informations Diplôme #}
-            <div class="bg-gray-50 p-4 rounded-lg shadow-sm text-sm text-gray-700">
-                <div class="mb-1">
-                    <span class="font-semibold text-gray-800">Diplôme :</span>
-                    {{ diploma.title }} <small class="text-gray-500"> – {{ diploma.RNCP }}</small>
-                </div>
+            <div class=" text-gray-700">
+                {{ diploma.title }} <span class="text-gray-500"> – {{ diploma.RNCP }}</span>
+
 
                 {% set totalHours = 0 %}
                 {% set totalCredits = 0 %}
@@ -73,7 +31,7 @@
         </div>
 
         <h3 class="text-xl font-semibold mb-4">Modules non affectés</h3>
-        <div class="bg-gray-100 p-4 rounded mb-6">
+        <div class="bg-gray-100 rounded mb-6">
             <div class="flex flex-wrap gap-2" id="unassigned-modules" data-total-id="unassigned-total">
                 {% for assignment in unassignedModules %}
                     <div class="module-item bg-white border rounded px-4 py-2 text-sm cursor-move relative"
@@ -85,6 +43,7 @@
                         <small class="text-gray-600">{{ assignment.module.duration ?? 0 }}h – {{ assignment.module.credit ?? 0 }} crédits</small>
                     </div>
                 {% endfor %}
+
             </div>
         </div>
 
@@ -116,11 +75,52 @@
             {% endfor %}
         </div>
 
-        <div class="mt-8">
+        {# ✅ Bouton Génération Automatique #}
+        {% if user.isSuperAdmin or user.school.isFreeAccount or subscription.chatgpt %}
+
+            <div x-data="{ showModal: false}">
+                {%  if credit < 200 %}
+                    <button
+                            type="button"
+                            @click="showModal = true;"
+                            class="btn-primary my-6 w-full"
+                    >
+                        Générer automatiquement <br> ( {{ 200 - credit  }} Crédits restants )
+                    </button>
+                {% else %}
+                    <button type="submit" class="btn-primary" disabled>
+                        Vous n'avez plus de crédit pour une génération automatique.
+                    </button>
+                {% endif %}
+
+                <form method="post"
+                      action="{{ path('app_program_assign_competence_auto',{'diploma':diploma.id, 'program':program.id}) }}"
+                      id="form-generate-auto"
+                      class="hidden ">
+                    <input type="hidden" name="_csrf_token" value="{{ csrf_token('generate_diploma') }}">
+                </form>
+
+
+                {% include 'components/modal-confirmation.html.twig' with {
+                    x_show: 'showModal',
+                    title: 'Répartition automatique',
+                    message: '<span class="text-red-600">Attention</span>, lancer la répartition automatique des modules va écraser toutes les affectations manuelles que vous avez faites.
+                        Voulez-vous vraiment continuer ?',
+                    cancelLabel: 'Annuler',
+                    confirmLabel: 'Continuer',
+                    confirmAction: "document.getElementById('form-generate-auto').submit()"
+                } %}
+
+            </div>
+
+        {% endif %}
+
+
+        <div class="flex flex-wrap justify-center w-full gap-2 pt-6">
             <form id="save-assignments-form" method="post" action="{{ path('app_diploma_assign_save', {'diploma': diploma.id, 'program': program.id}) }}">
                 <input type="hidden" name="assignments" id="assignments-data" value="">
-                <button type="submit" class="btn-primary mt-6">Enregistrer les affectations</button>
-                <a href="{{ path('app_program') }}" class="ml-4 text-gray-600 hover:underline">Retour</a>
+                <button type="submit" class="mt-4 md:w-70  w-full btn-primary text-white px-4 py-2 rounded">Enregistrer les affectations</button>
+                <a href="{{ path('app_program') }}" class="mt-4 md:w-50  w-full btn-neutral text-white px-4 py-2 rounded">Retour</a>
             </form>
         </div>
     </div>
